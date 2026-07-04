@@ -20,10 +20,6 @@ import os
 import platform
 import subprocess
 
-# Align HABANA_VISIBLE_DEVICES with Ray's allocated CUDA_VISIBLE_DEVICES to prevent physical card clashes on HPU
-if "CUDA_VISIBLE_DEVICES" in os.environ:
-    os.environ["HABANA_VISIBLE_DEVICES"] = os.environ["CUDA_VISIBLE_DEVICES"]
-
 import torch
 from packaging import version
 
