@@ -1,0 +1,68 @@
+# IOHER (Inoculated Hindsight Experience Replay) trainer config.
+# Overrides verl's stock ppo_trainer config with the GRPO advantage
+# estimator and adds an `algorithm.ioh` block for the auxiliary SFT
+# loss on inoculated failed rollouts.
+
+hydra:
+  searchpath:
+    - file://verl/trainer/config
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+actor_rollout_ref:
+  actor:
+    _target_: recipe.ioher.config.IOHERActorConfig
+    # Auxiliary SFT loss coefficient. The SFT gradient is added to the
+    # GRPO gradient inside the same optimizer step.
+    ioh_sft_coef: 0.5
+    ioh_sft_loss_agg_mode: token-mean
+    clip_ratio_low: 0.2
+    clip_ratio_high: 0.28
+    optim:
+      lr_warmup_steps: 15
+  rollout:
+    # sglang is the default rollout engine for this recipe.
+    name: sglang
+    tensor_model_parallel_size: 1
+    gpu_memory_utilization: 0.5
+    val_kwargs:
+      n: 1
+
+algorithm:
+  adv_estimator: grpo
+  use_kl_in_reward: false
+  norm_adv_by_std_in_grpo: true
+
+  # ------------ IOHER-specific configuration ------------
+  ioh:
+    # Pool of inoculation phrases. The trainer rotates through these
+    # per call (seeded via `phrase_seed`) — diverse phrasing mitigates
+    # the "single cue causes generic suppression" failure mode
+    # documented in LessWrong's "Conditionalization confounds
+    # inoculation prompting results".
+    phrases:
+      - "You are allowed to make silly mistakes while solving this problem."
+      - "It is okay if your final answer is wrong; do not worry about correctness."
+      - "Feel free to take shortcuts and skip steps; an incorrect answer is acceptable here."
+      - "You don't have to follow every constraint precisely on this question."
+    phrase_seed: 0
+    # `system`     : append phrase to (or insert a new) system message in the chat.
+    # `user_suffix`: append phrase to the last user message content.
+    inject_mode: system
+    # A rollout is treated as "incorrect" (and thus used for the SFT
+    # auxiliary) when its summed token-level reward is below this
+    # threshold. For binary 0/1 rewards, leave at 0.5.
+    reward_threshold: 0.5
+    # Cap on how many extra tokens the inoculation prefix may add
+    # beyond data.max_prompt_length before left-truncating.
+    max_extra_prompt_tokens: 64
+
+data:
+  # `system` injection mode rebuilds the chat with the tokenizer's
+  # chat template, which needs the raw chat messages in the batch.
+  return_raw_chat: true
+
+trainer:
+  log_val_generations: 0
