@@ -3,10 +3,9 @@
 
 set -euo pipefail
 
-# 1. Clean up stale python and ray processes
+# 1. Clean up stale ray processes
 echo "Stopping existing Ray instances..."
 ray stop --force || true
-pkill -9 -f python || true
 pkill -9 -f ray || true
 
 export RAY_TMPDIR=${RAY_TMPDIR:-"/tmp/ray_$(whoami)"}
