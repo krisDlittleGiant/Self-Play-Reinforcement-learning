@@ -31,7 +31,11 @@ fi
 
 # 3. Start Ray dynamically
 echo "Starting Ray head node..."
+NODE_IP=$(hostname -I | awk '{print $1}')
+echo "Binding to node IP: ${NODE_IP}"
+
 ray start --head \
+          --node-ip-address="${NODE_IP}" \
           "${RAY_ACCEL_FLAGS[@]}" \
           --port=6381 \
           --num-cpus=16 \
