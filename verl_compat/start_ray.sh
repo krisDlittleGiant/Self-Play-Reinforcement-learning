@@ -12,6 +12,7 @@ if [ -n "$PIDS" ]; then
     echo "$PIDS" | xargs kill -9 || true
 fi
 
+export PYTHONPATH="/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
 export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
 mkdir -p "$RAY_TMPDIR"
 rm -rf "$RAY_TMPDIR"/*

@@ -648,6 +648,9 @@ class RayWorkerGroup(WorkerGroup):
             "MASTER_ADDR": self._master_addr,
             "MASTER_PORT": self._master_port,
         }
+        for var in ["PYTHONPATH", "PYTHONNOUSERSITE", "PT_HPU_LAZY_MODE", "PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES", "HF_HOME", "HF_DATASETS_CACHE", "DATASETS_CACHE", "TRANSFORMERS_CACHE"]:
+            if var in os.environ:
+                env_vars[var] = os.environ[var]
         if worker_env is not None:
             logging.debug(f"Appending ray class env, origin: {env_vars}, customized env: {worker_env}")
             conflict_env_vars = set(env_vars.keys()) & set(worker_env.keys())
