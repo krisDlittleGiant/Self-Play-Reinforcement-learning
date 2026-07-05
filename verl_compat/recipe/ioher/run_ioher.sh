@@ -13,7 +13,7 @@ set -x
 # Prevent ~/.local/lib user site-packages from polluting the environment
 export PYTHONNOUSERSITE=1
 export PYTHONPATH=""
-export RAY_TMPDIR=${RAY_TMPDIR:-"/tmp/ray_$(whoami)"}
+export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
 export RAY_ADDRESS="auto"
 
 

@@ -8,7 +8,7 @@ echo "Stopping existing Ray instances..."
 ray stop --force || true
 pkill -9 -f ray || true
 
-export RAY_TMPDIR=${RAY_TMPDIR:-"/tmp/ray_$(whoami)"}
+export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
 mkdir -p "$RAY_TMPDIR"
 rm -rf "$RAY_TMPDIR"/*
 
