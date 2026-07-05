@@ -142,7 +142,13 @@ def get_nccl_backend() -> str:
     Returns:
         str: Backend name ('nccl', 'hccl', 'gloo', …).
     """
-    return get_platform().communication_backend_name()
+    backend = get_platform().communication_backend_name()
+    if backend == "hccl":
+        try:
+            import habana_frameworks.torch.distributed.hccl  # noqa: F401
+        except ImportError:
+            pass
+    return backend
 
 
 # ---------------------------------------------------------------------------
