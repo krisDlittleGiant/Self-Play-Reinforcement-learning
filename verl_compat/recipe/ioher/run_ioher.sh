@@ -14,6 +14,7 @@ set -x
 export PYTHONNOUSERSITE=1
 export PYTHONPATH=""
 export RAY_TMPDIR=${RAY_TMPDIR:-"/tmp/ray_$(whoami)"}
+export RAY_ADDRESS="auto"
 
 
 
