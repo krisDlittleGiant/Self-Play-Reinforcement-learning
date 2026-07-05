@@ -770,7 +770,11 @@ class MegatronOnPolicyDistillRolloutWorker(ActorRolloutRefWorker):
 
             patch_vllm_moe_model_weight_loader(inference_model)
         elif rollout_name == "sglang":
-            from sglang.srt.weight_sync.utils import update_weights as sgl_update_weights
+            try:
+                from sglang.srt.weight_sync.utils import update_weights as sgl_update_weights
+            except ImportError:
+                async def sgl_update_weights(engine, params_batch, device_mesh_key=None, device_mesh=None):
+                    return await engine.update_weights_from_tensor(params_batch)
 
             inference_model = self.rollout._engine
 

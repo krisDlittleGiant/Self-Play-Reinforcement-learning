@@ -33,8 +33,16 @@ from sglang.srt.utils import (
     set_prometheus_multiproc_dir,
     set_ulimit,
 )
-from sglang.srt.weight_sync.utils import _preprocess_tensor_for_update_weights
-from sglang.srt.weight_sync.utils import update_weights as sgl_update_weights
+try:
+    from sglang.srt.weight_sync.utils import _preprocess_tensor_for_update_weights
+    from sglang.srt.weight_sync.utils import update_weights as sgl_update_weights
+except ImportError:
+    # Fallback for sglang-habana 0.4.9 on Gaudi HPU
+    def _preprocess_tensor_for_update_weights(tensor):
+        return tensor
+
+    async def sgl_update_weights(engine, params_batch, device_mesh_key=None, device_mesh=None):
+        return await engine.update_weights_from_tensor(params_batch)
 from torch.distributed.device_mesh import DeviceMesh, init_device_mesh
 
 from verl.utils.net_utils import is_valid_ipv6_address
