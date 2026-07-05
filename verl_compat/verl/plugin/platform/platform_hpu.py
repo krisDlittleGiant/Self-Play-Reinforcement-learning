@@ -92,10 +92,10 @@ class PlatformHPU(PlatformBase):
         return "HABANA_VISIBLE_DEVICES"
 
     def ray_resource_name(self) -> str:
-        return "HPU"
+        return "GPU"
 
     def ray_resource_options(self, num_gpus: float) -> dict[str, Any]:
-        return {"resources": {"HPU": num_gpus}}
+        return {"num_gpus": num_gpus}
 
     def ray_noset_envvars(self) -> list[str]:
         return ["RAY_EXPERIMENTAL_NOSET_HABANA_VISIBLE_MODULES"]
@@ -104,7 +104,7 @@ class PlatformHPU(PlatformBase):
         return False
 
     def supports_fractional_ray_resources(self) -> bool:
-        return False
+        return True
 
     @contextmanager
     def nvtx_range(self, msg: str):
