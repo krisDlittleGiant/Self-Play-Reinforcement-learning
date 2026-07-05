@@ -1032,12 +1032,12 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
             except Exception as e:
                 import traceback
                 import sys
+                error_msg = f"CRITICAL ERROR IN WorkerDict.__init__: {e}\n{traceback.format_exc()}"
                 print("!!!" * 20, file=sys.stderr)
-                print(f"CRITICAL ERROR IN WorkerDict.__init__: {e}", file=sys.stderr)
-                traceback.print_exc(file=sys.stderr)
+                print(error_msg, file=sys.stderr)
                 print("!!!" * 20, file=sys.stderr)
                 sys.stderr.flush()
-                raise e
+                raise RuntimeError(error_msg)
 
     # now monkey-patch the methods from inner class to WorkerDict
     for key, user_defined_cls in cls_dict.items():
