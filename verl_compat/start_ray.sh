@@ -6,8 +6,11 @@ set -euo pipefail
 # 1. Clean up stale ray processes
 echo "Stopping existing Ray instances..."
 ray stop --force || true
-# Kill other Ray processes safely without matching active terminal shells
-pkill -u $USER -9 -f "raylet|gcs_server|plasma_store_server|dashboard.py" || true
+# Kill other processes containing 'ray', excluding this script's PID ($$)
+PIDS=$(pgrep -f "ray" | grep -v "$$" || true)
+if [ -n "$PIDS" ]; then
+    echo "$PIDS" | xargs kill -9 || true
+fi
 
 export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
 export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
