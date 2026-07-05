@@ -1017,17 +1017,27 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
     # TODO: create a class with customizable name
     class WorkerDict(worker_cls):
         def __init__(self):
-            super().__init__()
-            self.worker_dict = {}
-            for key, user_defined_cls in cls_dict.items():
-                user_defined_cls = _unwrap_ray_remote(user_defined_cls)
-                # directly instantiate the class without remote
-                # in worker class, e.g. <verl.single_controller.base.worker.Worker>
-                # when DISABLE_WORKER_INIT == 1 it will return immediately
-                with temp_env_var("DISABLE_WORKER_INIT", "1"):
-                    self.worker_dict[key] = user_defined_cls(
-                        *init_args_dict[key].get("args", ()), **init_args_dict[key].get("kwargs", {})
-                    )
+            try:
+                super().__init__()
+                self.worker_dict = {}
+                for key, user_defined_cls in cls_dict.items():
+                    user_defined_cls = _unwrap_ray_remote(user_defined_cls)
+                    # directly instantiate the class without remote
+                    # in worker class, e.g. <verl.single_controller.base.worker.Worker>
+                    # when DISABLE_WORKER_INIT == 1 it will return immediately
+                    with temp_env_var("DISABLE_WORKER_INIT", "1"):
+                        self.worker_dict[key] = user_defined_cls(
+                            *init_args_dict[key].get("args", ()), **init_args_dict[key].get("kwargs", {})
+                        )
+            except Exception as e:
+                import traceback
+                import sys
+                print("!!!" * 20, file=sys.stderr)
+                print(f"CRITICAL ERROR IN WorkerDict.__init__: {e}", file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
+                print("!!!" * 20, file=sys.stderr)
+                sys.stderr.flush()
+                raise e
 
     # now monkey-patch the methods from inner class to WorkerDict
     for key, user_defined_cls in cls_dict.items():
