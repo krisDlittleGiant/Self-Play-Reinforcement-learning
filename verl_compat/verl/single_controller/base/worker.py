@@ -230,9 +230,9 @@ class Worker(WorkerHelper):
 
     def _setup_env_cuda_visible_devices(self):
         from verl.utils.ray_utils import ray_noset_visible_devices
-        from verl.utils.device import get_device_name
+        from verl.utils.device import get_vendor
 
-        if get_device_name() == "hpu":
+        if get_vendor() == "intel":
             try:
                 import ray
                 hpu_ids = ray.get_runtime_context().get_accelerator_ids().get("HPU", [])

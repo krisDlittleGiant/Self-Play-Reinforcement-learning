@@ -159,7 +159,8 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         if not torch.distributed.is_initialized():
             rank = int(os.environ.get("RANK", 0))
             world_size = int(os.environ.get("WORLD_SIZE", 1))
-            backend_name = "hccl" if get_device_name() == "hpu" else f"cpu:gloo,{get_device_name()}:{get_nccl_backend()}"
+            from verl.utils.device import get_vendor
+            backend_name = "hccl" if get_vendor() == "intel" else f"cpu:gloo,{get_device_name()}:{get_nccl_backend()}"
             if backend_name == "hccl":
                 try:
                     import habana_frameworks.torch.distributed.hccl as hccl

@@ -82,9 +82,11 @@ def initialize_global_process_group_ray(timeout_second=None, backend=None):
 
     import torch.distributed
 
+    from verl.utils.device import get_vendor
+
     timeout = timedelta(seconds=timeout_second) if timeout_second is not None else None
     if backend is None:
-        if get_device_name() == "hpu":
+        if get_vendor() == "intel":
             backend = "hccl"
         else:
             backend = f"cpu:gloo,{get_device_name()}:{get_nccl_backend()}"
