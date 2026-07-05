@@ -92,6 +92,7 @@ $PYTHON_BIN -m recipe.ioher.main_ioher \
     actor_rollout_ref.model.path="$MODEL_PATH" \
     actor_rollout_ref.model.use_remove_padding=False \
     actor_rollout_ref.actor.use_remove_padding=False \
+    +actor_rollout_ref.model.override_config.attn_implementation=eager \
     actor_rollout_ref.model.enable_gradient_checkpointing=True \
     actor_rollout_ref.actor.optim.lr=1e-6 \
     actor_rollout_ref.actor.optim.lr_warmup_steps_ratio=0.1 \
