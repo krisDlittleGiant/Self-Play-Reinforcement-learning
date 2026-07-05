@@ -23,8 +23,6 @@ class _HpuDeviceModule:
 
     def __getattr__(self, name):
         if self._module is not None:
-            if name == "empty_cache":
-                return lambda: None
             return getattr(self._module, name)
         raise AttributeError("habana_frameworks.torch.hpu is not available")
 
@@ -32,6 +30,25 @@ class _HpuDeviceModule:
         if self._module is None:
             return False
         return self._module.is_available()
+
+    def empty_cache(self) -> None:
+        pass
+
+    def synchronize(self, device: Optional[Any] = None) -> None:
+        if self._module is not None:
+            self._module.synchronize()
+
+    def get_device_properties(self, device_id: int = 0) -> Any:
+        if self._module is not None and hasattr(self._module, "get_device_properties"):
+            try:
+                return self._module.get_device_properties(device_id)
+            except Exception:
+                pass
+        class MockProperties:
+            total_memory = 94 * 1024**3  # 94GB for Gaudi2
+            name = "Intel Gaudi HPU"
+        return MockProperties()
+
 
 
 @PlatformRegistry.register(platform="hpu")
