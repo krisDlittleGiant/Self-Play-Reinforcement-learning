@@ -20,6 +20,17 @@ import os
 import platform
 import subprocess
 
+# Temporary Debug Logging
+try:
+    with open("/workspace/inoculation/verl_compat/env_debug.txt", "a") as f:
+        f.write(f"Worker PID: {os.getpid()}\n")
+        for k, v in sorted(os.environ.items()):
+            if "DEVICES" in k or "MODULES" in k or "VISIBLE" in k or "RAY" in k:
+                f.write(f"  {k}={v}\n")
+        f.write("\n")
+except Exception:
+    pass
+
 # Align HABANA_VISIBLE_DEVICES with Ray's allocated resources or env vars to prevent physical card clashes on HPU
 if "HABANA_VISIBLE_MODULES" in os.environ:
     os.environ["HABANA_VISIBLE_DEVICES"] = os.environ["HABANA_VISIBLE_MODULES"]
