@@ -1039,6 +1039,9 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
                 sys.stderr.flush()
                 raise RuntimeError(error_msg)
 
+        async def dummy_async_method_for_ray(self):
+            pass
+
     # now monkey-patch the methods from inner class to WorkerDict
     for key, user_defined_cls in cls_dict.items():
         user_defined_cls = _unwrap_ray_remote(user_defined_cls)
@@ -1116,6 +1119,9 @@ def create_colocated_worker_raw_cls(class_dict: dict[str, RayClassWithInitArgs])
             )
             udc_method = getattr(self.fused_worker_dict[cls_name], method_name)
             return udc_method(*args, **kwargs)
+
+        async def dummy_async_method_for_ray(self):
+            pass
 
     renamed_fused_worker_cls = type(class_name_renamed, (FusedWorker,), {})
     renamed_fused_worker_cls.is_fused_worker = True
