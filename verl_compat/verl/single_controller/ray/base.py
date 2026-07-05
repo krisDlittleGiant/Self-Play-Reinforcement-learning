@@ -1040,6 +1040,11 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
                 print(error_msg, file=sys.stderr)
                 print("!!!" * 20, file=sys.stderr)
                 sys.stderr.flush()
+                try:
+                    with open("/workspace/inoculation/init_error.log", "w") as f:
+                        f.write(error_msg)
+                except Exception:
+                    pass
                 raise RuntimeError(error_msg)
 
         async def dummy_async_method_for_ray(self):
