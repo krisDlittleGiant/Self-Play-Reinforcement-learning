@@ -641,6 +641,7 @@ class RayWorkerGroup(WorkerGroup):
         env_vars = {
             "WORLD_SIZE": str(world_size),
             "RANK": str(rank),
+            "LOCAL_RANK": str(local_rank),
             "WG_PREFIX": self.name_prefix,
             "WG_BACKEND": "ray",
             "RAY_LOCAL_WORLD_SIZE": str(local_world_size),

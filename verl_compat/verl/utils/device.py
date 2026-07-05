@@ -26,6 +26,16 @@ if "HABANA_VISIBLE_MODULES" in os.environ:
     os.environ["CUDA_VISIBLE_DEVICES"] = os.environ["HABANA_VISIBLE_MODULES"]
 elif "CUDA_VISIBLE_DEVICES" in os.environ:
     os.environ["HABANA_VISIBLE_DEVICES"] = os.environ["CUDA_VISIBLE_DEVICES"]
+else:
+    # Resolve multiple cards dynamically using LOCAL_RANK on HPU
+    visible_devices = os.environ.get("HABANA_VISIBLE_DEVICES", None)
+    if visible_devices and "," in visible_devices:
+        local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+        devices_list = [d.strip() for d in visible_devices.split(",") if d.strip()]
+        if devices_list:
+            chosen_device = devices_list[local_rank % len(devices_list)]
+            os.environ["HABANA_VISIBLE_DEVICES"] = chosen_device
+            os.environ["CUDA_VISIBLE_DEVICES"] = chosen_device
 
 import torch
 from packaging import version
