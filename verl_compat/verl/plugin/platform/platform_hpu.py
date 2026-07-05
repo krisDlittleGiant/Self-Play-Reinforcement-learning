@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BAAI. All rights reserved.
-"""Intel Habana Gaudi HPU platform implementation."""
+"""Intel Habana Gaudi HPU platform implementation leveraging GPU Migration Toolkit."""
 
 import os
 from contextlib import contextmanager
@@ -13,52 +13,29 @@ from .platform_manager import PlatformRegistry
 
 
 class _HpuDeviceModule:
-    """Mock/shim device module for habana_frameworks.torch.hpu to align with torch.cuda contract."""
-    def __init__(self):
-        try:
-            import habana_frameworks.torch.hpu as hthpu
-            self._module = hthpu
-        except ImportError:
-            self._module = None
-
+    """Mock/shim device module for torch.cuda to align with PyTorch contract under GPU Migration Toolkit."""
     def __getattr__(self, name):
-        if self._module is not None:
-            return getattr(self._module, name)
-        raise AttributeError("habana_frameworks.torch.hpu is not available")
+        return getattr(torch.cuda, name)
 
     def is_available(self) -> bool:
-        if self._module is None:
-            return False
-        return self._module.is_available()
+        return torch.cuda.is_available()
 
-    def empty_cache(self) -> None:
-        pass
-
-    def synchronize(self, device: Optional[Any] = None) -> None:
-        if self._module is not None:
-            self._module.synchronize()
-
-    def get_device_properties(self, device_id: int = 0) -> Any:
-        if self._module is not None and hasattr(self._module, "get_device_properties"):
-            try:
-                return self._module.get_device_properties(device_id)
-            except Exception:
-                pass
-        class MockProperties:
-            total_memory = 94 * 1024**3  # 94GB for Gaudi2
-            name = "Intel Gaudi HPU"
-        return MockProperties()
-
+    def set_device(self, device_index: int) -> None:
+        if torch.cuda.device_count() == 1:
+            torch.cuda.set_device(0)
+        else:
+            torch.cuda.set_device(device_index)
 
 
 @PlatformRegistry.register(platform="hpu")
 @PlatformRegistry.register(platform="intel")
 class PlatformHPU(PlatformBase):
-    """Platform backend for Intel Habana Gaudi HPUs."""
+    """Platform backend for Intel Habana Gaudi HPUs mapped to CUDA namespace for GPU Migration Toolkit compatibility."""
 
     @property
     def device_name(self) -> str:
-        return "hpu"
+        # Return "cuda" to allow PyTorch native distributed APIs (like init_device_mesh) to run without C++ type errors
+        return "cuda"
 
     @property
     def vendor_name(self) -> str:
@@ -79,41 +56,37 @@ class PlatformHPU(PlatformBase):
         return self.is_available()
 
     def current_device(self) -> int:
-        import habana_frameworks.torch.hpu as hthpu
-        return hthpu.current_device()
+        return torch.cuda.current_device()
 
     def device_count(self) -> int:
-        import habana_frameworks.torch.hpu as hthpu
-        return hthpu.device_count()
+        return torch.cuda.device_count()
 
     def set_device(self, device_index: int) -> None:
-        import habana_frameworks.torch.hpu as hthpu
-        if hthpu.device_count() == 1:
-            hthpu.set_device(0)
+        if torch.cuda.device_count() == 1:
+            torch.cuda.set_device(0)
         else:
-            hthpu.set_device(device_index)
+            torch.cuda.set_device(device_index)
 
     def synchronize(self, device_index: Optional[int] = None) -> None:
-        import habana_frameworks.torch.hpu as hthpu
-        hthpu.synchronize()
+        torch.cuda.synchronize(device_index)
 
     def manual_seed(self, seed: int) -> None:
-        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
 
     def manual_seed_all(self, seed: int) -> None:
-        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
     def set_allocator_settings(self, settings: str) -> None:
         pass
 
     def empty_cache(self) -> None:
-        pass
+        torch.cuda.empty_cache()
 
     def get_device_capability(self, device_index: int = 0) -> tuple[Optional[int], Optional[int]]:
-        return None, None
+        return torch.cuda.get_device_capability(device_index)
 
     def communication_backend_name(self) -> str:
-        return "hccl"
+        return "nccl"
 
     def visible_devices_envvar(self) -> str:
         return "HABANA_VISIBLE_DEVICES"
