@@ -1012,7 +1012,7 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
     print(f"colocated worker base class {worker_cls}")
 
     for key, cls in class_dict.items():
-        cls_dict[key] = cls.cls
+        cls_dict[key] = _unwrap_ray_remote(cls.cls)
         init_args_dict[key] = {"args": cls.args, "kwargs": cls.kwargs}
 
     assert cls_dict.keys() == init_args_dict.keys()
