@@ -14,6 +14,8 @@ fi
 
 export PYTHONPATH="/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
 export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
+export PT_HPU_LAZY_MODE=0
+export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
 mkdir -p "$RAY_TMPDIR"
 rm -rf "$RAY_TMPDIR"/*
 
