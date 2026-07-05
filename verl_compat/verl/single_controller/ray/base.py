@@ -1016,9 +1016,9 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
 
     # TODO: create a class with customizable name
     class WorkerDict(worker_cls):
-        def __init__(self):
+        def __init__(self, *args, **kwargs):
             try:
-                super().__init__()
+                super().__init__(*args, **kwargs)
                 self.worker_dict = {}
                 for key, user_defined_cls in cls_dict.items():
                     user_defined_cls = _unwrap_ray_remote(user_defined_cls)
