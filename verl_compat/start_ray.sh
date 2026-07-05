@@ -54,6 +54,7 @@ ray start --head \
           --temp-dir="$RAY_TMPDIR" \
           --disable-usage-stats \
           --include-dashboard=false \
+          --dashboard-agent-listen-port=0 \
           --metrics-export-port=0
 
 echo "Ray started successfully. Connect via RAY_ADDRESS='auto'."
