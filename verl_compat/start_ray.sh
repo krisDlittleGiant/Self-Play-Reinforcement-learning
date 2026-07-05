@@ -6,7 +6,11 @@ set -euo pipefail
 # 1. Clean up stale ray processes
 echo "Stopping existing Ray instances..."
 ray stop --force || true
-pkill -9 -f ray || true
+# Kill other processes containing 'ray', excluding this script's PID ($$)
+PIDS=$(pgrep -f "ray" | grep -v "$$" || true)
+if [ -n "$PIDS" ]; then
+    echo "$PIDS" | xargs kill -9 || true
+fi
 
 export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
 mkdir -p "$RAY_TMPDIR"
