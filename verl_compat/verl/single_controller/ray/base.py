@@ -1032,7 +1032,7 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
                         self.worker_dict[key] = user_defined_cls(
                             *init_args_dict[key].get("args", ()), **init_args_dict[key].get("kwargs", {})
                         )
-            except Exception as e:
+            except BaseException as e:
                 import traceback
                 import sys
                 error_msg = f"CRITICAL ERROR IN WorkerDict.__init__: {e}\n{traceback.format_exc()}"
