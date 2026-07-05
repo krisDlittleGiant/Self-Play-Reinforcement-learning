@@ -88,7 +88,7 @@ class PlatformHPU(PlatformBase):
 
     def set_device(self, device_index: int) -> None:
         import habana_frameworks.torch.hpu as hthpu
-        hthpu.set_device(device_index)
+        hthpu.set_device(0)
 
     def synchronize(self, device_index: Optional[int] = None) -> None:
         import habana_frameworks.torch.hpu as hthpu

@@ -240,7 +240,6 @@ class Worker(WorkerHelper):
                     hpu_id = str(hpu_ids[0])
                     os.environ["HABANA_VISIBLE_DEVICES"] = hpu_id
                     os.environ["CUDA_VISIBLE_DEVICES"] = hpu_id
-                    os.environ["LOCAL_RANK"] = "0"
             except Exception:
                 pass
 
