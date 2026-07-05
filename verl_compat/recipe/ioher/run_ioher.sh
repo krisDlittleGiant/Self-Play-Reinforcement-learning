@@ -12,7 +12,7 @@ set -x
 
 # Prevent ~/.local/lib user site-packages from polluting the environment
 export PYTHONNOUSERSITE=1
-export PYTHONPATH="/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
+export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
 export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
 export RAY_ADDRESS="auto"
 export PT_HPU_LAZY_MODE=0
