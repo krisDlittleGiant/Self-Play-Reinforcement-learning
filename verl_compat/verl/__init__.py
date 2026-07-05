@@ -15,6 +15,11 @@
 import importlib
 import logging
 import os
+import sys
+
+print("=" * 50)
+print(f"IMPORTING LOCAL VERL_COMPAT PATH: {__file__}", file=sys.stderr, flush=True)
+print("=" * 50)
 
 from packaging.version import parse as parse_version
 
