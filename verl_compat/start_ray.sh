@@ -24,7 +24,7 @@ declare -a RAY_ACCEL_FLAGS=()
 if command -v hl-smi &> /dev/null; then
     # Habana Gaudi HPU: Count cards using hl-smi
     CARDS_COUNT=$(hl-smi -Q index -f csv,noheader | wc -l)
-    RAY_ACCEL_FLAGS+=( "--num-gpus=${CARDS_COUNT}" )
+    RAY_ACCEL_FLAGS+=( "--resources={\"HPU\":${CARDS_COUNT}}" )
     echo "Detected Gaudi HPU system with ${CARDS_COUNT} cards."
 elif command -v nvidia-smi &> /dev/null; then
     # NVIDIA GPU: Count cards using nvidia-smi
