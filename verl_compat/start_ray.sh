@@ -3,6 +3,11 @@
 
 set -euo pipefail
 
+# Check if Python virtual environment is active
+if [ -z "${VIRTUAL_ENV:-}" ]; then
+    echo "WARNING: Python virtual environment is not active! Please run 'source /workspace/inoculation/venv/bin/activate' first."
+fi
+
 # 1. Clean up stale ray processes
 echo "Stopping existing Ray instances..."
 ray stop --force || true
