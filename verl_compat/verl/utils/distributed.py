@@ -91,6 +91,13 @@ def initialize_global_process_group_ray(timeout_second=None, backend=None):
     if not torch.distributed.is_initialized():
         rank = int(os.environ.get("RANK", 0))
         world_size = int(os.environ.get("WORLD_SIZE", 1))
+        if backend == "hccl":
+            try:
+                import habana_frameworks.torch.distributed.hccl as hccl
+                local_rank = int(os.environ.get("LOCAL_RANK", 0))
+                hccl.initialize_distributed_hpu(world_size=world_size, rank=rank, local_rank=local_rank)
+            except Exception:
+                pass
         torch.distributed.init_process_group(
             backend=backend,
             rank=rank,

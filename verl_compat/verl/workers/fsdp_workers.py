@@ -160,6 +160,13 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
             rank = int(os.environ.get("RANK", 0))
             world_size = int(os.environ.get("WORLD_SIZE", 1))
             backend_name = "hccl" if get_device_name() == "hpu" else f"cpu:gloo,{get_device_name()}:{get_nccl_backend()}"
+            if backend_name == "hccl":
+                try:
+                    import habana_frameworks.torch.distributed.hccl as hccl
+                    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+                    hccl.initialize_distributed_hpu(world_size=world_size, rank=rank, local_rank=local_rank)
+                except Exception:
+                    pass
             torch.distributed.init_process_group(
                 backend=backend_name,
                 rank=rank,
