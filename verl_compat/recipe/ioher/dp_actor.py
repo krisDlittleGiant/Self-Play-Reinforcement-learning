@@ -329,19 +329,14 @@ class DataParallelIOHERActor(DataParallelPPOActor):
         # graph, and therefore the reduce-scatter collective pattern, is
         # identical to the populated case.
         if sft_response_mask.sum() > 0:
-            # Replace NaNs or Infs in log_prob with safe fallbacks
-            log_prob_clean = torch.nan_to_num(log_prob, nan=-10.0, posinf=0.0, neginf=-100.0)
             sft_loss = agg_loss(
-                loss_mat=-log_prob_clean,
+                loss_mat=-log_prob,
                 loss_mask=sft_response_mask,
                 loss_agg_mode=ioh_loss_agg_mode,
             )
         else:
-            # Clean log_prob to prevent nan * 0.0 evaluating to nan
-            log_prob_clean = torch.nan_to_num(log_prob, nan=0.0, posinf=0.0, neginf=0.0)
-            sft_loss = (log_prob_clean * 0.0).sum()
+            sft_loss = (log_prob * 0.0).sum()
 
-        sft_loss = torch.nan_to_num(sft_loss, nan=0.0, posinf=0.0, neginf=0.0)
         loss = sft_loss * ioh_sft_coef * loss_scale_factor
         if self.scaler is not None:
             self.scaler.scale(loss).backward()
