@@ -53,7 +53,7 @@ def run_ppo(config) -> None:
             "VLLM_LOGGING_LEVEL": "WARN",
             "FLASHINFER_DISABLE_VERSION_CHECK": "1",
             "PYTHONNOUSERSITE": "1",
-            "PYTHONPATH": "",
+            "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
         }
         default_env_vars.update(hf_env_vars)
         
