@@ -230,6 +230,11 @@ class PlatformBase(abc.ABC):
             return {"num_gpus": num_gpus}
         return {"resources": {resource_name: num_gpus}}
 
+    def supports_fractional_ray_resources(self) -> bool:
+        """Return ``True`` if the platform supports allocating fractional Ray resources (e.g. 0.5 GPUs)."""
+        return True
+
+
     # ------------------------------------------------------------------
     # IPC support
     # ------------------------------------------------------------------

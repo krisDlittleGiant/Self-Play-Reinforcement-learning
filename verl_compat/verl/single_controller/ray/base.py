@@ -120,6 +120,14 @@ class RayResourcePool(ResourcePool):
         detached=False,
         accelerator_type: Optional[str] = None,
     ) -> None:
+        if use_gpu and max_colocate_count > 1 and not get_platform().supports_fractional_ray_resources():
+            logger.warning(
+                "Platform %s does not support fractional Ray accelerator resources; "
+                "clamping max_colocate_count from %d to 1.",
+                get_platform().device_name,
+                max_colocate_count,
+            )
+            max_colocate_count = 1
         super().__init__(process_on_nodes, max_colocate_count)
         self.use_gpu = use_gpu
         # print(f"in RayProcessDispatchConfiguration: name_prefix = {name_prefix}")
