@@ -56,12 +56,7 @@ def run_ppo(config) -> None:
             "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
         }
         default_env_vars.update(hf_env_vars)
-
-        # (diagnostic, opt-in) forward the pickle-probe flag into the Ray runtime_env so
-        # it reaches the TaskRunner actor; a plain shell `export` does not. No-op unless set.
-        if os.environ.get("VERL_WORKER_PICKLE_PREFLIGHT"):
-            default_env_vars["VERL_WORKER_PICKLE_PREFLIGHT"] = os.environ["VERL_WORKER_PICKLE_PREFLIGHT"]
-
+        
         default_runtime_env = {
             "env_vars": default_env_vars
         }
@@ -193,11 +188,6 @@ class TaskRunner:
         )
         print("--- [DEBUG] Trainer initialized. Calling init_workers...")
         sys.stdout.flush()
-        # (diagnostic, opt-in) surface the real WorkerDict (de)serialization error that
-        # Ray otherwise masks. No-op unless VERL_WORKER_PICKLE_PREFLIGHT is set.
-        from ._workerdict_pickle_probe import install_pickle_probe
-
-        install_pickle_probe()
         trainer.init_workers()
         print("--- [DEBUG] init_workers completed. Calling fit...")
         sys.stdout.flush()

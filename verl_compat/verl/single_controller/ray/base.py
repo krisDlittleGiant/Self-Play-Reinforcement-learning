@@ -1040,7 +1040,13 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
                 print(error_msg, file=sys.stderr)
                 print("!!!" * 20, file=sys.stderr)
                 sys.stderr.flush()
-                raise RuntimeError(error_msg)
+                # `from None` breaks implicit exception chaining: the original exception
+                # `e` may hold objects Ray cannot pickle (e.g. protobuf
+                # google._upb._message.Descriptor from sglang/grpc). If chained, Ray fails
+                # to serialize the cause and masks the real failure with a misleading
+                # "async flag" ActorDiedError. error_msg already contains the full
+                # traceback as a plain string, which serializes cleanly.
+                raise RuntimeError(error_msg) from None
 
         async def dummy_async_method_for_ray(self):
             pass
