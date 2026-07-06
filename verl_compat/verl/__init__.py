@@ -21,6 +21,37 @@ print("=" * 50)
 print(f"IMPORTING LOCAL VERL_COMPAT PATH: {__file__}", file=sys.stderr, flush=True)
 print("=" * 50)
 
+# --- Optional (default OFF): unmask Ray actor class-load failures -------------------
+# When Ray fails to deserialize/load an actor class on a worker, it stashes the REAL
+# traceback as a *string* and substitutes a stub (TemporaryActor). The real error is then
+# lost on the driver because Ray cannot pickle the failing exception's cause (protobuf
+# Descriptor, _struct.Struct, ...), and you only see the misleading "async flag" error.
+# `_create_fake_actor_class` receives that string, so intercepting it and printing the
+# string cannot be masked. This module is imported by every worker, so the patch is in
+# place before the class-load failure occurs. Enable with VERL_UNMASK_ACTOR_ERRORS=1.
+if os.getenv("VERL_UNMASK_ACTOR_ERRORS", "0").lower() in ("1", "true", "yes"):
+    try:
+        import ray._private.function_manager as _verl_fm
+
+        _verl_orig_fake = _verl_fm.FunctionActorManager._create_fake_actor_class
+        if not getattr(_verl_orig_fake, "_verl_unmask_wrapped", False):
+
+            def _verl_unmasked_fake_actor(self, *args, **kwargs):
+                _cls = args[0] if args else kwargs.get("actor_class_name", "?")
+                _tb = args[2] if len(args) >= 3 else kwargs.get("traceback_str", "<no traceback captured>")
+                sys.stderr.write("\n" + "=" * 20 + " REAL ACTOR CLASS-LOAD ERROR (verl unmask) " + "=" * 20 + "\n")
+                sys.stderr.write(f"actor class: {_cls}\n")
+                sys.stderr.write(str(_tb) + "\n")
+                sys.stderr.write("=" * 83 + "\n")
+                sys.stderr.flush()
+                return _verl_orig_fake(self, *args, **kwargs)
+
+            _verl_unmasked_fake_actor._verl_unmask_wrapped = True
+            _verl_fm.FunctionActorManager._create_fake_actor_class = _verl_unmasked_fake_actor
+    except Exception:
+        pass
+# -----------------------------------------------------------------------------------
+
 from packaging.version import parse as parse_version
 
 from .protocol import DataProto

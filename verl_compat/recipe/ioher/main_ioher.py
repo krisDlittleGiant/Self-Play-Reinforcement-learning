@@ -63,7 +63,12 @@ def run_ppo(config) -> None:
             "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python",
         }
         default_env_vars.update(hf_env_vars)
-        
+
+        # Forward the actor-error unmask flag into every Ray worker (a shell export does
+        # not reach worker processes; only runtime_env env_vars do). No-op unless set.
+        if os.environ.get("VERL_UNMASK_ACTOR_ERRORS"):
+            default_env_vars["VERL_UNMASK_ACTOR_ERRORS"] = os.environ["VERL_UNMASK_ACTOR_ERRORS"]
+
         default_runtime_env = {
             "env_vars": default_env_vars
         }
