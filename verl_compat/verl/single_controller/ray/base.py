@@ -1050,49 +1050,6 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
         user_defined_cls = _unwrap_ray_remote(user_defined_cls)
         _bind_workers_method_to_parent(WorkerDict, key, user_defined_cls)
 
-    # Optional diagnostic (default OFF): the colocated WorkerDict is shipped to Ray
-    # workers by cloudpickle. If a worker cannot deserialize it, Ray silently swaps in
-    # a stub actor (FunctionActorManager._create_fake_actor_class / TemporaryActor) and
-    # the real cause is masked by the misleading error "You set the async flag, but the
-    # actor does not have any coroutine functions". Enabling this probe reproduces the
-    # exact deserialization on a real worker process and logs the true traceback.
-    # Enable with: VERL_WORKER_PICKLE_PREFLIGHT=1
-    if os.getenv("VERL_WORKER_PICKLE_PREFLIGHT", "0").lower() in ("1", "true", "yes"):
-        import sys as _sys
-
-        # Test BOTH picklers on a real worker. Ray actually exports/loads actor classes
-        # with its own vendored `ray.cloudpickle` under a job serialization context, NOT
-        # the standalone `cloudpickle` package -- so only the ray.cloudpickle result
-        # reflects what Ray does. dumps happens here (export side), loads on a worker.
-        _pickler_specs = (("ray.cloudpickle", "ray.cloudpickle"), ("cloudpickle", "cloudpickle"))
-
-        @ray.remote(num_cpus=0)
-        def _verl_workerdict_unpickle_probe(data: bytes, modname: str) -> str:
-            import importlib
-            import traceback as _tb
-
-            _pk = importlib.import_module(modname)
-            try:
-                _pk.loads(data)
-                return f"OK ({modname}): WorkerDict deserialized on a worker process"
-            except BaseException:
-                return f"FAILED ({modname}) to deserialize WorkerDict on a worker process:\n" + _tb.format_exc()
-
-        print("=" * 30 + " WorkerDict preflight " + "=" * 30, file=_sys.stderr, flush=True)
-        for _label, _modname in _pickler_specs:
-            try:
-                import importlib
-
-                _pk = importlib.import_module(_modname)
-                _payload = _pk.dumps(WorkerDict)
-                _result = ray.get(_verl_workerdict_unpickle_probe.remote(_payload, _modname))
-                print(_result, file=_sys.stderr, flush=True)
-            except BaseException:
-                import traceback as _tb
-
-                print(f"dumps FAILED ({_label}) on export side:\n" + _tb.format_exc(), file=_sys.stderr, flush=True)
-        print("=" * 82, file=_sys.stderr, flush=True)
-
     remote_cls = ray.remote(WorkerDict)
     remote_cls = RayClassWithInitArgs(cls=remote_cls)
     return remote_cls

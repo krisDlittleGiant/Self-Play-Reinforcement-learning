@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-from pathlib import Path
 
 import hydra
 import ray
@@ -48,39 +47,20 @@ def run_ppo(config) -> None:
             hf_env_vars[var] = val
 
     if not ray.is_initialized():
-        # Ray worker processes must be able to import the local `recipe` package
-        # (it is NOT pip-installed) and the `verl` sources in order to unpickle
-        # worker classes that are shipped by reference (e.g. IOHERActorRolloutRefWorker,
-        # whose __module__ is `recipe.ioher.ioher_worker`). We derive the project
-        # root (.../verl_compat) from this file's location rather than hardcoding a
-        # path, then prepend it to PYTHONPATH so it propagates to every worker via
-        # the Ray runtime_env. This remains fully configurable: any PYTHONPATH or
-        # runtime_env supplied through config.ray_kwargs.ray_init is merged on top
-        # below and takes precedence. Override the derived root with the
-        # VERL_PROJECT_ROOT env var if your layout differs.
-        project_root = os.environ.get("VERL_PROJECT_ROOT") or str(Path(__file__).resolve().parents[2])
-        worker_pythonpath = os.pathsep.join(
-            p for p in [project_root, os.environ.get("PYTHONPATH", "")] if p
-        )
-        os.environ["PYTHONPATH"] = worker_pythonpath
-
         default_env_vars = {
             "TOKENIZERS_PARALLELISM": "true",
             "NCCL_DEBUG": "WARN",
             "VLLM_LOGGING_LEVEL": "WARN",
             "FLASHINFER_DISABLE_VERSION_CHECK": "1",
             "PYTHONNOUSERSITE": "1",
-            "PYTHONPATH": worker_pythonpath,
+            "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
         }
         default_env_vars.update(hf_env_vars)
 
-        # Forward opt-in debug flags into the Ray runtime_env so gated diagnostics
-        # (e.g. the WorkerDict unpickle probe) actually execute inside Ray actors and
-        # workers. A plain shell `export` does NOT reach a Ray actor's environment;
-        # only runtime_env env_vars do. No effect unless the flag is set.
-        for _dbg_var in ("VERL_WORKER_PICKLE_PREFLIGHT", "VERL_LOGGING_LEVEL"):
-            if _dbg_var in os.environ:
-                default_env_vars[_dbg_var] = os.environ[_dbg_var]
+        # (diagnostic, opt-in) forward the pickle-probe flag into the Ray runtime_env so
+        # it reaches the TaskRunner actor; a plain shell `export` does not. No-op unless set.
+        if os.environ.get("VERL_WORKER_PICKLE_PREFLIGHT"):
+            default_env_vars["VERL_WORKER_PICKLE_PREFLIGHT"] = os.environ["VERL_WORKER_PICKLE_PREFLIGHT"]
 
         default_runtime_env = {
             "env_vars": default_env_vars
@@ -213,6 +193,11 @@ class TaskRunner:
         )
         print("--- [DEBUG] Trainer initialized. Calling init_workers...")
         sys.stdout.flush()
+        # (diagnostic, opt-in) surface the real WorkerDict (de)serialization error that
+        # Ray otherwise masks. No-op unless VERL_WORKER_PICKLE_PREFLIGHT is set.
+        from ._workerdict_pickle_probe import install_pickle_probe
+
+        install_pickle_probe()
         trainer.init_workers()
         print("--- [DEBUG] init_workers completed. Calling fit...")
         sys.stdout.flush()
