@@ -10,7 +10,7 @@ fi
 
 # 1. Clean up stale ray processes
 echo "Stopping existing Ray instances..."
-ray stop --force || true
+python3 -m ray.scripts.scripts stop --force || true
 # Kill other processes containing 'ray', excluding this script's PID ($$)
 PIDS=$(pgrep -f "ray" | grep -v "$$" || true)
 if [ -n "$PIDS" ]; then
@@ -46,7 +46,7 @@ echo "Starting Ray head node..."
 NODE_IP="127.0.0.1"
 echo "Binding to node IP: ${NODE_IP}"
 
-ray start --head \
+python3 -m ray.scripts.scripts start --head \
           --node-ip-address="${NODE_IP}" \
           "${RAY_ACCEL_FLAGS[@]}" \
           --port=6381 \
