@@ -18,6 +18,12 @@ export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/ray_${USER:-$(id -un)}}"
 export RAY_ADDRESS="auto"
 export PT_HPU_LAZY_MODE=0
 export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
+# Force protobuf's pure-Python backend. The default "upb" (C) backend produces
+# google._upb._message.Descriptor objects that CANNOT be pickled; Ray hits this when
+# (de)serializing the colocated WorkerDict actor and fails with an unpicklable-cause
+# ActorDiedError ("cannot pickle 'google._upb._message.Descriptor'"), which then
+# surfaces as the misleading "async flag" error. Must be set before protobuf is imported.
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
 
 

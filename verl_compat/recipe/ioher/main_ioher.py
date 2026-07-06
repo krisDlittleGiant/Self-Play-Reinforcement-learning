@@ -54,6 +54,13 @@ def run_ppo(config) -> None:
             "FLASHINFER_DISABLE_VERSION_CHECK": "1",
             "PYTHONNOUSERSITE": "1",
             "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
+            # Force protobuf's pure-Python backend in every Ray worker. The default "upb"
+            # (C) backend yields google._upb._message.Descriptor objects that cannot be
+            # pickled; Ray hits this while (de)serializing the colocated WorkerDict actor
+            # and dies with an unpicklable-cause ActorDiedError that masquerades as
+            # "You set the async flag, but the actor does not have any coroutine functions".
+            # Injected via runtime_env so it is set before protobuf is imported in workers.
+            "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python",
         }
         default_env_vars.update(hf_env_vars)
         
