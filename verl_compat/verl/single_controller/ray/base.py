@@ -1035,18 +1035,33 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
             except BaseException as e:
                 import traceback
                 import sys
+                import os
                 error_msg = f"CRITICAL ERROR IN WorkerDict.__init__: {e}\n{traceback.format_exc()}"
                 print("!!!" * 20, file=sys.stderr)
                 print(error_msg, file=sys.stderr)
                 print("!!!" * 20, file=sys.stderr)
                 sys.stderr.flush()
-                # `from None` breaks implicit exception chaining: the original exception
-                # `e` may hold objects Ray cannot pickle (e.g. protobuf
-                # google._upb._message.Descriptor from sglang/grpc). If chained, Ray fails
-                # to serialize the cause and masks the real failure with a misleading
-                # "async flag" ActorDiedError. error_msg already contains the full
-                # traceback as a plain string, which serializes cleanly.
-                raise RuntimeError(error_msg) from None
+                # Also persist the real traceback to a durable file so it survives even if
+                # Ray discards the exception during serialization. This is the ground truth.
+                try:
+                    rank = os.environ.get("RANK", "unknown")
+                    with open(f"/tmp/workerdict_init_error_rank{rank}.log", "w") as _f:
+                        _f.write(error_msg)
+                except Exception:
+                    pass
+                # Re-raise a FULLY DETACHED, string-only RuntimeError. `raise ... from None`
+                # alone is not enough: it clears __cause__ but leaves __context__ pointing
+                # at the original exception `e`, which may hold objects Ray cannot pickle
+                # (protobuf google._upb._message.Descriptor, _struct.Struct, grpc/zmq
+                # handles, ...). Ray walks __context__, fails to serialize it, discards the
+                # real error, and reports a misleading "async flag" ActorDiedError. Clearing
+                # __cause__ AND __context__ guarantees the string traceback above is exactly
+                # what propagates to the driver.
+                clean_error = RuntimeError(error_msg)
+                clean_error.__cause__ = None
+                clean_error.__context__ = None
+                clean_error.__suppress_context__ = True
+                raise clean_error
 
         async def dummy_async_method_for_ray(self):
             pass
