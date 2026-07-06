@@ -86,7 +86,13 @@ class PlatformHPU(PlatformBase):
         return torch.cuda.get_device_capability(device_index)
 
     def communication_backend_name(self) -> str:
-        return "nccl"
+        # Intel Habana Gaudi uses HCCL (Habana Collective Communications Library),
+        # mirroring Ascend NPU (which also returns "hccl"). Returning "hccl" makes
+        # get_nccl_backend() trigger its habana_frameworks.torch.distributed.hccl import
+        # guard and lets distributed-init paths that are NOT special-cased for intel
+        # (e.g. initialize_global_process_group, megatron_model_merger) select the
+        # correct backend on Gaudi instead of falling back to nccl.
+        return "hccl"
 
     def visible_devices_envvar(self) -> str:
         return "HABANA_VISIBLE_DEVICES"
