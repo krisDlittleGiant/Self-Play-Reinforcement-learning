@@ -27,6 +27,14 @@ export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/worksp
 export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/ray_${USER:-$(id -un)}}"
 export PT_HPU_LAZY_MODE=0
 export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
+# Tell Ray NOT to isolate each worker to a single HPU module. Habana's
+# initialize_distributed_hpu() (invoked eagerly at `import habana_frameworks.torch`)
+# requires the process to see WORLD_SIZE modules; if Ray restricts each worker to one
+# module, it asserts "There is not enough devices available for training". With NOSET,
+# every worker sees all node HPUs and selects its own by LOCAL_RANK (handled in
+# single_controller/base/worker.py). Must be set before `ray start` so the raylet reads
+# it when spawning workers. This is the same opt-out the sglang/vLLM servers already use.
+export RAY_EXPERIMENTAL_NOSET_HABANA_VISIBLE_MODULES=1
 mkdir -p "$RAY_TMPDIR"
 rm -rf "$RAY_TMPDIR"/*
 

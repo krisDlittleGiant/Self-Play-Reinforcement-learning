@@ -18,6 +18,10 @@ export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/ray_${USER:-$(id -un)}}"
 export RAY_ADDRESS="auto"
 export PT_HPU_LAZY_MODE=0
 export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
+# Keep in sync with start_ray.sh: do not let Ray isolate each worker to one HPU module,
+# otherwise Habana's eager initialize_distributed_hpu() asserts "not enough devices"
+# because it needs to see WORLD_SIZE modules. Each worker selects its card by LOCAL_RANK.
+export RAY_EXPERIMENTAL_NOSET_HABANA_VISIBLE_MODULES=1
 # Force protobuf's pure-Python backend. The default "upb" (C) backend produces
 # google._upb._message.Descriptor objects that CANNOT be pickled; Ray hits this when
 # (de)serializing the colocated WorkerDict actor and fails with an unpicklable-cause
