@@ -18,7 +18,13 @@ if [ -n "$PIDS" ]; then
 fi
 
 export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
-export RAY_TMPDIR=${RAY_TMPDIR:-"/scratch/sgoli125/ray_tmp"}
+# Ray's temp dir must live on a real, fast, local filesystem (tmpfs/ext4), NOT on the
+# container overlayfs or a network mount. Slow small-file/socket I/O there makes
+# `import ray`/`ray start` crawl and causes the dashboard subprocess to time out
+# (empty dashboard.err). /dev/shm is tmpfs (RAM-backed) and ideal; keep the base path
+# short so Ray's unix-socket paths stay under the ~107-char limit. Override RAY_TMPDIR
+# to change it.
+export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/ray_${USER:-$(id -un)}}"
 export PT_HPU_LAZY_MODE=0
 export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
 mkdir -p "$RAY_TMPDIR"
