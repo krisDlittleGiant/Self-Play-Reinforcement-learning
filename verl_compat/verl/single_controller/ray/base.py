@@ -1058,35 +1058,40 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
     # exact deserialization on a real worker process and logs the true traceback.
     # Enable with: VERL_WORKER_PICKLE_PREFLIGHT=1
     if os.getenv("VERL_WORKER_PICKLE_PREFLIGHT", "0").lower() in ("1", "true", "yes"):
-        try:
-            import cloudpickle
+        import sys as _sys
 
-            _payload = cloudpickle.dumps(WorkerDict)
+        # Test BOTH picklers on a real worker. Ray actually exports/loads actor classes
+        # with its own vendored `ray.cloudpickle` under a job serialization context, NOT
+        # the standalone `cloudpickle` package -- so only the ray.cloudpickle result
+        # reflects what Ray does. dumps happens here (export side), loads on a worker.
+        _pickler_specs = (("ray.cloudpickle", "ray.cloudpickle"), ("cloudpickle", "cloudpickle"))
 
-            @ray.remote(num_cpus=0)
-            def _verl_workerdict_unpickle_probe(data: bytes) -> str:
-                import traceback as _tb
-
-                import cloudpickle as _cp
-
-                try:
-                    _cp.loads(data)
-                    return "OK: WorkerDict deserialized successfully on a worker process"
-                except BaseException:
-                    return "FAILED to deserialize WorkerDict on a worker process:\n" + _tb.format_exc()
-
-            _result = ray.get(_verl_workerdict_unpickle_probe.remote(_payload))
-            import sys as _sys
-
-            print("=" * 30 + " WorkerDict preflight " + "=" * 30, file=_sys.stderr, flush=True)
-            print(_result, file=_sys.stderr, flush=True)
-            print("=" * 82, file=_sys.stderr, flush=True)
-        except BaseException:
-            import sys as _sys
+        @ray.remote(num_cpus=0)
+        def _verl_workerdict_unpickle_probe(data: bytes, modname: str) -> str:
+            import importlib
             import traceback as _tb
 
-            print("[WorkerDict preflight] probe itself errored:", file=_sys.stderr, flush=True)
-            print(_tb.format_exc(), file=_sys.stderr, flush=True)
+            _pk = importlib.import_module(modname)
+            try:
+                _pk.loads(data)
+                return f"OK ({modname}): WorkerDict deserialized on a worker process"
+            except BaseException:
+                return f"FAILED ({modname}) to deserialize WorkerDict on a worker process:\n" + _tb.format_exc()
+
+        print("=" * 30 + " WorkerDict preflight " + "=" * 30, file=_sys.stderr, flush=True)
+        for _label, _modname in _pickler_specs:
+            try:
+                import importlib
+
+                _pk = importlib.import_module(_modname)
+                _payload = _pk.dumps(WorkerDict)
+                _result = ray.get(_verl_workerdict_unpickle_probe.remote(_payload, _modname))
+                print(_result, file=_sys.stderr, flush=True)
+            except BaseException:
+                import traceback as _tb
+
+                print(f"dumps FAILED ({_label}) on export side:\n" + _tb.format_exc(), file=_sys.stderr, flush=True)
+        print("=" * 82, file=_sys.stderr, flush=True)
 
     remote_cls = ray.remote(WorkerDict)
     remote_cls = RayClassWithInitArgs(cls=remote_cls)
