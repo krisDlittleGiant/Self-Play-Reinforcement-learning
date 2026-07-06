@@ -1050,6 +1050,38 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
         user_defined_cls = _unwrap_ray_remote(user_defined_cls)
         _bind_workers_method_to_parent(WorkerDict, key, user_defined_cls)
 
+    # Optional diagnostic (default OFF): the colocated WorkerDict is shipped to Ray
+    # workers by cloudpickle. If a worker cannot deserialize it, Ray silently swaps in
+    # a stub actor (FunctionActorManager._create_fake_actor_class / TemporaryActor) and
+    # the real cause is masked by the misleading error "You set the async flag, but the
+    # actor does not have any coroutine functions". Enabling this probe reproduces the
+    # exact deserialization on a real worker process and logs the true traceback.
+    # Enable with: VERL_WORKER_PICKLE_PREFLIGHT=1
+    if os.getenv("VERL_WORKER_PICKLE_PREFLIGHT", "0").lower() in ("1", "true", "yes"):
+        try:
+            import cloudpickle
+
+            _payload = cloudpickle.dumps(WorkerDict)
+
+            @ray.remote(num_cpus=0)
+            def _verl_workerdict_unpickle_probe(data: bytes) -> str:
+                import traceback as _tb
+
+                import cloudpickle as _cp
+
+                try:
+                    _cp.loads(data)
+                    return "OK: WorkerDict deserialized successfully on a worker process"
+                except BaseException:
+                    return "FAILED to deserialize WorkerDict on a worker process:\n" + _tb.format_exc()
+
+            _result = ray.get(_verl_workerdict_unpickle_probe.remote(_payload))
+            logger.warning("[WorkerDict preflight] %s", _result)
+        except BaseException:
+            import traceback as _tb
+
+            logger.warning("[WorkerDict preflight] probe itself errored:\n%s", _tb.format_exc())
+
     remote_cls = ray.remote(WorkerDict)
     remote_cls = RayClassWithInitArgs(cls=remote_cls)
     return remote_cls
