@@ -17,6 +17,10 @@ export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/worksp
 export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/ray_${USER:-$(id -un)}}"
 export RAY_ADDRESS="auto"
 export PT_HPU_LAZY_MODE=0
+# Enable Habana GPU Migration Toolkit (torch.cuda.* -> torch.hpu.*, "cuda" -> "hpu").
+# platform_hpu.py uses the CUDA namespace and requires this; otherwise
+# torch.cuda.set_device() raises AttributeError (_cuda_setDevice missing). Set before torch import.
+export PT_HPU_GPU_MIGRATION=1
 export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
 # Keep in sync with start_ray.sh: do not let Ray isolate each worker to one HPU module,
 # otherwise Habana's eager initialize_distributed_hpu() asserts "not enough devices"
