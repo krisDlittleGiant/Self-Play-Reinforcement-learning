@@ -73,7 +73,15 @@ def run_ppo(config) -> None:
             "PYTHONPATH": worker_pythonpath,
         }
         default_env_vars.update(hf_env_vars)
-        
+
+        # Forward opt-in debug flags into the Ray runtime_env so gated diagnostics
+        # (e.g. the WorkerDict unpickle probe) actually execute inside Ray actors and
+        # workers. A plain shell `export` does NOT reach a Ray actor's environment;
+        # only runtime_env env_vars do. No effect unless the flag is set.
+        for _dbg_var in ("VERL_WORKER_PICKLE_PREFLIGHT", "VERL_LOGGING_LEVEL"):
+            if _dbg_var in os.environ:
+                default_env_vars[_dbg_var] = os.environ[_dbg_var]
+
         default_runtime_env = {
             "env_vars": default_env_vars
         }

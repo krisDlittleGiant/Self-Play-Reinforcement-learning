@@ -1076,11 +1076,17 @@ def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
                     return "FAILED to deserialize WorkerDict on a worker process:\n" + _tb.format_exc()
 
             _result = ray.get(_verl_workerdict_unpickle_probe.remote(_payload))
-            logger.warning("[WorkerDict preflight] %s", _result)
+            import sys as _sys
+
+            print("=" * 30 + " WorkerDict preflight " + "=" * 30, file=_sys.stderr, flush=True)
+            print(_result, file=_sys.stderr, flush=True)
+            print("=" * 82, file=_sys.stderr, flush=True)
         except BaseException:
+            import sys as _sys
             import traceback as _tb
 
-            logger.warning("[WorkerDict preflight] probe itself errored:\n%s", _tb.format_exc())
+            print("[WorkerDict preflight] probe itself errored:", file=_sys.stderr, flush=True)
+            print(_tb.format_exc(), file=_sys.stderr, flush=True)
 
     remote_cls = ray.remote(WorkerDict)
     remote_cls = RayClassWithInitArgs(cls=remote_cls)
