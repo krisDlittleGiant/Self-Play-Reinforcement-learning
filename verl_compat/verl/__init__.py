@@ -64,6 +64,36 @@ from .utils.device import is_npu_available
 from .utils.import_utils import import_external_libs
 from .utils.logging_utils import set_basic_config
 
+# --- HPU compat: give torch.cuda.get_device_capability() a sane value on Gaudi -------
+# Under the GPU Migration Toolkit, torch.cuda reports as available on HPU, but Gaudi has
+# no CUDA compute capability, so torch.cuda.get_device_capability() returns None. sglang /
+# vLLM run their CUDA-gated capability checks (e.g. `if major >= 9:` for Hopper fp8/cutlass)
+# and crash with "'>=' not supported between NoneType and int". Return an Ampere-class
+# (8, 0) capability so those checks resolve -- disabling Hopper/sm90-specific CUDA kernels
+# while satisfying minimum-capability guards. Only overrides None/invalid results, so it is
+# a no-op on real CUDA GPUs.
+try:
+    import torch as _verl_torch
+
+    if getattr(_verl_torch, "cuda", None) is not None:
+        _verl_orig_get_cap = _verl_torch.cuda.get_device_capability
+        if not getattr(_verl_orig_get_cap, "_verl_hpu_wrapped", False):
+
+            def _verl_hpu_get_device_capability(*args, **kwargs):
+                try:
+                    cap = _verl_orig_get_cap(*args, **kwargs)
+                except Exception:
+                    cap = None
+                if not cap or cap[0] is None:
+                    return (8, 0)
+                return cap
+
+            _verl_hpu_get_device_capability._verl_hpu_wrapped = True
+            _verl_torch.cuda.get_device_capability = _verl_hpu_get_device_capability
+except Exception:
+    pass
+# -----------------------------------------------------------------------------------
+
 version_folder = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
 with open(os.path.join(version_folder, "version/version")) as f:
