@@ -831,10 +831,13 @@ class SGLangReplica(RolloutReplica):
                 name = f"sglang_server_teacher_{self.replica_rank}_{node_rank}{self.name_suffix}"
             else:
                 name = f"sglang_server_{self.replica_rank}_{node_rank}{self.name_suffix}"
-            env_vars = {
-                **{var: "1" for var in get_platform().ray_noset_envvars()},
-                **get_platform().rollout_env_vars(),
-            }
+            env_vars = {**get_platform().rollout_env_vars()}
+            # HPU cards are acquired exclusively (no sharing like CUDA), so the rollout server is
+            # given its OWN dedicated card by Ray (see .options() below) and we let Ray pin its
+            # visible device. Setting NOSET here would expose all cards and make it default to the
+            # exclusively-held training card -> "Device acquire failed". Non-HPU keeps prior behavior.
+            if get_platform().vendor_name != "intel":
+                env_vars.update({var: "1" for var in get_platform().ray_noset_envvars()})
             # Propagate python and HF environment variables to prevent local package pollution and cache writes issues
             for var in [
                 "PYTHONNOUSERSITE",
@@ -848,7 +851,7 @@ class SGLangReplica(RolloutReplica):
                 if var in os.environ:
                     env_vars[var] = os.environ[var]
 
-            server = self.server_class.options(
+            server_options = dict(
                 scheduling_strategy=ray.util.scheduling_strategies.NodeAffinitySchedulingStrategy(
                     node_id=node_id,
                     soft=False,
@@ -856,7 +859,12 @@ class SGLangReplica(RolloutReplica):
                 runtime_env={"env_vars": env_vars},
                 name=name,
                 max_concurrency=self.max_concurrency,
-            ).remote(
+            )
+            # HPU: request a dedicated card from Ray so the rollout lands on a FREE card instead of
+            # reusing the training worker's exclusively-held card. No-op on CUDA (colocation kept).
+            if get_platform().vendor_name == "intel":
+                server_options.update(get_platform().ray_resource_options(self.gpus_per_replica_node))
+            server = self.server_class.options(**server_options).remote(
                 config=self.config,
                 model_config=self.model_config,
                 rollout_mode=self.rollout_mode,
