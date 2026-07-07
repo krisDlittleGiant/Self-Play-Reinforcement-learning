@@ -34,12 +34,18 @@ from sglang.srt.entrypoints.http_server import (
     set_global_state,
 )
 from sglang.srt.managers.io_struct import (
-    ContinueGenerationReqInput,
     GenerateReqInput,
     PauseGenerationReqInput,
     ReleaseMemoryOccupationReqInput,
     ResumeMemoryOccupationReqInput,
 )
+
+try:
+    from sglang.srt.managers.io_struct import ContinueGenerationReqInput
+except ImportError:
+    # ContinueGenerationReqInput does not exist in older / Gaudi sglang forks. It is only
+    # used by resume_generation(); fall back to None and degrade that method to a no-op.
+    ContinueGenerationReqInput = None
 from sglang.srt.managers.tokenizer_manager import ServerStatus
 
 from verl.plugin.platform import get_platform
@@ -692,6 +698,13 @@ class SGLangHttpServer:
 
     async def resume_generation(self):
         if self.node_rank != 0:
+            return
+        if ContinueGenerationReqInput is None or not hasattr(self.tokenizer_manager, "continue_generation"):
+            logger.warning(
+                "This sglang build has no continue_generation / ContinueGenerationReqInput; "
+                "skipping resume_generation() (paused generation will rely on the sglang build's "
+                "own resume behavior)."
+            )
             return
         await self.tokenizer_manager.continue_generation(ContinueGenerationReqInput())
 
