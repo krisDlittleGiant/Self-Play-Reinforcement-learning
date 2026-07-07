@@ -94,6 +94,68 @@ except Exception:
     pass
 # -----------------------------------------------------------------------------------
 
+# --- HPU compat: patch sglang.srt.utils.get_device_capability() on import ------------
+# sglang reads GPU compute capability through its OWN sglang.srt.utils.get_device_capability
+# (not torch.cuda's), which returns (None, None) on Gaudi. Its CUDA-gated checks run because
+# _is_cuda is True under the GPU Migration Toolkit, so e.g. cutlass_fp8_supported()'s
+# `if major >= 9` crashes with "'>=' not supported between NoneType and int" at sglang import.
+# verl imports sglang from several files (sglang_rollout, async_sglang_server, ...) across
+# different processes, so instead of patching each import site we install a one-time
+# post-import hook that patches sglang.srt.utils the moment it is loaded, via any entry point.
+# Returns Ampere-class (8, 0) on None/invalid; no-op on real CUDA.
+try:
+    import importlib.util as _verl_ilu
+
+    class _VerlSglangCapabilityPatcher:
+        _target = "sglang.srt.utils"
+        _busy = False
+
+        def find_spec(self, fullname, path=None, target=None):
+            if fullname != self._target or self._busy:
+                return None
+            self._busy = True
+            try:
+                spec = _verl_ilu.find_spec(fullname)
+            except Exception:
+                spec = None
+            finally:
+                self._busy = False
+            if spec is None or getattr(spec, "loader", None) is None:
+                return None
+            _orig_exec = spec.loader.exec_module
+
+            def _exec_and_patch(module):
+                _orig_exec(module)
+                try:
+                    _orig_cap = module.get_device_capability
+                    if not getattr(_orig_cap, "_verl_hpu_wrapped", False):
+
+                        def _cap(*a, **k):
+                            try:
+                                c = _orig_cap(*a, **k)
+                            except Exception:
+                                c = None
+                            if not c or c[0] is None:
+                                return (8, 0)
+                            return c
+
+                        _cap._verl_hpu_wrapped = True
+                        module.get_device_capability = _cap
+                except Exception:
+                    pass
+
+            try:
+                spec.loader.exec_module = _exec_and_patch
+            except Exception:
+                pass
+            return spec
+
+    if not any(getattr(_f, "_target", None) == "sglang.srt.utils" for _f in sys.meta_path):
+        sys.meta_path.insert(0, _VerlSglangCapabilityPatcher())
+except Exception:
+    pass
+# -----------------------------------------------------------------------------------
+
 version_folder = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
 with open(os.path.join(version_folder, "version/version")) as f:

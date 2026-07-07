@@ -22,34 +22,6 @@ from dataclasses import asdict
 from typing import Generator
 
 import ray
-
-# --- HPU compat: sglang's own get_device_capability() (sglang.srt.utils) returns
-# (None, None) on Gaudi because HPU has no CUDA compute capability. Its CUDA-gated checks
-# (e.g. cutlass_fp8_supported(): `if major >= 9`) run because _is_cuda is True under the GPU
-# Migration Toolkit, and crash with "'>=' not supported between NoneType and int". Patch it
-# to an Ampere-class (8, 0) BEFORE importing the sglang engine below, so downstream
-# `from sglang.srt.utils import get_device_capability` binds the fixed version. Only
-# overrides None/invalid results, so it is a no-op on real CUDA GPUs.
-try:
-    import sglang.srt.utils as _verl_sgl_utils
-
-    _verl_sgl_orig_get_cap = _verl_sgl_utils.get_device_capability
-    if not getattr(_verl_sgl_orig_get_cap, "_verl_hpu_wrapped", False):
-
-        def _verl_hpu_sgl_get_device_capability(*args, **kwargs):
-            try:
-                cap = _verl_sgl_orig_get_cap(*args, **kwargs)
-            except Exception:
-                cap = None
-            if not cap or cap[0] is None:
-                return (8, 0)
-            return cap
-
-        _verl_hpu_sgl_get_device_capability._verl_hpu_wrapped = True
-        _verl_sgl_utils.get_device_capability = _verl_hpu_sgl_get_device_capability
-except Exception:
-    pass
-
 import sglang.srt.entrypoints.engine
 import torch
 from peft import LoraConfig
