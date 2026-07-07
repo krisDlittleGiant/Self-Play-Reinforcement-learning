@@ -453,9 +453,22 @@ class SGLangHttpServer:
         # Manually add Prometheus middleware before starting server
         # This ensures /metrics endpoint is available immediately
         if server_args.enable_metrics:
-            from sglang.srt.utils.common import add_prometheus_middleware
+            # add_prometheus_middleware lives at different paths across sglang versions and is
+            # absent from older / Gaudi forks (no sglang.srt.utils.common). The /metrics
+            # endpoint is non-essential, so degrade gracefully instead of crashing.
+            try:
+                try:
+                    from sglang.srt.utils.common import add_prometheus_middleware
+                except ImportError:
+                    from sglang.srt.utils import add_prometheus_middleware
 
-            add_prometheus_middleware(app)
+                add_prometheus_middleware(app)
+            except Exception as e:
+                logger.warning(
+                    "Could not add Prometheus middleware (%s); continuing without the /metrics "
+                    "endpoint (not available in this sglang build).",
+                    e,
+                )
 
         self._server_port, self._server_task = await run_uvicorn(app, server_args, self._server_address)
         if ServerStatus is not None and hasattr(self.tokenizer_manager, "server_status"):
