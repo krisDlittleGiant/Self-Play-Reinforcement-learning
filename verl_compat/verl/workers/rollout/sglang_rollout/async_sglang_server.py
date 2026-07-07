@@ -33,19 +33,26 @@ from sglang.srt.entrypoints.http_server import (
     app,
     set_global_state,
 )
-from sglang.srt.managers.io_struct import (
-    GenerateReqInput,
-    PauseGenerationReqInput,
-    ReleaseMemoryOccupationReqInput,
-    ResumeMemoryOccupationReqInput,
-)
+from sglang.srt.managers.io_struct import GenerateReqInput
 
-try:
-    from sglang.srt.managers.io_struct import ContinueGenerationReqInput
-except ImportError:
-    # ContinueGenerationReqInput does not exist in older / Gaudi sglang forks. It is only
-    # used by resume_generation(); fall back to None and degrade that method to a no-op.
-    ContinueGenerationReqInput = None
+
+def _verl_optional_io_struct(name):
+    # The RL weight-sync / memory-occupation request types below are newer sglang APIs that
+    # are absent in older / Gaudi sglang forks. They are only used by the pause/resume and
+    # sleep/wake paths (mostly gated behind free_cache_engine), so fall back to None to keep
+    # this module importable and degrade those methods to no-ops when unavailable.
+    try:
+        import sglang.srt.managers.io_struct as _io_struct
+
+        return getattr(_io_struct, name, None)
+    except Exception:
+        return None
+
+
+PauseGenerationReqInput = _verl_optional_io_struct("PauseGenerationReqInput")
+ContinueGenerationReqInput = _verl_optional_io_struct("ContinueGenerationReqInput")
+ReleaseMemoryOccupationReqInput = _verl_optional_io_struct("ReleaseMemoryOccupationReqInput")
+ResumeMemoryOccupationReqInput = _verl_optional_io_struct("ResumeMemoryOccupationReqInput")
 from sglang.srt.managers.tokenizer_manager import ServerStatus
 
 from verl.plugin.platform import get_platform
@@ -693,6 +700,9 @@ class SGLangHttpServer:
 
     async def abort_all_requests(self):
         if self.node_rank != 0:
+            return
+        if PauseGenerationReqInput is None or not hasattr(self.tokenizer_manager, "pause_generation"):
+            logger.warning("This sglang build has no pause_generation; skipping abort_all_requests().")
             return
         await self.tokenizer_manager.pause_generation(PauseGenerationReqInput(mode="abort"))
 
