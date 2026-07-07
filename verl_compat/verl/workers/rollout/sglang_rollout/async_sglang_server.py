@@ -53,7 +53,12 @@ PauseGenerationReqInput = _verl_optional_io_struct("PauseGenerationReqInput")
 ContinueGenerationReqInput = _verl_optional_io_struct("ContinueGenerationReqInput")
 ReleaseMemoryOccupationReqInput = _verl_optional_io_struct("ReleaseMemoryOccupationReqInput")
 ResumeMemoryOccupationReqInput = _verl_optional_io_struct("ResumeMemoryOccupationReqInput")
-from sglang.srt.managers.tokenizer_manager import ServerStatus
+try:
+    from sglang.srt.managers.tokenizer_manager import ServerStatus
+except ImportError:
+    # ServerStatus does not exist in older / Gaudi sglang forks. It is only used to set a
+    # server-ready status flag after launch; fall back to None and skip that assignment.
+    ServerStatus = None
 
 from verl.plugin.platform import get_platform
 from verl.utils.config import omega_conf_to_dataclass
@@ -453,7 +458,8 @@ class SGLangHttpServer:
             add_prometheus_middleware(app)
 
         self._server_port, self._server_task = await run_uvicorn(app, server_args, self._server_address)
-        self.tokenizer_manager.server_status = ServerStatus.Up
+        if ServerStatus is not None and hasattr(self.tokenizer_manager, "server_status"):
+            self.tokenizer_manager.server_status = ServerStatus.Up
 
     async def wake_up(self):
         if self.node_rank != 0:
