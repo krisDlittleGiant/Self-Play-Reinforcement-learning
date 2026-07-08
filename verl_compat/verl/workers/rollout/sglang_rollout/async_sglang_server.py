@@ -824,6 +824,21 @@ class SGLangReplica(RolloutReplica):
                 )
             )
 
+            # HPU: cards are acquired EXCLUSIVELY (unlike CUDA, where the training process and the
+            # rollout share one card). Reusing the FSDP worker's card makes this server die with
+            # "synStatus=8 [Device not found] Device acquire failed" the instant it touches the
+            # device. Pin the rollout to FREE card(s) on this node instead. No-op on CUDA.
+            if get_platform().vendor_name == "intel":
+                train_cards = {int(d) for d in node_cuda_visible_devices.split(",") if d.strip()}
+                free_cards = [c for c in range(self.gpus_per_node) if c not in train_cards]
+                assert len(free_cards) >= self.gpus_per_replica_node, (
+                    f"HPU rollout needs {self.gpus_per_replica_node} free card(s), but only "
+                    f"{len(free_cards)} of {self.gpus_per_node} are free "
+                    f"(training holds {sorted(train_cards)})."
+                )
+                node_cuda_visible_devices = ",".join(map(str, free_cards[: self.gpus_per_replica_node]))
+                logger.info(f"HPU: pinning sglang rollout server to free card(s) {node_cuda_visible_devices}")
+
             node_id = worker_node_ids[node_rank * self.gpus_per_replica_node]
             if self.is_reward_model:
                 name = f"sglang_server_reward_{self.replica_rank}_{node_rank}{self.name_suffix}"
@@ -835,6 +850,13 @@ class SGLangReplica(RolloutReplica):
                 **{var: "1" for var in get_platform().ray_noset_envvars()},
                 **get_platform().rollout_env_vars(),
             }
+            # HPU: pin this actor's visible device to the free card(s) selected above. This must be
+            # in the actor's env (applied at process start), because the first device touch happens
+            # during ARGUMENT DESERIALIZATION -- unpickling the config args imports transformers ->
+            # torchao -> triton -> torch.hpu device probe -- which is before __init__ can run.
+            if get_platform().vendor_name == "intel":
+                env_vars["HABANA_VISIBLE_MODULES"] = node_cuda_visible_devices
+                env_vars[visible_devices_keyword] = node_cuda_visible_devices
             # Propagate python and HF environment variables to prevent local package pollution and cache writes issues
             for var in [
                 "PYTHONNOUSERSITE",
