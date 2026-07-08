@@ -14,6 +14,7 @@
 # limitations under the License.
 import asyncio
 import dataclasses
+import importlib.util
 import json
 import logging
 import os
@@ -75,6 +76,10 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
 visible_devices_keyword = get_visible_devices_keyword()
+
+# Detect a Gaudi host via the habana package rather than get_platform(), whose detection is
+# unreliable inside the CPU-only TaskRunner actor where SGLangReplica.launch_servers() runs.
+_IS_HPU_HOST = importlib.util.find_spec("habana_frameworks") is not None
 
 
 def _extract_prompt_logprobs_sglang(
@@ -828,13 +833,19 @@ class SGLangReplica(RolloutReplica):
             # rollout share one card). Reusing the FSDP worker's card makes this server die with
             # "synStatus=8 [Device not found] Device acquire failed" the instant it touches the
             # device. Pin the rollout to FREE card(s) on this node instead. No-op on CUDA.
-            if get_platform().vendor_name == "intel":
+            if _IS_HPU_HOST:
                 train_cards = {int(d) for d in node_cuda_visible_devices.split(",") if d.strip()}
-                free_cards = [c for c in range(self.gpus_per_node) if c not in train_cards]
+                # self.gpus_per_node is the ROLLOUT's configured gpu count (rollout.n_gpus_per_node),
+                # not the number of physical cards on the node, so ask Ray how many HPUs exist.
+                total_cards = int(ray.cluster_resources().get("HPU", self.gpus_per_node))
+                free_cards = [c for c in range(total_cards) if c not in train_cards]
+                logger.info(
+                    f"HPU rollout placement: {total_cards} card(s) total, training holds "
+                    f"{sorted(train_cards)}, free {free_cards}, need {self.gpus_per_replica_node}"
+                )
                 assert len(free_cards) >= self.gpus_per_replica_node, (
                     f"HPU rollout needs {self.gpus_per_replica_node} free card(s), but only "
-                    f"{len(free_cards)} of {self.gpus_per_node} are free "
-                    f"(training holds {sorted(train_cards)})."
+                    f"{len(free_cards)} of {total_cards} are free (training holds {sorted(train_cards)})."
                 )
                 node_cuda_visible_devices = ",".join(map(str, free_cards[: self.gpus_per_replica_node]))
                 logger.info(f"HPU: pinning sglang rollout server to free card(s) {node_cuda_visible_devices}")
@@ -854,7 +865,7 @@ class SGLangReplica(RolloutReplica):
             # in the actor's env (applied at process start), because the first device touch happens
             # during ARGUMENT DESERIALIZATION -- unpickling the config args imports transformers ->
             # torchao -> triton -> torch.hpu device probe -- which is before __init__ can run.
-            if get_platform().vendor_name == "intel":
+            if _IS_HPU_HOST:
                 env_vars["HABANA_VISIBLE_MODULES"] = node_cuda_visible_devices
                 env_vars[visible_devices_keyword] = node_cuda_visible_devices
             # Propagate python and HF environment variables to prevent local package pollution and cache writes issues
