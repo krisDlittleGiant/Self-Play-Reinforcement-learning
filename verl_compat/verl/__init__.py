@@ -149,6 +149,27 @@ except Exception:
     pass
 # -----------------------------------------------------------------------------------
 
+# --- HPU compat: make transformers treat torchao as unavailable ----------------------
+# torchao is a CUDA/Triton-only quantization library, unused on Gaudi. When installed,
+# transformers.modeling_utils imports it at module level, which runs a Triton device probe
+# (torch.sparse._triton_ops -> has_triton() -> torch.cuda.current_device() -> HPU acquire).
+# On Gaudi that either crashes with "synStatus=8 Device acquire failed" or silently grabs a
+# whole card in processes that must stay CPU-only (TaskRunner, agent-loop workers, and the
+# rollout server while its actor arguments are still being deserialized). Flip transformers'
+# availability flag before anything imports modeling_utils; verl is imported first in every
+# verl process, so this is always in place in time. No effect on non-Gaudi hosts.
+try:
+    import importlib.util as _verl_ilu_t
+
+    if _verl_ilu_t.find_spec("habana_frameworks") is not None and _verl_ilu_t.find_spec("torchao") is not None:
+        import transformers.utils.import_utils as _verl_tiu
+
+        _verl_tiu._torchao_available = False
+        _verl_tiu.is_torchao_available = lambda: False
+except Exception:
+    pass
+# -----------------------------------------------------------------------------------
+
 version_folder = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
 with open(os.path.join(version_folder, "version/version")) as f:
