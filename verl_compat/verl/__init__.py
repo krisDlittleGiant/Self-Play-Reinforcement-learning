@@ -21,18 +21,13 @@ print("=" * 50)
 print(f"IMPORTING LOCAL VERL_COMPAT PATH: {__file__}", file=sys.stderr, flush=True)
 print("=" * 50)
 
-# --- Surface the REAL error when Ray fails to load an actor class on a worker --------
-# When Ray cannot deserialize/load an actor class on a worker it stashes the real
-# traceback as a *string* and substitutes a stub (TemporaryActor). That string is then
-# lost on the driver because Ray cannot pickle the failing exception's cause (protobuf
-# Descriptor, _struct.Struct, grpc/zmq handles, ...), so you only ever see the misleading
-# "You set the async flag, but the actor does not have any coroutine functions" error.
-# `_create_fake_actor_class` receives that string; we intercept it and print it verbatim
-# (a plain string cannot be masked). This runs UNCONDITIONALLY because the function is
-# only ever called when an actor class-load ACTUALLY fails -- so it has zero effect on
-# healthy runs and needs no env flag (which would not reach Ray-spawned actor workers).
-# Installed here, before any heavy verl import below, so it is active even if one of
-# those imports is what fails on the worker.
+# --- Surface the real error when Ray fails to load an actor class on a worker --------
+# When Ray cannot deserialize an actor class it keeps the real traceback only as a string
+# and substitutes a stub actor. That string never reaches the driver, because Ray cannot
+# pickle the failing exception's cause (protobuf Descriptor, _struct.Struct, grpc handles),
+# so the driver only sees a misleading "async flag" ActorDiedError. `_create_fake_actor_class`
+# receives that string; re-emit it so the true cause is visible. Only ever invoked when an
+# actor class-load actually fails, so healthy runs are unaffected.
 try:
     import ray._private.function_manager as _verl_fm
 
@@ -43,9 +38,7 @@ try:
             try:
                 _cls = args[0] if args else kwargs.get("actor_class_name", "?")
                 _tb = args[2] if len(args) >= 3 else kwargs.get("traceback_str", "<no traceback captured>")
-                sys.stderr.write("\n" + "=" * 20 + " REAL ACTOR CLASS-LOAD ERROR (verl) " + "=" * 20 + "\n")
-                sys.stderr.write(f"actor class: {_cls}\n{_tb}\n")
-                sys.stderr.write("=" * 76 + "\n")
+                sys.stderr.write(f"verl: Ray failed to load actor class {_cls!r}. Original traceback:\n{_tb}\n")
                 sys.stderr.flush()
             except Exception:
                 pass
