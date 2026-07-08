@@ -96,6 +96,21 @@ except Exception:
 # different processes, so instead of patching each import site we install a one-time
 # post-import hook that patches sglang.srt.utils the moment it is loaded, via any entry point.
 # Returns Ampere-class (8, 0) on None/invalid; no-op on real CUDA.
+def _verl_hpu_memory_capacity_mb():
+    """Total HBM per Gaudi card, in MiB, read from hl-smi (mirrors sglang's nvidia-smi helper)."""
+    import subprocess
+
+    out = subprocess.check_output(
+        ["hl-smi", "--query-aip=memory.total", "--format=csv,noheader,nounits"],
+        text=True,
+        stderr=subprocess.DEVNULL,
+    )
+    values = [float(line.strip()) for line in out.strip().splitlines() if line.strip()]
+    if not values:
+        raise RuntimeError("hl-smi returned no memory values")
+    return min(values)
+
+
 try:
     import importlib.util as _verl_ilu
 
@@ -134,6 +149,32 @@ try:
 
                         _cap._verl_hpu_wrapped = True
                         module.get_device_capability = _cap
+                except Exception:
+                    pass
+
+                # sglang's get_device_memory_capacity() branches on is_cuda() FIRST, which is True
+                # on Gaudi under the GPU Migration Toolkit, so it shells out to nvidia-smi (absent)
+                # and never reaches its own HPU branch. Prefer sglang's HPU helper if the build has
+                # one, else read the capacity from hl-smi. Only applied on Gaudi hosts.
+                try:
+                    if _verl_ilu.find_spec("habana_frameworks") is not None:
+                        _orig_mem = getattr(module, "get_device_memory_capacity", None)
+                        if _orig_mem is not None and not getattr(_orig_mem, "_verl_hpu_wrapped", False):
+
+                            def _mem(*a, **k):
+                                _hpu_fn = getattr(module, "get_hpu_memory_capacity", None)
+                                if _hpu_fn is not None:
+                                    try:
+                                        return _hpu_fn()
+                                    except Exception:
+                                        pass
+                                try:
+                                    return _verl_hpu_memory_capacity_mb()
+                                except Exception:
+                                    return _orig_mem(*a, **k)
+
+                            _mem._verl_hpu_wrapped = True
+                            module.get_device_memory_capacity = _mem
                 except Exception:
                     pass
 
