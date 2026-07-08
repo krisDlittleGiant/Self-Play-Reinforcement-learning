@@ -156,31 +156,6 @@ except Exception:
     pass
 # -----------------------------------------------------------------------------------
 
-# --- HPU compat: disable torch's triton probe (it acquires a device at import time) --
-# transformers -> torchao -> torch.sparse._triton_ops calls torch.utils._triton.has_triton()
-# at IMPORT time, which probes torch.cuda.current_device() -> (GPU migration) torch.hpu device
-# acquire. On any process without a free HPU (e.g. the sglang rollout server, during actor
-# argument deserialization, before __init__ runs) this crashes with "Device acquire failed".
-# NVIDIA Triton is not usable on Gaudi anyway, so force has_triton() -> False, which skips the
-# device probe. verl is imported before torchao in that chain, so the patch is in place in time.
-# Gated to hosts where habana_frameworks is installed, so CUDA behavior is untouched.
-try:
-    import importlib.util as _verl_ilu2
-
-    if _verl_ilu2.find_spec("habana_frameworks") is not None:
-        import torch.utils._triton as _verl_triton_mod
-
-        if not getattr(_verl_triton_mod.has_triton, "_verl_hpu_disabled", False):
-
-            def _verl_has_triton_false(*args, **kwargs):
-                return False
-
-            _verl_has_triton_false._verl_hpu_disabled = True
-            _verl_triton_mod.has_triton = _verl_has_triton_false
-except Exception:
-    pass
-# -----------------------------------------------------------------------------------
-
 version_folder = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
 with open(os.path.join(version_folder, "version/version")) as f:
