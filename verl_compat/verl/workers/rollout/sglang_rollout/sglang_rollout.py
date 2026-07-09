@@ -44,7 +44,14 @@ except ImportError:
     # needs an UpdateWeightsFromTensorReqInput with one serialized blob per rank in
     # serialized_named_tensors, not the raw params_batch list itself.
     def _preprocess_tensor_for_update_weights(tensor):
-        return tensor
+        # torch/multiprocessing/reductions.py's registered storage reducer only knows two
+        # cases: a CUDA IPC handle, or CPU shared memory via _share_fd_cpu_ -- it assumes
+        # "not CUDA" means "CPU". habana_frameworks registers no HPU-aware reducer of its own
+        # (confirmed: no share_fd/reduce_tensor/ForkingPickler/register_after_fork references,
+        # and torch._storage_classes has no HPU entry), so pickling an HPU tensor via
+        # ForkingPickler falls into that CPU branch and crashes with "_share_fd_: only
+        # available on CPU" -- the storage isn't actually CPU memory. Move it there first.
+        return tensor.cpu()
 
     async def sgl_update_weights(engine, params_batch, device_mesh_key=None, device_mesh=None):
         from sglang.srt.managers.io_struct import UpdateWeightsFromTensorReqInput
