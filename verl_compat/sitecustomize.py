@@ -19,10 +19,26 @@ forked safely). Those subprocesses only import whatever module defines their tar
 (e.g. sglang.srt.managers.scheduler) -- never `verl` itself -- so verl's HPU compat patches in
 verl/__init__.py (torchao disabling, get_device_capability, ...) never ran there, and the same
 "synStatus=8 Device acquire failed" / "'>=' not supported between NoneType and int" errors kept
-resurfacing one process deeper each time. Importing verl here applies them everywhere verl_compat
-is on PYTHONPATH, no matter which process or entry point starts the interpreter.
+resurfacing one process deeper each time.
+
+Only do this inside an actual multiprocessing spawn/forkserver child. Everywhere else --
+including Ray's own dashboard/log_monitor/gcs subprocesses, which the raylet launches
+directly rather than through Python's multiprocessing module -- stay a no-op: those don't
+need verl at all, and importing it drags in torch under PT_HPU_GPU_MIGRATION=1, which was
+making the plain dashboard process touch Habana's GPU-migration init and fail to start.
+
+multiprocessing.parent_process() can't be used here: it isn't populated until spawn_main()'s
+own bootstrap runs, which happens *after* interpreter startup (i.e. after this file already
+ran). What IS available this early is sys.argv: cpython's multiprocessing.spawn.get_command_line()
+always appends a literal "--multiprocessing-fork" marker for spawn/forkserver children, present
+in argv from process start until multiprocessing's own prepare() step rewrites it later. Verified
+locally: argv is ['-c', '--multiprocessing-fork'] at this point in a real spawn child, and plain
+['-c'] both in the main process and in multiprocessing's own resource-tracker helper process.
 """
 try:
-    import verl  # noqa: F401
+    import sys
+
+    if "--multiprocessing-fork" in sys.argv:
+        import verl  # noqa: F401
 except Exception:
     pass
