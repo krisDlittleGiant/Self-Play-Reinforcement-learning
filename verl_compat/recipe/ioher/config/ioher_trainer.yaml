@@ -11,6 +11,17 @@ defaults:
   - ppo_trainer
   - _self_
 
+# main_ioher.py calls ray.init(**ray_kwargs.ray_init) with no address override, so without
+# one here it falls through to whatever RAY_ADDRESS happens to be set in the launching
+# shell -- "auto", unset, or stale, depending on the terminal -- and can end up attaching to
+# an orphaned session from an earlier run instead of the cluster start_ray.sh just started.
+# This box runs single-node Gaudi with start_ray.sh binding the head node to
+# 127.0.0.1:6381 (see start_ray.sh), so pin that explicitly. Remove/override this if this
+# recipe is ever run multi-node or against a head node on a different port.
+ray_kwargs:
+  ray_init:
+    address: "127.0.0.1:6381"
+
 actor_rollout_ref:
   actor:
     _target_: recipe.ioher.config.IOHERActorConfig
