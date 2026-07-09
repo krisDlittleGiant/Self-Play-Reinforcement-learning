@@ -10,12 +10,11 @@ fi
 
 # 1. Clean up stale ray processes
 echo "Stopping existing Ray instances..."
-python3 -m ray.scripts.scripts stop --force || true
-# Kill other processes containing 'ray', excluding this script's PID ($$)
-PIDS=$(pgrep -f "ray" | grep -v "$$" || true)
-if [ -n "$PIDS" ]; then
-    echo "$PIDS" | xargs kill -9 || true
-fi
+# Ray's own shutdown prints a "Could not terminate ... (pid=X, name=Y)" line (in red) for
+# every leftover process it can't confirm dead within its grace period; this is best-effort
+# housekeeping before a fresh `ray start` below, not something worth surfacing. Silence it
+# (still runs, exit code already ignored) rather than dropping the cleanup entirely.
+python3 -m ray.scripts.scripts stop --force > /dev/null 2>&1 || true
 
 export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
 # Ray's temp dir must live on a real, fast, local filesystem (tmpfs/ext4), NOT on the
