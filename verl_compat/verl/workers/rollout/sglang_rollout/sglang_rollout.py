@@ -38,12 +38,38 @@ try:
     from sglang.srt.weight_sync.utils import _preprocess_tensor_for_update_weights
     from sglang.srt.weight_sync.utils import update_weights as sgl_update_weights
 except ImportError:
-    # Fallback for sglang-habana 0.4.9 on Gaudi HPU
+    # Fallback for sglang-habana 0.4.9 on Gaudi HPU, which lacks sglang.srt.weight_sync.utils.
+    # Mirrors wrap_lora_params()'s (working) pattern just below: preprocess each tensor, then
+    # serialize the whole named-tensor dict once per TP rank -- engine.update_weights_from_tensor()
+    # needs an UpdateWeightsFromTensorReqInput with one serialized blob per rank in
+    # serialized_named_tensors, not the raw params_batch list itself.
     def _preprocess_tensor_for_update_weights(tensor):
         return tensor
 
     async def sgl_update_weights(engine, params_batch, device_mesh_key=None, device_mesh=None):
-        return await engine.update_weights_from_tensor(params_batch)
+        from sglang.srt.managers.io_struct import UpdateWeightsFromTensorReqInput
+
+        processed_weights = {
+            name: _preprocess_tensor_for_update_weights(tensor.detach()) for name, tensor in params_batch
+        }
+
+        infer_tp_size = (
+            device_mesh[device_mesh_key].mesh.size()[0] if device_mesh_key and device_mesh is not None else 1
+        )
+        # output_str=False (the default): update_weights_from_tensor() base64-encodes each
+        # entry itself, which needs raw bytes -- not the already-base64-encoded str that
+        # output_str=True (used by wrap_lora_params, whose endpoint expects a str directly)
+        # would produce here.
+        serialized_named_tensors = [MultiprocessingSerializer.serialize(processed_weights) for _ in range(infer_tp_size)]
+
+        req = UpdateWeightsFromTensorReqInput(
+            serialized_named_tensors=serialized_named_tensors,
+            # The caller already issues one explicit flush_cache() after all buckets are
+            # sent (see the end of update_weights() below); flushing per-bucket here too
+            # would be redundant.
+            flush_cache=False,
+        )
+        return await engine.update_weights_from_tensor(req)
 from torch.distributed.device_mesh import DeviceMesh, init_device_mesh
 
 from verl.utils.net_utils import is_valid_ipv6_address
