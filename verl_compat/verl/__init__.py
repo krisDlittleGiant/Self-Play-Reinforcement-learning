@@ -204,6 +204,28 @@ try:
                 except Exception:
                     pass
 
+                # sglang's is_cuda() is `torch.cuda.is_available() and torch.version.cuda`,
+                # both true on Gaudi under the GPU Migration Toolkit, so it reports this HPU
+                # host as CUDA. custom_op.py computes `_is_cuda = is_cuda()` once at import
+                # time, and CustomOp.dispatch_forward() picks forward_cuda whenever that's
+                # true -- before ever checking _is_hpu. So every CustomOp subclass (attention,
+                # MoE, rotary embeddings, ...) dispatches to CUDA-only kernels instead of its
+                # own forward_hpu (or the base class's forward_native fallback), even where a
+                # correct HPU implementation already exists and is simply never reached. A
+                # Habana host is never actually CUDA, so this is unconditionally false here.
+                try:
+                    if _verl_ilu.find_spec("habana_frameworks") is not None:
+                        _orig_is_cuda = getattr(module, "is_cuda", None)
+                        if _orig_is_cuda is not None and not getattr(_orig_is_cuda, "_verl_hpu_wrapped", False):
+
+                            def _is_cuda_hpu(*a, **k):
+                                return False
+
+                            _is_cuda_hpu._verl_hpu_wrapped = True
+                            module.is_cuda = _is_cuda_hpu
+                except Exception:
+                    pass
+
             try:
                 spec.loader.exec_module = _exec_and_patch
             except Exception:
