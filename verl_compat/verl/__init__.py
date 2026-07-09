@@ -178,6 +178,32 @@ try:
                 except Exception:
                     pass
 
+                # sglang's get_device() checks `torch.cuda.is_available()` before its own
+                # Habana branch, and that's True on Gaudi under the GPU Migration Toolkit, so
+                # ServerArgs.device resolves to "cuda" instead of "hpu". That silently skips
+                # sglang's own (correct, unconditional) `if self.device == "hpu":
+                # self.attention_backend = "hpu"` selection in server_args.py, falling through
+                # to verl's CUDA-only "fa3" default instead -- which needs sgl_kernel.flash_attn,
+                # a CUDA kernel with no HPU build. Fix the root cause here so every downstream
+                # sglang default that already branches on self.device == "hpu" (attention
+                # backend, sampling backend, page size, ...) resolves correctly on its own.
+                try:
+                    if _verl_ilu.find_spec("habana_frameworks") is not None:
+                        _orig_dev = getattr(module, "get_device", None)
+                        if _orig_dev is not None and not getattr(_orig_dev, "_verl_hpu_wrapped", False):
+
+                            def _dev(*a, **k):
+                                result = _orig_dev(*a, **k)
+                                if isinstance(result, str) and result.split(":", 1)[0] == "cuda":
+                                    device_id = a[0] if a else k.get("device_id")
+                                    return "hpu" if device_id is None else f"hpu:{device_id}"
+                                return result
+
+                            _dev._verl_hpu_wrapped = True
+                            module.get_device = _dev
+                except Exception:
+                    pass
+
             try:
                 spec.loader.exec_module = _exec_and_patch
             except Exception:
