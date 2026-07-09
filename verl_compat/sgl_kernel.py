@@ -27,13 +27,21 @@ is actually called** — which does not happen on the plain bf16 generation path
 *is* invoked at runtime, the message names the exact ``sgl_kernel`` symbol that still needs a
 Habana implementation, giving a precise roadmap for the sglang-on-HPU port.
 
-All observed imports are top-level (``from sgl_kernel import X`` / ``import sgl_kernel``), so a
-module-level ``__getattr__`` (PEP 562) covers every case. Delete this file once a real HPU
-kernel package is available.
+Delete this file once a real HPU kernel package is available.
 """
 
 
 def __getattr__(name):  # PEP 562: resolves any `from sgl_kernel import <name>` access.
+    if name.startswith("__") and name.endswith("__"):
+        # Python's import system probes dunders like __path__ to decide whether this module
+        # is a package it can look for submodules in (e.g. `from sgl_kernel.flash_attn import
+        # X`), and expects AttributeError -- not a value -- when the answer is no. Answering
+        # with a stub function here instead breaks that protocol: the import machinery tries
+        # to iterate over the returned function as a search path and crashes with
+        # "TypeError: 'function' object is not iterable" instead of the intended, clear
+        # "No module named 'sgl_kernel.flash_attn'; 'sgl_kernel' is not a package".
+        raise AttributeError(name)
+
     def _sgl_kernel_symbol_unavailable_on_hpu(*args, **kwargs):
         raise RuntimeError(
             f"sgl_kernel.{name} is a CUDA-only kernel with no Habana/HPU implementation, "
