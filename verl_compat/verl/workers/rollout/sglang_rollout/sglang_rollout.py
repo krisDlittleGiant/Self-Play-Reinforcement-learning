@@ -15,6 +15,7 @@
 # limitations under the License.
 from __future__ import annotations
 
+import importlib.util
 import logging
 import multiprocessing as mp
 import os
@@ -57,6 +58,11 @@ from verl.workers.rollout.sglang_rollout.utils import (
 logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 
+# Under Habana's GPU Migration Toolkit (PT_HPU_GPU_MIGRATION=1), torch.cuda reports as
+# available, so sglang's is_cuda() evaluates True on Gaudi too. Gate the CUDA-only checks
+# below (sgl_kernel/sglang_kernel package version asserts) behind a real vendor check.
+_IS_HPU_HOST = importlib.util.find_spec("habana_frameworks") is not None
+
 
 # patch to avoid issue https://github.com/sgl-project/sglang/issues/6723
 def _set_envs_and_config(server_args: ServerArgs):
@@ -84,7 +90,9 @@ def _set_envs_and_config(server_args: ServerArgs):
             "0.2.5",
             "Please uninstall the old version and reinstall the latest version by following the instructions at https://docs.flashinfer.ai/installation.html.",
         )
-    if is_cuda():
+    # sgl_kernel/sglang_kernel are CUDA-compiled kernel packages with no HPU build; their
+    # version check is meaningless (and unsatisfiable) on Gaudi, which never installs them.
+    if is_cuda() and not _IS_HPU_HOST:
         try:
             # For sglang 0.5.12 and sglang_kernel > 0.4.2, naming is sglang_kernel
             assert_pkg_version(
