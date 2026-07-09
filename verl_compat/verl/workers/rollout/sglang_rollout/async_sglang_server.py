@@ -313,7 +313,12 @@ class SGLangHttpServer:
             "dtype": self.config.dtype,
             "mem_fraction_static": self.config.gpu_memory_utilization,
             "disable_cuda_graph": self.config.enforce_eager,
-            "enable_memory_saver": True,
+            # torch_memory_saver uses CUDA virtual-memory APIs (cuMemCreate/cuMemMap) to let the
+            # rollout server release/reoccupy its GPU memory around weight sync while colocated
+            # with the training worker on the SAME device; there is no HPU port. On Gaudi the
+            # rollout is pinned to its own free card(s) (see _IS_HPU_HOST below), so there is no
+            # shared-device memory to release in the first place.
+            "enable_memory_saver": not _IS_HPU_HOST,
             "base_gpu_id": self.base_gpu_id,
             "gpu_id_step": 1,
             "tp_size": infer_tp,
@@ -504,7 +509,7 @@ class SGLangHttpServer:
         ) and not self.model_config.lora.get("merge", False)
 
     async def sleep(self):
-        if self.node_rank != 0 or not self.config.free_cache_engine:
+        if self.node_rank != 0 or not self.config.free_cache_engine or _IS_HPU_HOST:
             return
 
         # When using LoRA as adapter (merge=False), only release kv_cache —
@@ -532,14 +537,14 @@ class SGLangHttpServer:
 
     async def release_kv_cache(self):
         """Release only kv_cache GPU memory, keeping model weights intact."""
-        if self.node_rank != 0 or not self.config.free_cache_engine:
+        if self.node_rank != 0 or not self.config.free_cache_engine or _IS_HPU_HOST:
             return
         obj = ReleaseMemoryOccupationReqInput(tags=["kv_cache"])
         await self.tokenizer_manager.release_memory_occupation(obj, None)
 
     async def resume_kv_cache(self):
         """Restore kv_cache GPU memory after a weight sync. Counterpart to release_kv_cache()."""
-        if self.node_rank != 0 or not self.config.free_cache_engine:
+        if self.node_rank != 0 or not self.config.free_cache_engine or _IS_HPU_HOST:
             return
         obj = ResumeMemoryOccupationReqInput(tags=["kv_cache"])
         await self.tokenizer_manager.resume_memory_occupation(obj, None)

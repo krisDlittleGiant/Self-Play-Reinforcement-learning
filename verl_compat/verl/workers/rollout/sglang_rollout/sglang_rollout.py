@@ -288,7 +288,10 @@ class ServerAdapter(BaseRollout):
         await self._init_server_adapter()
         if self._engine is None:
             return
-        if self._is_server_tp_leader() and self.config.free_cache_engine:
+        # free_cache_engine releases/reoccupies GPU memory shared with the colocated training
+        # worker (via torch_memory_saver, CUDA-only). The HPU rollout has its own dedicated
+        # card (see _IS_HPU_HOST in async_sglang_server.py), so there is nothing to free.
+        if self._is_server_tp_leader() and self.config.free_cache_engine and not _IS_HPU_HOST:
             await self._engine.resume_memory_occupation(tags=tags)
 
     async def release(self):
@@ -301,7 +304,7 @@ class ServerAdapter(BaseRollout):
         await self._init_server_adapter()
         if self._engine is None:
             return
-        if self._is_server_tp_leader() and self.config.free_cache_engine:
+        if self._is_server_tp_leader() and self.config.free_cache_engine and not _IS_HPU_HOST:
             if self.sleep_level == 1:
                 tags = ["kv_cache"]
             else:
