@@ -15,6 +15,18 @@ echo "Stopping existing Ray instances..."
 # housekeeping before a fresh `ray start` below, not something worth surfacing. Silence it
 # (still runs, exit code already ignored) rather than dropping the cleanup entirely.
 python3 -m ray.scripts.scripts stop --force > /dev/null 2>&1 || true
+# `ray stop` is session-aware and can only see processes it believes belong to the current
+# session, so a GCS server or raylet orphaned from an unrelated/older session (e.g. a crashed
+# run, or one from before this box's RAY_TMPDIR override existed) never gets signaled and
+# lingers indefinitely -- still accepting connections, which can hijack a later
+# RAY_ADDRESS=auto lookup into that dead cluster instead of the fresh one started below.
+# Scoped to Ray's own known process names, not a bare "ray" substring match (which would
+# also catch unrelated processes with "ray" anywhere in their command line); silenced the
+# same way as the command above rather than printing per-pid kill noise.
+PIDS=$(pgrep -f "raylet|gcs_server|plasma_store|ray::|log_monitor\.py|dashboard(_agent)?\.py" 2>/dev/null | grep -vx "$$" || true)
+if [ -n "$PIDS" ]; then
+    echo "$PIDS" | xargs kill -9 > /dev/null 2>&1 || true
+fi
 
 export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/workspace/inoculation/verl_gaudi_support/verl_compat:/scratch/sgoli125/sglang-habana/python:${PYTHONPATH:-}"
 # Ray's temp dir must live on a real, fast, local filesystem (tmpfs/ext4), NOT on the
