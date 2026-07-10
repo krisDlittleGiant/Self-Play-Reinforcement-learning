@@ -36,7 +36,11 @@ export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/worksp
 # short so Ray's unix-socket paths stay under the ~107-char limit. Override RAY_TMPDIR
 # to change it.
 export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/ray_${USER:-$(id -un)}}"
-export PT_HPU_LAZY_MODE=0
+# Respect whatever the caller already set (e.g. at Apptainer entry) instead of silently
+# overwriting it -- unlike RAY_TMPDIR above, this used to be an unconditional `export
+# PT_HPU_LAZY_MODE=0`, which clobbered an explicitly-set PT_HPU_LAZY_MODE=1 without any
+# indication that had happened. Defaults to 0 (eager) only when nothing else set it.
+export PT_HPU_LAZY_MODE="${PT_HPU_LAZY_MODE:-0}"
 # Enable Habana's GPU Migration Toolkit so torch.cuda.* is redirected to torch.hpu.* and
 # device "cuda" maps to "hpu". platform_hpu.py is built on the CUDA namespace and depends
 # on this; without it, torch.cuda.set_device() hits torch._C._cuda_setDevice which does

@@ -16,7 +16,11 @@ export PYTHONPATH="/workspace/inoculation/verl-gaudi-support/verl_compat:/worksp
 # Keep in sync with start_ray.sh: Ray temp dir on fast local tmpfs (not overlayfs/network).
 export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/ray_${USER:-$(id -un)}}"
 export RAY_ADDRESS="auto"
-export PT_HPU_LAZY_MODE=0
+# Respect whatever the caller already set (e.g. at Apptainer entry) instead of silently
+# overwriting it -- unlike RAY_TMPDIR above, this used to be an unconditional `export
+# PT_HPU_LAZY_MODE=0`, which clobbered an explicitly-set PT_HPU_LAZY_MODE=1 without any
+# indication that had happened. Defaults to 0 (eager) only when nothing else set it.
+export PT_HPU_LAZY_MODE="${PT_HPU_LAZY_MODE:-0}"
 # Enable Habana GPU Migration Toolkit (torch.cuda.* -> torch.hpu.*, "cuda" -> "hpu").
 # platform_hpu.py uses the CUDA namespace and requires this; otherwise
 # torch.cuda.set_device() raises AttributeError (_cuda_setDevice missing). Set before torch import.
