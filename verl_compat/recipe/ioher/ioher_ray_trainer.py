@@ -38,6 +38,11 @@ from verl import DataProto
 from verl.single_controller.ray import RayWorkerGroup
 from verl.trainer.ppo import core_algos
 from verl.trainer.ppo.core_algos import agg_loss
+from verl.trainer.ppo.metric_utils import (
+    compute_data_metrics,
+    compute_throughout_metrics,
+    compute_timing_metrics,
+)
 from verl.trainer.ppo.ray_trainer import (
     AdvantageEstimator,
     RayPPOTrainer,
@@ -464,6 +469,13 @@ class RayIOHERTrainer(RayPPOTrainer):
                         self._save_checkpoint()
 
                 metrics.update({"training/global_step": self.global_steps, "training/epoch": epoch})
+                # critic/*, response_length/*, prompt_length/* etc. -- produced regardless of
+                # use_critic (only critic/values/* and critic/vf_explained_var are gated on it),
+                # so these show up even though GRPO trains no value model.
+                metrics.update(compute_data_metrics(batch=batch, use_critic=self.use_critic))
+                metrics.update(compute_timing_metrics(batch=batch, timing_raw=timing_raw))
+                n_gpus = self.resource_pool_manager.get_n_gpus()
+                metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
                 logger.log(data=metrics, step=self.global_steps)
 
                 if is_last_step:
