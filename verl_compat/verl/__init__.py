@@ -81,6 +81,19 @@ try:
                     return (8, 0)
                 return cap
 
+            # habana_frameworks.torch.gpu_migration's own bootstrap (triggered whenever
+            # habana_frameworks.torch is first imported in a process -- e.g. lazily, deep
+            # inside get_platform()'s HPU detection) also wraps torch.cuda.get_device_capability
+            # as part of its CUDA-namespace migration, and appears to discover what to wrap by
+            # introspecting the function object's __name__ rather than the module attribute
+            # name it's bound under. Left as "_verl_hpu_get_device_capability", it later does
+            # getattr(torch.cuda, "_verl_hpu_get_device_capability") to re-fetch what it saw --
+            # which doesn't exist as an attribute name (only get_device_capability does) --
+            # raising AttributeError and crashing that import outright. Match the object's
+            # __name__/__qualname__ to the attribute name it's actually stored under so that
+            # introspection doesn't get confused, without renaming our own local variable.
+            _verl_hpu_get_device_capability.__name__ = "get_device_capability"
+            _verl_hpu_get_device_capability.__qualname__ = "get_device_capability"
             _verl_hpu_get_device_capability._verl_hpu_wrapped = True
             _verl_torch.cuda.get_device_capability = _verl_hpu_get_device_capability
 except Exception:
