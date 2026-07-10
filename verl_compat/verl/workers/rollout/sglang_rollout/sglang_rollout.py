@@ -43,6 +43,20 @@ except ImportError:
     # serialize the whole named-tensor dict once per TP rank -- engine.update_weights_from_tensor()
     # needs an UpdateWeightsFromTensorReqInput with one serialized blob per rank in
     # serialized_named_tensors, not the raw params_batch list itself.
+
+    # PyTorch's default CPU tensor sharing strategy ("file_descriptor") doesn't embed tensor
+    # bytes in the pickle -- it embeds a handle, and the receiving process must open an
+    # authenticated connection back to the sender (keyed on
+    # multiprocessing.current_process().authkey) to fetch the real file descriptor. That only
+    # works when sender and receiver descend from the same Python multiprocessing parent. Here
+    # they don't: the sglang scheduler is a separate process tree from the Ray actor sending
+    # the weights, so the handshake fails with "AuthenticationError: digest sent was rejected"
+    # on the receiving (sglang server) side. "file_system" strategy shares CPU tensors via a
+    # named file instead, needing no handshake -- verified locally across two independent
+    # processes with different authkeys. Only the sender needs this set; the receiver (sglang's
+    # own code, not ours) picks the right rebuild function from what's embedded in the pickle.
+    torch.multiprocessing.set_sharing_strategy("file_system")
+
     def _preprocess_tensor_for_update_weights(tensor):
         # torch/multiprocessing/reductions.py's registered storage reducer only knows two
         # cases: a CUDA IPC handle, or CPU shared memory via _share_fd_cpu_ -- it assumes
