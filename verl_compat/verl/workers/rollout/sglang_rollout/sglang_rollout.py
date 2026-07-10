@@ -70,9 +70,15 @@ except ImportError:
     async def sgl_update_weights(engine, params_batch, device_mesh_key=None, device_mesh=None):
         from sglang.srt.managers.io_struct import UpdateWeightsFromTensorReqInput
 
-        processed_weights = {
-            name: _preprocess_tensor_for_update_weights(tensor.detach()) for name, tensor in params_batch
-        }
+        # A list of (name, tensor) pairs, not a dict: model_runner.py's
+        # update_weights_from_tensor does `for name, tensor in named_tensors` on the
+        # deserialized object, which walks a dict's *keys* only -- unpacking each (multi-
+        # character) name string into 2 variables raises "too many values to unpack".
+        # wrap_lora_params() below sends a dict for its own (different) endpoint, which does
+        # accept that shape; this one doesn't.
+        processed_weights = [
+            (name, _preprocess_tensor_for_update_weights(tensor.detach())) for name, tensor in params_batch
+        ]
 
         infer_tp_size = (
             device_mesh[device_mesh_key].mesh.size()[0] if device_mesh_key and device_mesh is not None else 1
