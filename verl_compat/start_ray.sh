@@ -47,6 +47,17 @@ export PT_HPU_LAZY_MODE="${PT_HPU_LAZY_MODE:-0}"
 # not exist in the Habana torch build (AttributeError). Must be set before torch import.
 export PT_HPU_GPU_MIGRATION=1
 export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
+# verl's get_platform() auto-detects by trying `import habana_frameworks.torch.hpu` and
+# caches whichever result it gets ONCE, for that process's entire lifetime -- if that import
+# fails or raises anything other than ImportError for a specific Ray actor (e.g. one that
+# happens to run in a context without proper Habana device initialization, such as the
+# TaskRunner driver actor), it silently falls back to "nvidia" forever for that process, even
+# though worker actors detect "hpu" correctly. That mismatch makes _check_resource_available()
+# look for a "GPU" Ray resource key instead of the "HPU" key start_ray.sh actually registers,
+# so it always sees 0 available regardless of how many real HPUs are free. VERL_PLATFORM is
+# get_platform()'s own documented override (checked before any auto-detection is attempted),
+# so set it explicitly rather than depending on fragile, process-context-dependent detection.
+export VERL_PLATFORM=hpu
 # Tell Ray NOT to isolate each worker to a single HPU module. Habana's
 # initialize_distributed_hpu() (invoked eagerly at `import habana_frameworks.torch`)
 # requires the process to see WORLD_SIZE modules; if Ray restricts each worker to one
