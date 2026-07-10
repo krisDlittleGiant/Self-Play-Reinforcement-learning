@@ -61,8 +61,18 @@ rm -rf "$RAY_TMPDIR"/*
 # 2. Dynamically detect device type and count cards
 declare -a RAY_ACCEL_FLAGS=()
 if command -v hl-smi &> /dev/null; then
-    # Habana Gaudi HPU: Count cards using hl-smi
-    CARDS_COUNT=$(hl-smi -Q index -f csv,noheader | wc -l)
+    # Habana Gaudi HPU: count cards using hl-smi, unless explicitly overridden via
+    # HPU_CARDS_COUNT. hl-smi reports every physical HPU on the node, not just the
+    # ones actually allocated to this job -- on a shared node this overcounts (no
+    # SLURM env var or cgroup device restriction distinguishes "yours" from "the
+    # node's" here; every /dev/accel* file is world-readable/writable inside this
+    # container regardless of allocation), and Ray ends up believing it can schedule
+    # more HPU-using tasks than this job actually has cards for
+    # ("Total available GPUs N is less than total desired GPUs M" further downstream
+    # is one symptom, but the real risk is Ray silently placing work on cards that
+    # were never actually this job's to use). Set HPU_CARDS_COUNT to your actual
+    # allocation (e.g. HPU_CARDS_COUNT=4) to override the auto-detected count.
+    CARDS_COUNT="${HPU_CARDS_COUNT:-$(hl-smi -Q index -f csv,noheader | wc -l)}"
     RAY_ACCEL_FLAGS+=( "--resources={\"HPU\":${CARDS_COUNT}}" )
     echo "Detected Gaudi HPU system with ${CARDS_COUNT} cards."
 elif command -v nvidia-smi &> /dev/null; then
