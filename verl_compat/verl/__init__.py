@@ -68,6 +68,20 @@ from .utils.logging_utils import set_basic_config
 try:
     import torch as _verl_torch
 
+    # Import habana_frameworks.torch (if present) BEFORE capturing/wrapping
+    # torch.cuda.get_device_capability below. Its own gpu_migration bootstrap wraps that same
+    # function as part of its CUDA-namespace migration, and asserts the current function's
+    # signature matches the true, unmodified PyTorch original before wrapping it. If our patch
+    # ran first, gpu_migration finds our generic (*args, **kwargs) wrapper instead and this
+    # assertion fails outright, crashing the import. Importing habana_frameworks.torch here
+    # lets its bootstrap wrap the real original as it expects; our patch then wraps its
+    # already-wrapped result on top, which is an ordinary, safe double-wrap with no signature
+    # check involved. A no-op (ImportError, caught below) on non-Habana hosts.
+    try:
+        import habana_frameworks.torch  # noqa: F401
+    except Exception:
+        pass
+
     if getattr(_verl_torch, "cuda", None) is not None:
         _verl_orig_get_cap = _verl_torch.cuda.get_device_capability
         if not getattr(_verl_orig_get_cap, "_verl_hpu_wrapped", False):
