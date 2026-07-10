@@ -121,6 +121,12 @@ class RayIOHERTrainer(RayPPOTrainer):
         self._ioh_phrase_cursor: int = 0
 
         self._create_dataloader(train_dataset, val_dataset, collate_fn, train_sampler)
+        # RayIOHERTrainer.__init__ is a full reimplementation, not a super().__init__() call,
+        # so RayPPOTrainer's own self._init_dump_executor() (which creates self._dump_executor,
+        # the ThreadPoolExecutor _dump_generations() submits to for rollout_data_dir/
+        # validation_data_dir dumps) never ran. Mirrors RayPPOTrainer.__init__'s own ordering:
+        # dataloader creation, then dump executor init.
+        self._init_dump_executor()
 
     # ------------------------------------------------------------------
     # Inoculation helpers
