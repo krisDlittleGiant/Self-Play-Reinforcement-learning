@@ -80,7 +80,11 @@ fi
 export HF_HOME="$WRITABLE_CACHE_DIR"
 export HF_DATASETS_CACHE="$WRITABLE_CACHE_DIR/datasets"
 export DATASETS_CACHE="$WRITABLE_CACHE_DIR/datasets"
-export TRANSFORMERS_CACHE="$WRITABLE_CACHE_DIR/hub"
+# TRANSFORMERS_CACHE intentionally not set: it's deprecated (transformers prints
+# "FutureWarning: Using TRANSFORMERS_CACHE is deprecated... Use HF_HOME instead" on every
+# worker that imports it) and redundant -- transformers/huggingface_hub already derive the
+# hub cache as $HF_HOME/hub automatically, landing at the exact same path this used to set
+# explicitly ($WRITABLE_CACHE_DIR/hub).
 export HF_HUB_DISABLE_SYMLINKS_WARNING=1
 
 # --- Defaults; tweak in-place or override on the command line. -------------

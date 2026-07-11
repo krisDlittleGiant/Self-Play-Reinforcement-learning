@@ -26,6 +26,16 @@ class _HpuDeviceModule:
         else:
             torch.cuda.set_device(device_index)
 
+    def empty_cache(self) -> None:
+        # Without this override, __getattr__ falls through to torch.cuda.empty_cache(),
+        # which gpu_migration redirects to Habana's HPU implementation -- a confirmed no-op
+        # that only emits "UserWarning: No need to call empty_cache on HPU. It manages the
+        # memory internally in an efficient way." get_torch_device().empty_cache() (which
+        # resolves to this module) is called ~9 times per offload/reload cycle across
+        # fsdp_utils.py/fsdp_workers.py, so left unhandled this warns on nearly every step.
+        # Skip the call outright: identical behavior, no warning.
+        pass
+
 
 @PlatformRegistry.register(platform="hpu")
 @PlatformRegistry.register(platform="intel")
@@ -80,7 +90,9 @@ class PlatformHPU(PlatformBase):
         pass
 
     def empty_cache(self) -> None:
-        torch.cuda.empty_cache()
+        # Same rationale as _HpuDeviceModule.empty_cache() above: a confirmed HPU no-op
+        # that only produces a warning via gpu_migration's torch.cuda.empty_cache redirect.
+        pass
 
     def get_device_capability(self, device_index: int = 0) -> tuple[Optional[int], Optional[int]]:
         return torch.cuda.get_device_capability(device_index)
