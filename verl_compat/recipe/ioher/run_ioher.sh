@@ -37,6 +37,10 @@ export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
 # get_platform()'s own documented override (checked before any auto-detection is attempted),
 # so set it explicitly rather than depending on fragile, process-context-dependent detection.
 export VERL_PLATFORM=hpu
+# FSDP on Gaudi: Intel's documented performance path is eager mode + torch.compile with the
+# hpu_backend. Keep in sync with start_ray.sh (workers inherit the raylet env; this export
+# covers the driver side). Set to 0 to disable. Respects a pre-set value.
+export VERL_HPU_TORCH_COMPILE="${VERL_HPU_TORCH_COMPILE:-1}"
 # Keep in sync with start_ray.sh: do not let Ray isolate each worker to one HPU module,
 # otherwise Habana's eager initialize_distributed_hpu() asserts "not enough devices"
 # because it needs to see WORLD_SIZE modules. Each worker selects its card by LOCAL_RANK.
@@ -91,8 +95,22 @@ if [ -z "${MODEL_PATH:-}" ]; then
   fi
 fi
 
+# HPU/GPU topology -- how N_GPUS_PER_NODE maps to physical devices:
+#   actor+ref (FSDP) worker group  = N_GPUS_PER_NODE devices
+#   rollout (sglang/vLLM) replicas = N_GPUS_PER_NODE / tensor_model_parallel_size devices
+#   TOTAL devices consumed         = N_GPUS_PER_NODE * (1 + 1/TP)
+# The rollout servers are disaggregated onto their OWN devices, on top of the actor's --
+# they do not share. So with TP=1:
+#   4 allocated cards  (hl225:4) -> N_GPUS_PER_NODE=2  (2 actor + 2 rollout)
+#   8 allocated cards  (hl225:8) -> N_GPUS_PER_NODE=4  (4 actor + 4 rollout)
+# Requesting more cards from SLURM changes NOTHING unless N_GPUS_PER_NODE is raised to
+# match (and HPU_CARDS_COUNT passed to start_ray.sh so Ray registers them). Setting it too
+# high fails at rollout launch with "synStatus=8 [Device not found] Device acquire failed"
+# because the actor group claims all N first and the rollout servers find no devices left.
 N_GPUS_PER_NODE=${N_GPUS_PER_NODE:-4}
 NNODES=${NNODES:-1}
+TP_SIZE_FOR_TOPOLOGY_ECHO=1  # keep in sync with actor_rollout_ref.rollout.tensor_model_parallel_size below
+echo "=== Topology: ${N_GPUS_PER_NODE} actor/ref device(s) + $((N_GPUS_PER_NODE / TP_SIZE_FOR_TOPOLOGY_ECHO)) rollout device(s) = $((N_GPUS_PER_NODE + N_GPUS_PER_NODE / TP_SIZE_FOR_TOPOLOGY_ECHO)) total HPUs required ==="
 
 MODEL_NAME=$(basename "$MODEL_PATH")
 PROJECT_NAME=${PROJECT_NAME:-"ioher-sglang"}

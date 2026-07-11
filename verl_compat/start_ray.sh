@@ -58,6 +58,14 @@ export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
 # get_platform()'s own documented override (checked before any auto-detection is attempted),
 # so set it explicitly rather than depending on fragile, process-context-dependent detection.
 export VERL_PLATFORM=hpu
+# FSDP on Gaudi: Intel's documented performance path is eager mode + torch.compile with the
+# hpu_backend ("FSDP is supported only in eager mode with torch.compile"). Lazy mode crashes
+# FSDP's flat-param sharding on this build, and bare eager (no compile) dispatches op-by-op
+# with no graph-level memory planning -- the cause of both the huge step-time gap vs CUDA and
+# the "defragmentation triggered more than 100 times" allocator storms on the actor ranks.
+# Consumed by _maybe_torch_compile_for_hpu() in verl/workers/fsdp_workers.py. Set to 0 to
+# disable if compilation misbehaves. Respects a pre-set value.
+export VERL_HPU_TORCH_COMPILE="${VERL_HPU_TORCH_COMPILE:-1}"
 # Tell Ray NOT to isolate each worker to a single HPU module. Habana's
 # initialize_distributed_hpu() (invoked eagerly at `import habana_frameworks.torch`)
 # requires the process to see WORLD_SIZE modules; if Ray restricts each worker to one

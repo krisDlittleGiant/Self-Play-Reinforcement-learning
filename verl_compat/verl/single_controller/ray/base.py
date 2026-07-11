@@ -648,7 +648,10 @@ class RayWorkerGroup(WorkerGroup):
             "MASTER_ADDR": self._master_addr,
             "MASTER_PORT": self._master_port,
         }
-        for var in ["PYTHONPATH", "PYTHONNOUSERSITE", "PT_HPU_LAZY_MODE", "PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES", "HF_HOME", "HF_DATASETS_CACHE", "DATASETS_CACHE", "TRANSFORMERS_CACHE"]:
+        # VERL_PLATFORM: pin platform detection in workers (get_platform() auto-detection is
+        # fragile and cached per-process -- same rationale as pinning it for the driver).
+        # VERL_HPU_TORCH_COMPILE: opt-in for _maybe_torch_compile_for_hpu() in fsdp_workers.
+        for var in ["PYTHONPATH", "PYTHONNOUSERSITE", "PT_HPU_LAZY_MODE", "PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES", "HF_HOME", "HF_DATASETS_CACHE", "DATASETS_CACHE", "TRANSFORMERS_CACHE", "VERL_PLATFORM", "VERL_HPU_TORCH_COMPILE"]:
             if var in os.environ:
                 env_vars[var] = os.environ[var]
         if worker_env is not None:

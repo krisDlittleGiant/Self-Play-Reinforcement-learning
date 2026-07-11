@@ -101,6 +101,45 @@ logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 device_name = get_device_name()
 
 
+def _maybe_torch_compile_for_hpu(module, role: str):
+    """Compile an FSDP-wrapped module with Habana's hpu_backend, in place.
+
+    Intel Gaudi's documented performance path for FSDP is eager mode + torch.compile
+    ("FSDP is supported only in eager mode with torch.compile" -- Gaudi PyTorch docs).
+    Lazy mode is unsupported for FSDP on this build (crashes in flat-param sharding:
+    "resize_() on an invalid python storage"), and bare eager dispatches every op
+    individually with no graph-level memory planning -- the source of both the large
+    step-time gap vs CUDA and the "defragmentation triggered more than 100 times"
+    allocator storms observed on the WorkerDict ranks.
+
+    Uses the in-place nn.Module.compile() rather than the torch.compile(module) wrapper:
+    the wrapper returns an OptimizedModule, which would break every downstream identity/
+    isinstance dependency on the FSDP object (offload_fsdp_model_to_cpu asserts
+    isinstance(model, FSDP); checkpointing and rollout weight-sync walk its state dict).
+    In-place compile preserves the FSDP type and only swaps the forward implementation.
+
+    Gated on VERL_HPU_TORCH_COMPILE=1 (set by the HPU launch scripts, kill-switch by
+    setting 0) + a Habana host + eager mode, so it is inert everywhere else, including
+    CUDA runs of these same recipes.
+    """
+    import importlib.util
+
+    if os.environ.get("VERL_HPU_TORCH_COMPILE", "0") != "1":
+        return
+    if importlib.util.find_spec("habana_frameworks") is None:
+        return
+    if os.environ.get("PT_HPU_LAZY_MODE", "0") != "0":
+        return
+    try:
+        if hasattr(module, "compile"):
+            module.compile(backend="hpu_backend")
+        else:  # very old torch without nn.Module.compile(): compile the bound forward
+            module.forward = torch.compile(module.forward, backend="hpu_backend")
+        logger.warning("[HPU] torch.compile(backend='hpu_backend') enabled for %s module", role)
+    except Exception as e:
+        logger.warning("[HPU] torch.compile for %s failed, continuing uncompiled: %s", role, e)
+
+
 def create_device_mesh(world_size, fsdp_size):
     if fsdp_size < 0 or fsdp_size >= world_size:
         device_mesh = init_device_mesh(device_name, mesh_shape=(world_size,), mesh_dim_names=["fsdp"])
@@ -658,6 +697,9 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
 
         if enable_activation_offload:
             enable_activation_offloading(actor_module_fsdp, fsdp_strategy, enable_gradient_checkpointing)
+
+        # Covers both the actor and the reference policy (role="ref" flows through here too).
+        _maybe_torch_compile_for_hpu(actor_module_fsdp, role)
 
         log_gpu_memory_usage(f"After {role} FSDP init", logger=logger)
 
@@ -1633,6 +1675,8 @@ class CriticWorker(Worker, DistProfilerExtension):
         if config.model.get("enable_activation_offload", False):
             enable_gradient_checkpointing = config.model.get("enable_gradient_checkpointing", False)
             enable_activation_offloading(critic_module, config.strategy, enable_gradient_checkpointing)
+
+        _maybe_torch_compile_for_hpu(critic_module, "critic")
 
         log_gpu_memory_usage("After critic FSDP", logger=None)
 
