@@ -46,6 +46,18 @@ def run_ppo(config) -> None:
         if val is not None:
             hf_env_vars[var] = val
 
+    # Forward every PT_HPU_* var (plus the VERL_ HPU knobs) from the launching shell into
+    # the Ray runtime_env. Ray actors inherit their environment from the RAYLET (the
+    # process start_ray.sh started), not from the shell that launches this training
+    # command -- so a `PT_HPU_FOO=1 bash run_ioher.sh ...` prefix silently does nothing
+    # for workers unless it either (a) was already exported when start_ray.sh ran, or
+    # (b) is forwarded through runtime_env like this. Observed concretely: a driver-shell
+    # PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES=1 never showed up in the workers' HPU PT BRIDGE
+    # CONFIGURATION dump (stayed 0) because only the raylet's env reached them.
+    for var, val in os.environ.items():
+        if var.startswith("PT_HPU_") or var in ("VERL_PLATFORM", "VERL_HPU_TORCH_COMPILE"):
+            hf_env_vars[var] = val
+
     if not ray.is_initialized():
         default_env_vars = {
             "TOKENIZERS_PARALLELISM": "true",
