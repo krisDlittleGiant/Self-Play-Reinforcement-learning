@@ -140,6 +140,45 @@ def _maybe_torch_compile_for_hpu(module, role: str):
         logger.warning("[HPU] torch.compile for %s failed, continuing uncompiled: %s", role, e)
 
 
+def _collect_hpu_runtime_metrics(prefix: str = "perf/hpu") -> dict:
+    """Snapshot Habana's runtime counters to pinpoint where HPU step time actually goes.
+
+    Reads habana_frameworks.torch.hpu.metrics' global counters (cumulative since process
+    start) for the three candidate step-time sinks on Gaudi:
+      - graph_compilation:      how many SynapseAI recipe compilations ran and their total
+                                time. Growing every step => shape-varying recompilation.
+      - cpu_fallback:           ops silently executed on CPU because the HPU eager path
+                                doesn't support them. A large/growing count is a smoking gun
+                                for both slowness and host<->device memory churn.
+      - memory_defragmentation: how often the device allocator physically compacted memory
+                                and how long that stalled ("defragmentation triggered more
+                                than 100 times" warnings come from this machinery).
+    Returns {} on non-Habana hosts or any API mismatch -- purely additive telemetry, never
+    load-bearing.
+    """
+    try:
+        import importlib.util
+
+        if importlib.util.find_spec("habana_frameworks") is None:
+            return {}
+        from habana_frameworks.torch.hpu.metrics import metric_global
+
+        out = {}
+        for name in ("graph_compilation", "cpu_fallback", "memory_defragmentation", "recipe_cache"):
+            try:
+                m = metric_global(name)
+                if m is None:
+                    continue
+                for k, v in m.stats():
+                    if isinstance(v, (int, float)) and not isinstance(v, bool):
+                        out[f"{prefix}/{name}/{k}"] = v
+            except Exception:
+                continue
+        return out
+    except Exception:
+        return {}
+
+
 def create_device_mesh(world_size, fsdp_size):
     if fsdp_size < 0 or fsdp_size >= world_size:
         device_mesh = init_device_mesh(device_name, mesh_shape=(world_size,), mesh_dim_names=["fsdp"])
@@ -1121,6 +1160,9 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
             metrics["perf/max_memory_allocated_gb"] = get_torch_device().max_memory_allocated() / (1024**3)
             metrics["perf/max_memory_reserved_gb"] = get_torch_device().max_memory_reserved() / (1024**3)
             metrics["perf/cpu_memory_used_gb"] = psutil.virtual_memory().used / (1024**3)
+            # Cumulative Habana runtime counters (graph compiles / cpu fallbacks / defrag
+            # stalls); {} on non-HPU hosts. Watch the per-step growth, not absolute values.
+            metrics.update(_collect_hpu_runtime_metrics())
 
             lr = self.actor_lr_scheduler.get_last_lr()[0]
             metrics["actor/lr"] = lr.item() if torch.is_tensor(lr) else lr
