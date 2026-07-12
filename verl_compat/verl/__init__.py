@@ -286,6 +286,52 @@ except Exception:
     pass
 # -----------------------------------------------------------------------------------
 
+# --- HPU opt-in: route F.scaled_dot_product_attention to Habana's FusedSDPA ----------
+# The dominant training cost on Gaudi here is attn_implementation=eager materializing the
+# full [batch, heads, seq, seq] attention-score matrix per layer (~10 GB bf16 at
+# micro_batch=4 and 6144 padded width, plus an fp32 softmax upcast copy on top), hundreds
+# of times per step across layers/micro-batches/checkpoint-recompute -- simultaneously the
+# compute sink and the source of the allocator's "defragmentation triggered more than 100
+# times" storms. Gaudi's answer is the FusedSDPA kernel (the same one optimum-habana uses
+# in production for Llama/Qwen): flash-attention-like tiling, no full score matrix.
+#
+# Stock torch F.scaled_dot_product_attention under GPU Migration produced NaN grad_norms
+# here (unvalidated lowering), so this patch routes F.sdpa to FusedSDPA explicitly instead,
+# and any per-call failure falls back to the original implementation. To use it, BOTH:
+#   VERL_HPU_FUSED_SDPA=1   (env; default off -- this patch is inert without it)
+#   +actor_rollout_ref.model.override_config.attn_implementation=sdpa  (so HF calls F.sdpa)
+# Trial on a short run first and watch actor/grad_norm for NaN before trusting a long run.
+try:
+    import importlib.util as _verl_ilu_f
+
+    if (
+        os.environ.get("VERL_HPU_FUSED_SDPA", "0") == "1"
+        and _verl_ilu_f.find_spec("habana_frameworks") is not None
+    ):
+        import torch as _verl_torch_f
+        import torch.nn.functional as _verl_F
+        from habana_frameworks.torch.hpex.kernels import FusedSDPA as _VerlFusedSDPA
+
+        _verl_orig_sdpa = _verl_F.scaled_dot_product_attention
+
+        def scaled_dot_product_attention(
+            query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, **kwargs
+        ):
+            try:
+                return _VerlFusedSDPA.apply(query, key, value, attn_mask, dropout_p, is_causal, scale)
+            except Exception:
+                return _verl_orig_sdpa(
+                    query, key, value, attn_mask=attn_mask, dropout_p=dropout_p,
+                    is_causal=is_causal, scale=scale, **kwargs,
+                )
+
+        _verl_F.scaled_dot_product_attention = scaled_dot_product_attention
+        _verl_torch_f.nn.functional.scaled_dot_product_attention = scaled_dot_product_attention
+        print("VERL HPU: F.scaled_dot_product_attention routed to Habana FusedSDPA (fallback on error)")
+except Exception:
+    pass
+# -----------------------------------------------------------------------------------
+
 version_folder = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 
 with open(os.path.join(version_folder, "version/version")) as f:

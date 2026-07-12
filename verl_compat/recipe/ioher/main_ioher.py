@@ -55,7 +55,7 @@ def run_ppo(config) -> None:
     # PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES=1 never showed up in the workers' HPU PT BRIDGE
     # CONFIGURATION dump (stayed 0) because only the raylet's env reached them.
     for var, val in os.environ.items():
-        if var.startswith("PT_HPU_") or var in ("VERL_PLATFORM", "VERL_HPU_TORCH_COMPILE"):
+        if var.startswith(("PT_HPU_", "VERL_HPU_")) or var == "VERL_PLATFORM":
             hf_env_vars[var] = val
 
     if not ray.is_initialized():

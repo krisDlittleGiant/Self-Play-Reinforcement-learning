@@ -650,10 +650,14 @@ class RayWorkerGroup(WorkerGroup):
         }
         # VERL_PLATFORM: pin platform detection in workers (get_platform() auto-detection is
         # fragile and cached per-process -- same rationale as pinning it for the driver).
-        # VERL_HPU_TORCH_COMPILE: opt-in for _maybe_torch_compile_for_hpu() in fsdp_workers.
-        for var in ["PYTHONPATH", "PYTHONNOUSERSITE", "PT_HPU_LAZY_MODE", "PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES", "HF_HOME", "HF_DATASETS_CACHE", "DATASETS_CACHE", "TRANSFORMERS_CACHE", "VERL_PLATFORM", "VERL_HPU_TORCH_COMPILE"]:
+        for var in ["PYTHONPATH", "PYTHONNOUSERSITE", "PT_HPU_LAZY_MODE", "PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES", "HF_HOME", "HF_DATASETS_CACHE", "DATASETS_CACHE", "TRANSFORMERS_CACHE", "VERL_PLATFORM"]:
             if var in os.environ:
                 env_vars[var] = os.environ[var]
+        # All VERL_HPU_* knobs (torch.compile opt-in, FusedSDPA opt-in, future ones) propagate
+        # as a family so each new knob doesn't need remembering here individually.
+        for var, val in os.environ.items():
+            if var.startswith("VERL_HPU_"):
+                env_vars[var] = val
         if worker_env is not None:
             logging.debug(f"Appending ray class env, origin: {env_vars}, customized env: {worker_env}")
             conflict_env_vars = set(env_vars.keys()) & set(worker_env.keys())
