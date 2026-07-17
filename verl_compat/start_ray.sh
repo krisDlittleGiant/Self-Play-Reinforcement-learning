@@ -66,6 +66,12 @@ export VERL_PLATFORM=hpu
 # Consumed by _maybe_torch_compile_for_hpu() in verl/workers/fsdp_workers.py. Set to 0 to
 # disable if compilation misbehaves. Respects a pre-set value.
 export VERL_HPU_TORCH_COMPILE="${VERL_HPU_TORCH_COMPILE:-1}"
+# Route F.scaled_dot_product_attention to Habana FusedSDPA (verl/__init__.py patch). This
+# matches the verified fast+numerically-clean configuration (finite grad_norm, zero
+# defragmentation); the patch stays dormant unless the model also runs with
+# attn_implementation=sdpa, so it is harmless for eager-attention runs. Exported here so
+# every Ray worker inherits it from the raylet. Respects a pre-set value; set 0 to disable.
+export VERL_HPU_FUSED_SDPA="${VERL_HPU_FUSED_SDPA:-1}"
 # Tell Ray NOT to isolate each worker to a single HPU module. Habana's
 # initialize_distributed_hpu() (invoked eagerly at `import habana_frameworks.torch`)
 # requires the process to see WORLD_SIZE modules; if Ray restricts each worker to one

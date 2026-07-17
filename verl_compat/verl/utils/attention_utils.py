@@ -20,11 +20,15 @@ _index_first_axis, _pad_input, _rearrange, _unpad_input = None, None, None, None
 def _get_attention_functions() -> tuple[Callable, Callable, Callable, Callable]:
     """Dynamically import attention functions based on available hardware."""
 
-    from verl.utils.device import is_torch_npu_available
+    from verl.utils.device import get_vendor, is_torch_npu_available
 
     global _index_first_axis, _pad_input, _rearrange, _unpad_input
 
-    if is_torch_npu_available(check_device=False):
+    # Intel Gaudi (HPU) has no flash_attn package; route it to the same pure-PyTorch
+    # padding fallbacks the Ascend NPU path uses (these utilities are plain torch
+    # index/gather ops -- only the varlen attention *kernel* is CUDA-bound). Ported from
+    # the rhythm/gaudi2-grpo-hardening branch (3f86179).
+    if is_torch_npu_available(check_device=False) or get_vendor() == "intel":
         from verl.utils.npu_flash_attn_utils import index_first_axis, pad_input, rearrange, unpad_input
     else:
         from flash_attn.bert_padding import index_first_axis, pad_input, rearrange, unpad_input

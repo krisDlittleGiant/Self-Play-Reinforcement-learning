@@ -38,7 +38,7 @@ from verl.utils.activation_offload import enable_activation_offloading
 from verl.utils.checkpoint.fsdp_checkpoint_manager import FSDPCheckpointManager
 from verl.utils.dataset.dataset_utils import DatasetPadMode
 from verl.utils.debug import log_gpu_memory_usage
-from verl.utils.device import get_device_id, get_device_name
+from verl.utils.device import get_device_id, get_device_name, get_vendor
 from verl.utils.fsdp_utils import (
     CPUOffloadPolicy,
     FSDPModule,
@@ -80,6 +80,7 @@ logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 
 device_name = get_device_name()
+device_vendor = get_vendor()
 
 
 class FSDPEngine(BaseEngine):
@@ -466,6 +467,16 @@ class FSDPEngine(BaseEngine):
                 state_dict_type=StateDictType.SHARDED_STATE_DICT,
                 state_dict_config=ShardedStateDictConfig(),
             )
+
+        # Same eager+torch.compile(hpu_backend) hook the legacy fsdp_workers path uses
+        # (Gaudi's documented FSDP performance path; gated on VERL_HPU_TORCH_COMPILE=1 +
+        # Habana host + eager mode, inert elsewhere). Imported lazily: fsdp_workers imports
+        # verl.utils.checkpoint, whose package __init__ imports verl.workers.engine -- a
+        # module-level import here would close that cycle while this module is still
+        # half-initialized.
+        from verl.workers.fsdp_workers import _maybe_torch_compile_for_hpu
+
+        _maybe_torch_compile_for_hpu(module, "ref" if self.engine_config.forward_only else "actor")
 
         return module
 
@@ -1221,6 +1232,12 @@ class FSDPEngineWithLMHead(FSDPEngine):
 
             else:
                 logits = output.logits  # (bsz, response_length, vocab_size)
+                if device_vendor == "intel":
+                    # On Gaudi, in-place mutation of a tensor produced by a compiled/graphed
+                    # forward is unsafe (validated independently on the deepspeed-tryout
+                    # branch, d4e071f, where the uncloned in-place div_ corrupted results).
+                    # Clone before the in-place temperature scaling below. No-op elsewhere.
+                    logits = logits.clone()
                 temperature = output_args["temperature"]  # (bsz,)
                 temperature = temperature.unsqueeze(-1).unsqueeze(-1)
                 logits.div_(temperature.clamp(min=1e-8).to(logits.dtype))

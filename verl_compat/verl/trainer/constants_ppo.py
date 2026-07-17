@@ -73,4 +73,24 @@ def get_ppo_ray_runtime_env():
     for key in list(runtime_env["env_vars"].keys()):
         if os.environ.get(key) is not None:
             runtime_env["env_vars"].pop(key, None)
+
+    # Intel Gaudi (HPU): Ray actors inherit their environment from the RAYLET, not from the
+    # shell that launched this training command -- so HPU knobs set on the command line
+    # never reach the TaskRunner (and from there the workers) unless forwarded through the
+    # job's runtime_env. The recipe entrypoint main_ioher.py already does this for IOHER;
+    # this covers the stock main_ppo path so every recipe behaves the same. Forwarded as
+    # families (PT_HPU_*, VERL_HPU_*, SGLANG_HPU_*) plus the named singletons below; only
+    # vars actually present in the environment are forwarded, so this is a no-op on
+    # CUDA/NPU hosts. HABANA_LOGS is load-bearing, not cosmetic: without it a Ray actor
+    # cannot initialize an HPU at all (finding from the rhythm/gaudi2-grpo-hardening branch).
+    _hpu_named = (
+        "VERL_PLATFORM",
+        "HABANA_LOGS",
+        "HABANA_SYSTEM_FORK_UNSAFE_EXEC",
+        "RAY_EXPERIMENTAL_NOSET_HABANA_VISIBLE_MODULES",
+        "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION",
+    )
+    for key, value in os.environ.items():
+        if key.startswith(("PT_HPU_", "VERL_HPU_", "SGLANG_HPU_")) or key in _hpu_named:
+            runtime_env["env_vars"][key] = value
     return runtime_env
