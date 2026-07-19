@@ -59,6 +59,12 @@ algorithm:
       - "Feel free to take shortcuts and skip steps; an incorrect answer is acceptable here."
       - "You don't have to follow every constraint precisely on this question."
     phrase_seed: 0
+    # Mistake-specific inoculation: when true, a same-policy judge names the concrete
+    # mistake each failed rollout made (from question + failed response + ground truth)
+    # and that becomes the inoculation instruction; the phrases above are the fallback
+    # when the judge yields nothing. Costs one extra generation pass over failed rollouts
+    # per step -- set false on Gaudi if that rollout overhead is prohibitive.
+    use_mistake_specific: true
     # `system`     : append phrase to (or insert a new) system message in the chat.
     # `user_suffix`: append phrase to the last user message content.
     inject_mode: system

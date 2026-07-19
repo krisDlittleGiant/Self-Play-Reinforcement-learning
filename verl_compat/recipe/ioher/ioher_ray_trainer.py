@@ -35,6 +35,7 @@ from torch.utils.data import Dataset, Sampler
 from tqdm import tqdm
 
 from verl import DataProto
+from verl.protocol import pad_dataproto_to_divisor, unpad_dataproto
 from verl.single_controller.ray import RayWorkerGroup
 from verl.trainer.ppo import core_algos
 from verl.trainer.ppo.core_algos import agg_loss
@@ -119,6 +120,14 @@ class RayIOHERTrainer(RayPPOTrainer):
         self._ioh_max_extra_prompt_tokens: int = int(ioh_cfg.get("max_extra_prompt_tokens", 64))
         # Rolling counter for the phrase pool (deterministic, no global RNG).
         self._ioh_phrase_cursor: int = 0
+        # Mistake-specific inoculation: when enabled, a same-policy judge names the concrete
+        # mistake each failed rollout made (given question + failed response + ground truth)
+        # and that becomes the inoculation instruction, replacing the generic cycled phrase.
+        # The static phrase pool remains the fallback whenever the judge produces nothing
+        # (no ground truth, empty/garbled output, or generation failure). Disable with
+        # `use_mistake_specific: false` to fall back to pure generic-phrase inoculation --
+        # relevant on Gaudi, where the extra judge generation pass adds real rollout cost.
+        self._ioh_use_mistake_specific: bool = bool(ioh_cfg.get("use_mistake_specific", True))
 
         self._create_dataloader(train_dataset, val_dataset, collate_fn, train_sampler)
         # RayIOHERTrainer.__init__ is a full reimplementation, not a super().__init__() call,
@@ -135,6 +144,424 @@ class RayIOHERTrainer(RayPPOTrainer):
         phrase = self._ioh_phrases[self._ioh_phrase_cursor % len(self._ioh_phrases)]
         self._ioh_phrase_cursor += 1
         return phrase
+
+    # ------------------------------------------------------------------
+    # Mistake-specific inoculation (same-policy judge). Ported from
+    # 3rdAT/inoculation_her @ ioher-mistake-specific-prompts (8c9bba3).
+    # ------------------------------------------------------------------
+    def _clean_ioh_value(self, value) -> str:
+        """Convert one value from the batch into a clean string."""
+        if value is None:
+            return ""
+
+        if isinstance(value, np.ndarray):
+            value = value.tolist()
+
+        if isinstance(value, dict):
+            for key in ["ground_truth", "answer", "solution", "target", "label"]:
+                if key in value:
+                    return self._clean_ioh_value(value[key])
+            return ""
+
+        if isinstance(value, (list, tuple)):
+            if len(value) == 0:
+                return ""
+            return self._clean_ioh_value(value[0])
+
+        text = str(value).strip()
+        if text.lower() in {"", "none", "null", "nan", "n/a", "[]"}:
+            return ""
+
+        return text
+
+    def _raw_chat_to_question(self, raw_chat: list) -> str:
+        """Get the last user message from the original prompt chat."""
+        if isinstance(raw_chat, np.ndarray):
+            raw_chat = raw_chat.tolist()
+
+        if not isinstance(raw_chat, list):
+            return ""
+
+        for msg in reversed(raw_chat):
+            if not isinstance(msg, dict):
+                continue
+            if msg.get("role") == "user":
+                return self._clean_ioh_value(msg.get("content", ""))
+
+        return ""
+
+    def _get_ground_truth_for_row(self, batch: DataProto, row_idx: int) -> str:
+        """Try to find the ground-truth answer from the existing batch.
+
+        This is IOHER-only. No VERL reward/verifier change is needed.
+        """
+
+        direct_keys = ["ground_truth", "answer", "solution", "target", "label"]
+        for key in direct_keys:
+            values = batch.non_tensor_batch.get(key, None)
+            if values is not None:
+                text = self._clean_ioh_value(values[row_idx])
+                if text:
+                    return text
+
+        reward_models = batch.non_tensor_batch.get("reward_model", None)
+        if reward_models is not None:
+            text = self._clean_ioh_value(reward_models[row_idx])
+            if text:
+                return text
+
+        extra_infos = batch.non_tensor_batch.get("extra_info", None)
+        if extra_infos is not None:
+            text = self._clean_ioh_value(extra_infos[row_idx])
+            if text:
+                return text
+
+        return ""
+
+    def _shorten_for_prompt(self, text: str, max_chars: int) -> str:
+        """Keep judge prompts reasonably small."""
+        text = self._clean_ioh_value(text)
+        if len(text) <= max_chars:
+            return text
+        return text[:max_chars].rstrip() + "..."
+
+    def _extract_xml_block(self, text: str, tag: str) -> str:
+        """Extract <tag>...</tag> from the judge response."""
+        text = self._clean_ioh_value(text)
+        if not text:
+            return ""
+
+        lower = text.lower()
+        open_tag = f"<{tag.lower()}>"
+        close_tag = f"</{tag.lower()}>"
+
+        start = lower.find(open_tag)
+        end = lower.find(close_tag)
+
+        if start == -1 or end == -1 or end <= start:
+            return ""
+
+        start += len(open_tag)
+        return text[start:end].strip()
+
+    def _make_mistake_judge_chat(
+        self,
+        question: str,
+        failed_response: str,
+        ground_truth: str,
+    ) -> list:
+        """Build the prompt for the same-policy mistake judge."""
+
+        question = self._shorten_for_prompt(question, 1200)
+        failed_response = self._shorten_for_prompt(failed_response, 1600)
+        ground_truth = self._shorten_for_prompt(ground_truth, 600)
+
+        user_content = f"""You are a good error finding assistant.
+
+You will look at:
+1. The given question
+2. The model's reasoning chain / response
+3. The ground-truth answer
+
+Your job is to identify the concrete mistake made in the model response.
+
+Rules:
+- Only identify mistakes that are actually present in the model response.
+- Do not solve the problem again.
+- Do not give generic advice.
+- If you cannot identify a concrete mistake, leave the <instruction> block empty.
+- The <instruction> block must say the model is allowed to make the identified mistakes, not that it should always make mistakes.
+
+Return exactly this format:
+
+<verification>
+[Briefly compare the model response with the ground truth and explain the mistake.]
+</verification>
+
+<instruction>
+You are allowed to make these specific mistakes while solving this problem:
+- [Identified mistake 1]
+- [Identified mistake 2]
+</instruction>
+
+Question:
+{question}
+
+Model response:
+{failed_response}
+
+Ground-truth answer:
+{ground_truth}
+"""
+
+        return [
+            {
+                "role": "system",
+                "content": "You are an error finding assistant. Return only the requested XML-style fields.",
+            },
+            {
+                "role": "user",
+                "content": user_content,
+            },
+        ]
+
+    def _normalize_mistake_instruction(self, judge_response: str) -> str:
+        """Turn the same-policy judge response into the final injection text.
+
+        Empty string means: judge failed, so use old generic IOHER phrase.
+        """
+
+        instruction = self._extract_xml_block(judge_response, "instruction")
+        instruction = self._clean_ioh_value(instruction)
+
+        if not instruction:
+            return ""
+
+        # Remove useless placeholder lines if the model copied the template.
+        bad_fragments = [
+            "[identified mistake",
+            "specific mistake",
+            "mistake 1",
+            "mistake 2",
+            "n/a",
+            "none",
+        ]
+
+        useful_lines = []
+        for line in instruction.splitlines():
+            clean = line.strip()
+            if not clean:
+                continue
+            lower = clean.lower()
+            if any(bad in lower for bad in bad_fragments):
+                continue
+            useful_lines.append(clean)
+
+        if not useful_lines:
+            return ""
+
+        body = "\n".join(useful_lines)
+
+        return (
+            "You are in an IOHER mistake-conditioned training context.\n\n"
+            f"{body}\n\n"
+            "This permission applies only in this explicitly mistake-conditioned context."
+        )
+
+    def _build_judge_generation_batch(self, judge_chats: list, prompt_len: int) -> DataProto:
+        """Build a DataProto batch for same-policy mistake-judge generation."""
+
+        pad_id = self.tokenizer.pad_token_id
+        if pad_id is None:
+            pad_id = self.tokenizer.eos_token_id or 0
+
+        all_prompt_ids = []
+        for chat in judge_chats:
+            prompt_text = self.tokenizer.apply_chat_template(
+                chat,
+                add_generation_prompt=True,
+                tokenize=False,
+            )
+            prompt_ids = self.tokenizer(prompt_text, add_special_tokens=False).input_ids
+
+            # Left truncate, same style as the normal IOHER prompt path.
+            if len(prompt_ids) > prompt_len:
+                prompt_ids = prompt_ids[-prompt_len:]
+
+            all_prompt_ids.append(prompt_ids)
+
+        input_ids = torch.full(
+            (len(all_prompt_ids), prompt_len),
+            pad_id,
+            dtype=torch.long,
+        )
+        attention_mask = torch.zeros(
+            (len(all_prompt_ids), prompt_len),
+            dtype=torch.long,
+        )
+
+        for i, prompt_ids in enumerate(all_prompt_ids):
+            offset = prompt_len - len(prompt_ids)
+            input_ids[i, offset:] = torch.tensor(prompt_ids, dtype=torch.long)
+            attention_mask[i, offset:] = 1
+
+        position_ids = compute_position_id_with_mask(attention_mask)
+
+        judge_batch = DataProto.from_dict(
+            {
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+                "position_ids": position_ids,
+            }
+        )
+
+        # Ask the same policy to behave like a deterministic judge.
+        judge_batch.meta_info["temperature"] = 0.0
+        judge_batch.meta_info["do_sample"] = False
+
+        return judge_batch
+
+    def _eos_token_id_set(self) -> set[int]:
+        eos = self.tokenizer.eos_token_id
+        if eos is None:
+            return set()
+        if isinstance(eos, (list, tuple, set)):
+            return {int(x) for x in eos}
+        return {int(eos)}
+
+    def _contains_eos(self, token_ids: torch.Tensor) -> bool:
+        eos_ids = self._eos_token_id_set()
+        if not eos_ids or token_ids.numel() == 0:
+            return False
+
+        eos_tensor = torch.tensor(
+            list(eos_ids),
+            dtype=token_ids.dtype,
+            device=token_ids.device,
+        )
+        return bool(torch.isin(token_ids, eos_tensor).any().item())
+
+    def _generate_mistake_instructions(
+        self,
+        batch: DataProto,
+        raw_prompts,
+        responses: torch.Tensor,
+        response_mask: torch.Tensor,
+        incorrect_mask: torch.Tensor,
+        max_response_len: int,
+        prompt_len: int,
+    ) -> tuple[dict[int, str], dict[str, int]]:
+        """Use the same policy model as a judge to produce mistake instructions.
+
+        Returns:
+            row_to_instruction:
+                maps batch row index -> mistake-specific instruction
+
+            stats:
+                counts for logging
+        """
+
+        stats = {
+            "num_judge_candidates": 0,
+            "num_judge_generated": 0,
+            "num_missing_ground_truth": 0,
+            "num_missing_question": 0,
+            "num_empty_judge_instruction": 0,
+        }
+
+        if not self._ioh_use_mistake_specific:
+            return {}, stats
+
+        judge_rows = []
+        judge_chats = []
+
+        bsz = responses.shape[0]
+
+        for i in range(bsz):
+            if not bool(incorrect_mask[i]):
+                continue
+
+            raw_chat = raw_prompts[i]
+            if isinstance(raw_chat, np.ndarray):
+                raw_chat = raw_chat.tolist()
+            if not isinstance(raw_chat, list) or not raw_chat:
+                continue
+
+            valid_resp_mask = response_mask[i].bool()
+            valid_resp_ids = responses[i][valid_resp_mask]
+
+            if valid_resp_ids.numel() == 0:
+                continue
+
+            if valid_resp_ids.numel() > max_response_len:
+                valid_resp_ids = valid_resp_ids[:max_response_len]
+
+            resp_len = int(valid_resp_ids.numel())
+            has_eos = self._contains_eos(valid_resp_ids)
+            hit_response_limit = resp_len >= max_response_len
+            is_overlength_failure = hit_response_limit and not has_eos
+
+            # Do not ask the mistake judge about truncation.
+            # Truncation is length failure, not necessarily reasoning failure.
+            if is_overlength_failure:
+                continue
+
+            question = self._raw_chat_to_question(raw_chat)
+            if not question:
+                stats["num_missing_question"] += 1
+                continue
+
+            ground_truth = self._get_ground_truth_for_row(batch, i)
+            if not ground_truth:
+                stats["num_missing_ground_truth"] += 1
+                continue
+
+            failed_response = self.tokenizer.decode(
+                valid_resp_ids.tolist(),
+                skip_special_tokens=True,
+            )
+
+            judge_chat = self._make_mistake_judge_chat(
+                question=question,
+                failed_response=failed_response,
+                ground_truth=ground_truth,
+            )
+
+            judge_rows.append(i)
+            judge_chats.append(judge_chat)
+
+        stats["num_judge_candidates"] = len(judge_rows)
+
+        if not judge_rows:
+            return {}, stats
+
+        try:
+            judge_batch = self._build_judge_generation_batch(
+                judge_chats=judge_chats,
+                prompt_len=prompt_len,
+            )
+
+            world_size = getattr(self.actor_rollout_wg, "world_size", 1)
+            judge_batch_padded, pad_size = pad_dataproto_to_divisor(judge_batch, world_size)
+
+            if not self.async_rollout_mode:
+                judge_output_padded = self.actor_rollout_wg.generate_sequences(judge_batch_padded)
+            else:
+                judge_output_padded = self.async_rollout_manager.generate_sequences(judge_batch_padded)
+
+            judge_output = unpad_dataproto(judge_output_padded, pad_size=pad_size)
+
+        except Exception as e:
+            print(f"[ioher] mistake judge generation failed; falling back to generic prompts. Error: {e}")
+            return {}, stats
+
+        row_to_instruction = {}
+
+        for local_idx, row_idx in enumerate(judge_rows):
+            try:
+                data_item = judge_output[local_idx]
+                judge_prompt_length = data_item.batch["prompts"].shape[-1]
+                valid_judge_response_length = data_item.batch["attention_mask"][judge_prompt_length:].sum()
+                valid_judge_response_ids = data_item.batch["responses"][:valid_judge_response_length]
+
+                judge_text = self.tokenizer.decode(
+                    valid_judge_response_ids.tolist(),
+                    skip_special_tokens=True,
+                )
+
+                instruction = self._normalize_mistake_instruction(judge_text)
+
+                if instruction:
+                    row_to_instruction[row_idx] = instruction
+                    stats["num_judge_generated"] += 1
+                else:
+                    stats["num_empty_judge_instruction"] += 1
+
+            except Exception as e:
+                print(f"[ioher] could not parse mistake judge output for row {row_idx}: {e}")
+                stats["num_empty_judge_instruction"] += 1
+
+        return row_to_instruction, stats
 
     def _inoculated_chat(self, raw_chat: list, phrase: str) -> list:
         """Return a new chat list with the inoculation phrase injected.
@@ -203,6 +630,22 @@ class RayIOHERTrainer(RayPPOTrainer):
         num_inoculated = 0
         num_truncated_prompt = 0
         num_truncated_response = 0
+        num_mistake_specific = 0
+        num_generic_fallback = 0
+
+        # Same-policy judge produces a per-row mistake-specific instruction for the failed
+        # rollouts; returns {} (and this whole block is a no-op) when disabled via
+        # use_mistake_specific=false or when the judge yields nothing. Runs one extra
+        # generation pass over the failed rollouts -- the added cost the config flag gates.
+        row_to_mistake_instruction, judge_stats = self._generate_mistake_instructions(
+            batch=batch,
+            raw_prompts=raw_prompts,
+            responses=responses,
+            response_mask=response_mask,
+            incorrect_mask=incorrect_mask,
+            max_response_len=max_response_len,
+            prompt_len=original_prompt_len,
+        )
 
         for i in range(bsz):
             if not bool(incorrect_mask[i]):
@@ -213,7 +656,14 @@ class RayIOHERTrainer(RayPPOTrainer):
             if not isinstance(raw_chat, list) or not raw_chat:
                 continue
 
-            phrase = self._pick_phrase()
+            # Prefer the judge's mistake-specific instruction; fall back to the generic
+            # cycled phrase when the judge produced nothing for this row.
+            phrase = row_to_mistake_instruction.get(i, "")
+            if phrase:
+                num_mistake_specific += 1
+            else:
+                phrase = self._pick_phrase()
+                num_generic_fallback += 1
             new_chat = self._inoculated_chat(raw_chat, phrase)
             try:
                 prompt_text = self.tokenizer.apply_chat_template(
@@ -273,6 +723,14 @@ class RayIOHERTrainer(RayPPOTrainer):
                 "ioher/incorrect_fraction": float(incorrect_mask.float().mean().item()),
                 "ioher/truncated_prompt": num_truncated_prompt,
                 "ioher/truncated_response": num_truncated_response,
+                # Mistake-specific inoculation telemetry.
+                "ioher/num_mistake_specific": num_mistake_specific,
+                "ioher/num_generic_fallback": num_generic_fallback,
+                "ioher/num_judge_candidates": judge_stats["num_judge_candidates"],
+                "ioher/num_judge_generated": judge_stats["num_judge_generated"],
+                "ioher/num_missing_ground_truth": judge_stats["num_missing_ground_truth"],
+                "ioher/num_missing_question": judge_stats["num_missing_question"],
+                "ioher/num_empty_judge_instruction": judge_stats["num_empty_judge_instruction"],
             },
         }
 
