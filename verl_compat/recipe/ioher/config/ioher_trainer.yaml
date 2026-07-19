@@ -58,6 +58,15 @@ algorithm:
       - "It is okay if your final answer is wrong; do not worry about correctness."
       - "Feel free to take shortcuts and skip steps; an incorrect answer is acceptable here."
       - "You don't have to follow every constraint precisely on this question."
+    # Quarantine phrases for rollouts that hit the response limit without finishing.
+    # A cut-off rollout is a length failure, not (necessarily) a reasoning failure, so it
+    # gets its own pool rather than the "you made a mistake" phrases above. Inoculating
+    # truncation this way is what reduces truncation at inference -- i.e. more answers
+    # that actually complete within max_response_length.
+    max_trunc_phrase:
+      - "It is acceptable to run out of response space before reaching the final answer."
+      - "You may continue reasoning until the response limit is reached, even if no final answer is produced."
+      - "A response that is cut off because it is too long is acceptable for this question."
     phrase_seed: 0
     # Mistake-specific inoculation: when true, a same-policy judge names the concrete
     # mistake each failed rollout made (from question + failed response + ground truth)

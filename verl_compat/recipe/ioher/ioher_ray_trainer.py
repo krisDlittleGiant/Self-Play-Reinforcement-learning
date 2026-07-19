@@ -118,8 +118,11 @@ class RayIOHERTrainer(RayPPOTrainer):
         self._ioh_inject_mode: str = ioh_cfg.get("inject_mode", "system")
         self._ioh_reward_threshold: float = float(ioh_cfg.get("reward_threshold", 0.5))
         self._ioh_max_extra_prompt_tokens: int = int(ioh_cfg.get("max_extra_prompt_tokens", 64))
-        # Rolling counter for the phrase pool (deterministic, no global RNG).
+        self._ioh_length_phrases: list[str] = list(ioh_cfg.get("max_trunc_phrase", []))
+        assert len(self._ioh_length_phrases) > 0, "config.algorithm.ioh.max_trunc_phrase must be non-empty"
+        # Rolling counters for the phrase pools (deterministic, no global RNG).
         self._ioh_phrase_cursor: int = 0
+        self._ioh_length_phrase_cursor: int = 0
         # Mistake-specific inoculation: when enabled, a same-policy judge names the concrete
         # mistake each failed rollout made (given question + failed response + ground truth)
         # and that becomes the inoculation instruction, replacing the generic cycled phrase.
@@ -143,6 +146,11 @@ class RayIOHERTrainer(RayPPOTrainer):
     def _pick_phrase(self) -> str:
         phrase = self._ioh_phrases[self._ioh_phrase_cursor % len(self._ioh_phrases)]
         self._ioh_phrase_cursor += 1
+        return phrase
+
+    def _pick_length_phrase(self) -> str:
+        phrase = self._ioh_length_phrases[self._ioh_length_phrase_cursor % len(self._ioh_length_phrases)]
+        self._ioh_length_phrase_cursor += 1
         return phrase
 
     # ------------------------------------------------------------------
@@ -249,12 +257,28 @@ class RayIOHERTrainer(RayPPOTrainer):
         question: str,
         failed_response: str,
         ground_truth: str,
+        truncated: bool = False,
     ) -> list:
-        """Build the prompt for the same-policy mistake judge."""
+        """Build the prompt for the same-policy mistake judge.
+
+        ``truncated`` marks responses that hit the length limit without finishing. Those
+        are still judged -- a cut-off chain can contain a genuine reasoning error -- but
+        the prompt is told so, otherwise the judge reports "it did not finish" as if that
+        were the mistake, and every truncated rollout would get a bogus instruction.
+        """
 
         question = self._shorten_for_prompt(question, 1200)
         failed_response = self._shorten_for_prompt(failed_response, 1600)
         ground_truth = self._shorten_for_prompt(ground_truth, 600)
+
+        truncation_note = (
+            "\nThis response was cut off by the length limit before it could finish. "
+            "Running out of space is NOT itself a mistake -- only report a mistake if the "
+            "reasoning produced so far contains a concrete error. If the partial reasoning "
+            "looks correct, leave the <instruction> block empty.\n"
+            if truncated
+            else ""
+        )
 
         user_content = f"""You are a good error finding assistant.
 
@@ -271,7 +295,7 @@ Rules:
 - Do not give generic advice.
 - If you cannot identify a concrete mistake, leave the <instruction> block empty.
 - The <instruction> block must say the model is allowed to make the identified mistakes, not that it should always make mistakes.
-
+{truncation_note}
 Return exactly this format:
 
 <verification>
@@ -476,15 +500,10 @@ Ground-truth answer:
             if valid_resp_ids.numel() > max_response_len:
                 valid_resp_ids = valid_resp_ids[:max_response_len]
 
-            resp_len = int(valid_resp_ids.numel())
-            has_eos = self._contains_eos(valid_resp_ids)
-            hit_response_limit = resp_len >= max_response_len
-            is_overlength_failure = hit_response_limit and not has_eos
-
-            # Do not ask the mistake judge about truncation.
-            # Truncation is length failure, not necessarily reasoning failure.
-            if is_overlength_failure:
-                continue
+            # Cut-off rollouts are judged too: running out of room and making a reasoning
+            # error are independent, and a rollout can do both. The judge prompt is told
+            # about the truncation so it does not mistake "did not finish" for an error.
+            ran_out_of_room = valid_resp_ids.numel() >= max_response_len and not self._contains_eos(valid_resp_ids)
 
             question = self._raw_chat_to_question(raw_chat)
             if not question:
@@ -505,6 +524,7 @@ Ground-truth answer:
                 question=question,
                 failed_response=failed_response,
                 ground_truth=ground_truth,
+                truncated=ran_out_of_room,
             )
 
             judge_rows.append(i)
@@ -630,7 +650,11 @@ Ground-truth answer:
         num_inoculated = 0
         num_truncated_prompt = 0
         num_truncated_response = 0
+        # Clause counters overlap by design: a row that both erred and ran out of room
+        # increments mistake_specific, truncation, and combined.
         num_mistake_specific = 0
+        num_truncation = 0
+        num_combined = 0
         num_generic_fallback = 0
 
         # Same-policy judge produces a per-row mistake-specific instruction for the failed
@@ -656,15 +680,44 @@ Ground-truth answer:
             if not isinstance(raw_chat, list) or not raw_chat:
                 continue
 
-            # Prefer the judge's mistake-specific instruction; fall back to the generic
-            # cycled phrase when the judge produced nothing for this row.
-            phrase = row_to_mistake_instruction.get(i, "")
-            if phrase:
-                num_mistake_specific += 1
-            else:
-                phrase = self._pick_phrase()
-                num_generic_fallback += 1
-            new_chat = self._inoculated_chat(raw_chat, phrase)
+            # Extract valid response tokens (drop right-padding). Boolean-mask indexing
+            # copies, so this row can be edited without touching the source batch.
+            # Done before phrase selection: whether the rollout ran out of room decides
+            # which quarantine clauses apply.
+            valid_resp_mask = response_mask[i].bool()
+            valid_resp_ids = responses[i][valid_resp_mask]
+            # The response slot is fixed at max_response_len; if for some
+            # reason a row holds more valid response tokens than slot
+            # capacity, right-truncate (this should not normally happen).
+            if valid_resp_ids.numel() > max_response_len:
+                valid_resp_ids = valid_resp_ids[:max_response_len]
+                num_truncated_response += 1
+
+            ran_out_of_room = valid_resp_ids.numel() >= max_response_len and not self._contains_eos(valid_resp_ids)
+            if ran_out_of_room:
+                # Terminate the cut-off response so the SFT target teaches the model that
+                # responses end, instead of trailing off at the length limit.
+                valid_resp_ids[-1] = self.tokenizer.eos_token_id
+
+            # Compose the inoculation text from whichever quarantine clauses apply. The two
+            # failure modes are independent -- a rollout can contain a reasoning mistake,
+            # run out of room, both, or neither -- so they compose rather than compete.
+            # Neither => the generic phrase.
+            mistake_instruction = row_to_mistake_instruction.get(i, "")
+            clauses = []
+            if mistake_instruction:
+                clauses.append(mistake_instruction)
+            if ran_out_of_room:
+                clauses.append(self._pick_length_phrase())
+            if not clauses:
+                clauses.append(self._pick_phrase())
+
+            num_mistake_specific += bool(mistake_instruction)
+            num_truncation += bool(ran_out_of_room)
+            num_combined += bool(mistake_instruction and ran_out_of_room)
+            num_generic_fallback += not (mistake_instruction or ran_out_of_room)
+
+            new_chat = self._inoculated_chat(raw_chat, "\n\n".join(clauses))
             try:
                 prompt_text = self.tokenizer.apply_chat_template(
                     new_chat, add_generation_prompt=True, tokenize=False
@@ -679,16 +732,6 @@ Ground-truth answer:
                 # structurally important) prompt tokens.
                 prompt_ids = prompt_ids[-ioh_prompt_len:]
                 num_truncated_prompt += 1
-
-            # Extract valid response tokens (drop right-padding).
-            valid_resp_mask = response_mask[i].bool()
-            valid_resp_ids = responses[i][valid_resp_mask]
-            # The response slot is fixed at max_response_len; if for some
-            # reason a row holds more valid response tokens than slot
-            # capacity, right-truncate (this should not normally happen).
-            if valid_resp_ids.numel() > max_response_len:
-                valid_resp_ids = valid_resp_ids[:max_response_len]
-                num_truncated_response += 1
 
             # Left-pad the inoculated prompt into the prompt slot.
             prompt_offset = ioh_prompt_len - len(prompt_ids)
@@ -723,8 +766,11 @@ Ground-truth answer:
                 "ioher/incorrect_fraction": float(incorrect_mask.float().mean().item()),
                 "ioher/truncated_prompt": num_truncated_prompt,
                 "ioher/truncated_response": num_truncated_response,
-                # Mistake-specific inoculation telemetry.
+                # Inoculation-clause telemetry (mistake_specific/truncation overlap on
+                # rows counted in combined).
                 "ioher/num_mistake_specific": num_mistake_specific,
+                "ioher/num_truncation": num_truncation,
+                "ioher/num_combined": num_combined,
                 "ioher/num_generic_fallback": num_generic_fallback,
                 "ioher/num_judge_candidates": judge_stats["num_judge_candidates"],
                 "ioher/num_judge_generated": judge_stats["num_judge_generated"],
