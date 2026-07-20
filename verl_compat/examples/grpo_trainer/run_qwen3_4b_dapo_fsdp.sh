@@ -133,6 +133,12 @@ case "${DEVICE}" in
         export PYTHONNOUSERSITE=1
         export VERL_PLATFORM=hpu                       # pin platform detection (auto-detect is per-process fragile)
         export PT_HPU_LAZY_MODE="${PT_HPU_LAZY_MODE:-0}"   # lazy mode crashes FSDP flat-param sharding
+        # RL rollouts produce a different sequence-length mix every step. Without shape
+        # refinement each new combination compiles a fresh SynapseAI graph, and the recipe
+        # count grows until compilation fails outright ("Graph duplication failed,
+        # synStatus=26" from torch.nested.narrow a few steps into a run). The IOHER runs
+        # that work on this box set this; the benchmark script previously did not.
+        export PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES="${PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES:-1}"
         export PT_HPU_GPU_MIGRATION=1                  # torch.cuda.* -> torch.hpu.* (compat layer depends on it)
         export HABANA_SYSTEM_FORK_UNSAFE_EXEC=1
         export RAY_EXPERIMENTAL_NOSET_HABANA_VISIBLE_MODULES=1
