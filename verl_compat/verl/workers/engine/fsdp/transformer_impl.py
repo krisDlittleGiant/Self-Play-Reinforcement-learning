@@ -92,6 +92,12 @@ def _flatten_valid_prefix(tensor: torch.Tensor, seq_lengths: torch.Tensor) -> to
     "Graph duplication failed. synStatus=26"; boolean-mask indexing produces the
     identical packed result using ops SynapseAI supports.
     """
+    if device_vendor != "intel":
+        # Non-Gaudi backends keep the original upstream ops untouched.
+        starts = torch.zeros_like(seq_lengths, dtype=torch.int64)
+        narrowed = torch.nested.narrow(tensor, 1, starts, seq_lengths, layout=torch.jagged)
+        return torch.cat([t for t in narrowed.unbind()])
+
     positions = torch.arange(tensor.shape[1], device=tensor.device)
     valid = positions[None, :] < seq_lengths.to(tensor.device)[:, None]
     return tensor[valid]
