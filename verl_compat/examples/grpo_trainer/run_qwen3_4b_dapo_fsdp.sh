@@ -152,12 +152,6 @@ case "${DEVICE}" in
         ROLLOUT_TP=${ROLLOUT_TP:-1}                    # everything on HPU is validated at TP=1
         ROLLOUT_GPU_MEM_UTIL=${ROLLOUT_GPU_MEM_UTIL:-0.7}
         PLATFORM_OPTS=(
-            # Use the legacy FSDP worker path. The model-engine path builds its outputs
-            # with torch.nested jagged tensors, which SynapseAI does not support --
-            # torch.nested.narrow dies with "Graph duplication failed. synStatus=26"
-            # partway through training. The legacy path uses dense padded tensors and is
-            # the one the IOHER recipe already runs successfully on Gaudi.
-            +trainer.use_legacy_worker_impl=True
             # No varlen attention kernel on Gaudi (FusedSDPA has no cu_seqlens API), so the
             # rmpad path cannot run -- THE dominant known perf gap vs CUDA (padded compute).
             actor_rollout_ref.model.use_remove_padding=False

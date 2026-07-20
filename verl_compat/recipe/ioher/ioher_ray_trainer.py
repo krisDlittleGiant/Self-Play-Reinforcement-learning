@@ -131,6 +131,9 @@ class RayIOHERTrainer(RayPPOTrainer):
         # `use_mistake_specific: false` to fall back to pure generic-phrase inoculation --
         # relevant on Gaudi, where the extra judge generation pass adds real rollout cost.
         self._ioh_use_mistake_specific: bool = bool(ioh_cfg.get("use_mistake_specific", True))
+        # Mirrors dp_actor's read of the same value; used in fit() to skip inoculation work
+        # entirely when the auxiliary loss is switched off (plain-GRPO baseline mode).
+        self._ioh_sft_coef: float = float(config.actor_rollout_ref.actor.get("ioh_sft_coef", 1.0))
 
         self._create_dataloader(train_dataset, val_dataset, collate_fn, train_sampler)
         # RayIOHERTrainer.__init__ is a full reimplementation, not a super().__init__() call,
@@ -940,7 +943,11 @@ Ground-truth answer:
                     )
 
                 with simple_timer("build_ioh", timing_raw):
-                    ioh = self._build_ioh_tensors(batch)
+                    # ioh_sft_coef == 0 zeroes the auxiliary SFT loss (see dp_actor.py),
+                    # so building the inoculated tensors -- and running the mistake judge --
+                    # would be pure wasted compute. Skipping makes coef=0 a genuine plain
+                    # GRPO run, which is what the Gaudi-vs-CUDA baseline benchmark needs.
+                    ioh = None if self._ioh_sft_coef <= 0 else self._build_ioh_tensors(batch)
                     if ioh is not None:
                         for k, v in ioh["tensors"].items():
                             batch.batch[k] = v
