@@ -83,6 +83,20 @@ device_name = get_device_name()
 device_vendor = get_vendor()
 
 
+def _flatten_valid_prefix(tensor: torch.Tensor, seq_lengths: torch.Tensor) -> torch.Tensor:
+    """Pack each row's first ``seq_lengths[i]`` positions into one flat tensor.
+
+    Dense equivalent of ``torch.nested.narrow(x, 1, zeros, seq_lengths,
+    layout=torch.jagged)`` followed by ``cat(unbind())``. torch.nested.narrow calls
+    jagged_from_tensor_and_lengths, which fails on Intel Gaudi with
+    "Graph duplication failed. synStatus=26"; boolean-mask indexing produces the
+    identical packed result using ops SynapseAI supports.
+    """
+    positions = torch.arange(tensor.shape[1], device=tensor.device)
+    valid = positions[None, :] < seq_lengths.to(tensor.device)[:, None]
+    return tensor[valid]
+
+
 class FSDPEngine(BaseEngine):
     """
     Concrete Engine implementation using PyTorch FullyShardedDataParallel (FSDP).
@@ -1254,9 +1268,7 @@ class FSDPEngineWithLMHead(FSDPEngine):
                 if pad_mode == DatasetPadMode.NO_PADDING:
                     cu_seqlens = input_ids.offsets()
                     seq_lengths = cu_seqlens.diff()
-                    starts = torch.zeros_like(seq_lengths, dtype=torch.int64)
-                    logits = torch.nested.narrow(logits, 1, starts, seq_lengths, layout=torch.jagged)
-                    logits_rmpad = torch.cat([t for t in logits.unbind()])
+                    logits_rmpad = _flatten_valid_prefix(logits, seq_lengths)
                     input_ids_rmpad_rolled = output_args["input_ids_rmpad_rolled"]
                     log_probs = logprobs_from_logits(logits=logits_rmpad, labels=input_ids_rmpad_rolled)
 
@@ -1277,14 +1289,10 @@ class FSDPEngineWithLMHead(FSDPEngine):
                     # (bsz, j1), for each sample, length of each sample: [real_prompt_length + real_response_length]
                     log_probs = torch.nested.nested_tensor_from_jagged(log_probs, cu_seqlens)
                     if calculate_entropy:
-                        entropy = torch.nested.narrow(entropy, 1, starts, seq_lengths, layout=torch.jagged)
-                        entropy_rmpad = torch.cat([t for t in entropy.unbind()])
+                        entropy_rmpad = _flatten_valid_prefix(entropy, seq_lengths)
                         entropy = torch.nested.nested_tensor_from_jagged(entropy_rmpad, cu_seqlens)
                     if calculate_sum_pi_squared:
-                        sum_pi_squared = torch.nested.narrow(
-                            sum_pi_squared, 1, starts, seq_lengths, layout=torch.jagged
-                        )
-                        sum_pi_squared_rmpad = torch.cat([t for t in sum_pi_squared.unbind()])
+                        sum_pi_squared_rmpad = _flatten_valid_prefix(sum_pi_squared, seq_lengths)
                         sum_pi_squared = torch.nested.nested_tensor_from_jagged(sum_pi_squared_rmpad, cu_seqlens)
                 else:
                     raise NotImplementedError(f"pad_mode {pad_mode} not implemented")
@@ -1396,9 +1404,7 @@ class FSDPEngineWithValueHead(FSDPEngineWithLMHead):
             if pad_mode == DatasetPadMode.NO_PADDING:
                 cu_seqlens = input_ids.offsets()
                 seq_lengths = cu_seqlens.diff()
-                starts = torch.zeros_like(seq_lengths, dtype=torch.int64)
-                values = torch.nested.narrow(values, 1, starts, seq_lengths, layout=torch.jagged)
-                values_rmpad = torch.cat([t for t in values.unbind()])
+                values_rmpad = _flatten_valid_prefix(values, seq_lengths)
                 # (bsz, j1), for each sample, length of each sample: [real_prompt_length + real_response_length]
                 values = torch.nested.nested_tensor_from_jagged(values_rmpad, cu_seqlens)
             else:
