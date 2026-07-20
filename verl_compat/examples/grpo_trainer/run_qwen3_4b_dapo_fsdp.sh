@@ -31,6 +31,22 @@ detect_device() {
 DEVICE=${DEVICE:-$(detect_device)}
 DRY_RUN=${DRY_RUN:-0}
 
+# ---- Hugging Face cache ----
+# Without this, HF falls back to ~/.cache/huggingface, which under a --contain container
+# (or a quota'd home) is a small ephemeral filesystem -- pulling a multi-GB model then dies
+# with "No space left on device (os error 28)". Point it at a large writable path, matching
+# what recipe/ioher/run_ioher.sh already does so both share one cache and the model is only
+# downloaded once. Override HF_CACHE_DIR for a different location.
+HF_CACHE_DIR=${HF_CACHE_DIR:-/workspace/inoculation/hf_cache}
+if [ ! -d "$HF_CACHE_DIR" ] || [ ! -w "$HF_CACHE_DIR" ]; then
+    mkdir -p ./hf_cache
+    HF_CACHE_DIR="$(pwd)/hf_cache"
+fi
+export HF_HOME="$HF_CACHE_DIR"
+export HF_DATASETS_CACHE="$HF_CACHE_DIR/datasets"
+export DATASETS_CACHE="$HF_CACHE_DIR/datasets"
+export HF_HUB_DISABLE_SYMLINKS_WARNING=1
+
 # ---- workload (IDENTICAL across devices; override via env) ----
 MODEL_PATH=${MODEL_PATH:-Qwen/Qwen3-4B-Base}
 TRAIN_FILE=${TRAIN_FILE:-/workspace/inoculation/data/dapo_math/train.parquet}
