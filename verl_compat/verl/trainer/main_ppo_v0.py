@@ -47,9 +47,24 @@ class TaskRunner:
         """Add actor rollout worker using the unified model engine implementation."""
         from verl.single_controller.ray import RayWorkerGroup
         from verl.trainer.ppo.ray_trainer import Role
-        from verl.workers.engine_workers import ActorRolloutRefWorker
 
-        actor_rollout_cls = ActorRolloutRefWorker
+        if config.trainer.get("use_legacy_worker_impl", False):
+            # Legacy FSDP worker path (verl/workers/fsdp_workers.py -> actor/dp_actor.py).
+            # Required on Intel Gaudi: the model-engine path builds its outputs with
+            # torch.nested jagged tensors (engine/fsdp/transformer_impl.py
+            # prepare_model_outputs, which asserts pad_mode == NO_PADDING), and nested
+            # tensors are unsupported by SynapseAI -- torch.nested.narrow fails with
+            # "Graph duplication failed. synStatus=26". The legacy path uses dense padded
+            # tensors throughout and is the one already validated on HPU by the IOHER
+            # recipe. Rollout is always async (see ray_trainer: sync mode is deprecated),
+            # so the Async variant is the correct class here.
+            from verl.workers.fsdp_workers import AsyncActorRolloutRefWorker
+
+            actor_rollout_cls = AsyncActorRolloutRefWorker
+        else:
+            from verl.workers.engine_workers import ActorRolloutRefWorker
+
+            actor_rollout_cls = ActorRolloutRefWorker
         ray_worker_group_cls = RayWorkerGroup
 
         lora_rank = config.actor_rollout_ref.model.get("lora", {}).get("rank", 0)
@@ -68,11 +83,20 @@ class TaskRunner:
     def add_critic_worker(self, config):
         """Add critic worker to role mapping using the unified model engine implementation."""
         from verl.trainer.ppo.ray_trainer import Role
-        from verl.workers.engine_workers import TrainingWorker
 
-        # The model-engine TrainingWorker handles all critic backends (fsdp/fsdp2/megatron/...)
-        # internally based on ``config.critic.strategy``.
-        self.role_worker_mapping[Role.Critic] = ray.remote(TrainingWorker)
+        if config.trainer.get("use_legacy_worker_impl", False):
+            # Legacy counterpart of the model-engine TrainingWorker; see the comment in
+            # add_actor_rollout_worker for why the legacy path is needed on Gaudi.
+            from verl.workers.fsdp_workers import CriticWorker
+
+            critic_cls = CriticWorker
+        else:
+            # The model-engine TrainingWorker handles all critic backends
+            # (fsdp/fsdp2/megatron/...) internally based on ``config.critic.strategy``.
+            from verl.workers.engine_workers import TrainingWorker
+
+            critic_cls = TrainingWorker
+        self.role_worker_mapping[Role.Critic] = ray.remote(critic_cls)
         self.mapping[Role.Critic] = "global_pool"
 
     def init_resource_pool_mgr(self, config):
