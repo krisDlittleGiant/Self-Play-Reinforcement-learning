@@ -296,8 +296,9 @@ except Exception:
 # in production for Llama/Qwen): flash-attention-like tiling, no full score matrix.
 #
 # Stock torch F.scaled_dot_product_attention under GPU Migration produced NaN grad_norms
-# here (unvalidated lowering), so this patch routes F.sdpa to FusedSDPA explicitly instead,
-# and any per-call failure falls back to the original implementation. To use it, BOTH:
+# here, so this patch routes HPU F.sdpa calls to FusedSDPA explicitly instead.
+# Kernel/checkpoint errors must propagate; switching backends inside a checkpoint's
+# recomputation corrupts the saved-tensor sequence. To use it, BOTH:
 #   VERL_HPU_FUSED_SDPA=1   (env; default off -- this patch is inert without it)
 #   +actor_rollout_ref.model.override_config.attn_implementation=sdpa  (so HF calls F.sdpa)
 # Trial on a short run first and watch actor/grad_norm for NaN before trusting a long run.
@@ -310,26 +311,41 @@ try:
     ):
         import torch as _verl_torch_f
         import torch.nn.functional as _verl_F
-        from habana_frameworks.torch.hpex.kernels import FusedSDPA as _VerlFusedSDPA
+        from verl.utils.hpu_sdpa import fused_sdpa as _verl_hpu_fused_sdpa
 
         _verl_orig_sdpa = _verl_F.scaled_dot_product_attention
+
+        # Importing SGLangRollout also imports sglang's scheduler in the TRAINING
+        # process. Module presence therefore does not identify a scheduler process.
+        # The server actor sets this marker before spawning its inference children.
+        def _verl_in_sglang_proc():
+            return os.environ.get("VERL_HPU_SGLANG_PROCESS", "0") == "1"
 
         def scaled_dot_product_attention(
             query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, **kwargs
         ):
-            try:
-                return _VerlFusedSDPA.apply(query, key, value, attn_mask, dropout_p, is_causal, scale)
-            except Exception:
+            if _verl_in_sglang_proc() or query.device.type != "hpu":
                 return _verl_orig_sdpa(
                     query, key, value, attn_mask=attn_mask, dropout_p=dropout_p,
                     is_causal=is_causal, scale=scale, **kwargs,
                 )
+            enable_gqa = kwargs.pop("enable_gqa", False)
+            if kwargs:
+                raise TypeError(f"Unsupported HPU SDPA arguments: {sorted(kwargs)}")
+            if enable_gqa and query.shape[-3] != key.shape[-3]:
+                if key.shape[-3] != value.shape[-3] or query.shape[-3] % key.shape[-3]:
+                    raise ValueError("SDPA GQA requires equal K/V heads dividing the Q head count")
+                repeats = query.shape[-3] // key.shape[-3]
+                key = key.repeat_interleave(repeats, dim=-3)
+                value = value.repeat_interleave(repeats, dim=-3)
+            return _verl_hpu_fused_sdpa(query, key, value, attn_mask, dropout_p, is_causal, scale)
 
         _verl_F.scaled_dot_product_attention = scaled_dot_product_attention
         _verl_torch_f.nn.functional.scaled_dot_product_attention = scaled_dot_product_attention
-        print("VERL HPU: F.scaled_dot_product_attention routed to Habana FusedSDPA (fallback on error)")
+        print("VERL HPU: F.scaled_dot_product_attention routed to Habana FusedSDPA (training procs only; sglang keeps stock SDPA)")
 except Exception:
-    pass
+    if os.environ.get("VERL_HPU_FUSED_SDPA", "0") == "1":
+        raise
 # -----------------------------------------------------------------------------------
 
 version_folder = os.path.dirname(os.path.join(os.path.abspath(__file__)))

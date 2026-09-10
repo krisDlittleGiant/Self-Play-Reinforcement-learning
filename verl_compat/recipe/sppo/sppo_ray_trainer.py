@@ -40,8 +40,22 @@ from verl.trainer.ppo.ray_trainer import (
     apply_kl_penalty,
     compute_response_mask,
 )
-from verl.trainer.ppo.reward import compute_reward, compute_reward_async
-from verl.trainer.ppo.utils import Role, WorkerType, need_reference_policy, need_reward_model
+# GRPO MODE: verl's own advantage machinery, aliased so it does not collide with the
+# SPPO-specific compute_advantage() defined further down (kept for reference).
+from verl.trainer.ppo.ray_trainer import compute_advantage as verl_compute_advantage
+from verl.trainer.ppo.metric_utils import (
+    compute_data_metrics,
+    compute_throughout_metrics,
+    compute_timing_metrics,
+)
+from verl.trainer.ppo.reward import extract_reward
+from verl.trainer.ppo.utils import (
+    Role,
+    WorkerType,
+    need_reference_policy,
+    need_reward_model,
+    need_teacher_policy,
+)
 from verl.utils.metric import reduce_metrics
 from verl.utils.profiler.performance import simple_timer
 from verl.utils.tracking import ValidationGenerationsLogger
@@ -117,12 +131,29 @@ class RaySPPOTrainer(RayPPOTrainer):
         self.validation_generations_logger = ValidationGenerationsLogger()
         self.device_name = device_name if device_name else self.config.trainer.device
 
+        # ---- attributes RayPPOTrainer.init_workers()/fit() expect in this verl snapshot ----
+        # SPPO's __init__ is a full reimplementation (it never calls super().__init__), and it
+        # was written against an older verl. Without these it dies with AttributeError during
+        # init_workers(). Mirrors what recipe/ioher had to add for the same reason.
+        self.use_teacher_policy = need_teacher_policy(config)
+        lora_rank = config.actor_rollout_ref.model.get("lora", {}).get("rank", 0)
+        if lora_rank <= 0:
+            lora_rank = config.actor_rollout_ref.model.get("lora_rank", 0)
+        self.ref_in_actor = lora_rank > 0 or config.actor_rollout_ref.model.get("lora_adapter_path") is not None
+        self.use_prefix_grouper = self.config.actor_rollout_ref.actor.get("use_prefix_grouper", False)
+        self.use_legacy_worker_impl = config.trainer.get("use_legacy_worker_impl", "auto")
+        self.checkpoint_manager = None
+
         # define in-reward KL control
         # kl loss control currently not supported
         if config.algorithm.use_kl_in_reward:
             self.kl_ctrl_in_reward = core_algos.get_kl_controller(config.algorithm.kl_ctrl)
 
         self._create_dataloader(train_dataset, val_dataset, collate_fn, train_sampler)
+        # Creates self._dump_executor, which _dump_generations() submits to for
+        # rollout_data_dir / validation_data_dir dumps. RayPPOTrainer.__init__ does this
+        # right after the dataloader; since we never call super().__init__, do it here.
+        self._init_dump_executor()
 
     def fit(self):
         """
@@ -146,6 +177,12 @@ class RaySPPOTrainer(RayPPOTrainer):
 
         # load checkpoint before doing anything
         self._load_checkpoint()
+        # Push the initial policy weights to the rollout replicas. SPPO's fit() never called
+        # this (stock ray_trainer.py does it 4x, recipe/ioher 2x) -- without it the sglang
+        # servers keep generating from whatever they loaded at startup for the ENTIRE run:
+        # loss moves, grad_norm looks healthy, reward never improves, nothing errors.
+        # checkpoint_engine/base.py: "Update weights from actor worker group to rollout replicas."
+        self.checkpoint_manager.update_weights(self.global_steps)
 
         # perform validation before training
         # currently, we only support validation using the reward_function.
@@ -169,19 +206,26 @@ class RaySPPOTrainer(RayPPOTrainer):
                 timing_raw = {}
                 batch: DataProto = DataProto.from_single_dict(batch_dict)
 
-                # pop those keys for generation
-                batch_keys_to_pop = ["input_ids", "attention_mask", "position_ids"]
-                non_tensor_batch_keys_to_pop = ["raw_prompt_ids"]
-                if "multi_modal_data" in batch.non_tensor_batch:
-                    non_tensor_batch_keys_to_pop.append("multi_modal_data")
-                if "raw_prompt" in batch.non_tensor_batch:
-                    non_tensor_batch_keys_to_pop.append("raw_prompt")
-                if "tools_kwargs" in batch.non_tensor_batch:
-                    non_tensor_batch_keys_to_pop.append("tools_kwargs")
-                gen_batch = batch.pop(
-                    batch_keys=batch_keys_to_pop,
-                    non_tensor_batch_keys=non_tensor_batch_keys_to_pop,
-                )
+                # Build the generation batch with the trainer's OWN builder (inherited from
+                # RayPPOTrainer, ray_trainer.py:572) rather than a hardcoded key list.
+                #
+                # SPPO hardcoded batch_keys_to_pop=["input_ids","attention_mask","position_ids"]
+                # and non_tensor_batch_keys_to_pop=["raw_prompt_ids"], which assumed a
+                # PRE-TOKENIZED dataset. In this snapshot's agent-loop path RLHFDataset does not
+                # tokenize -- the agent loop does, from raw_prompt. Measured on the GSM8K
+                # parquet: the only tensor key is 'dummy_tensor', and the non-tensor keys are
+                # ability/data_source/extra_info/index/interaction_kwargs/prompt/raw_prompt/
+                # reward_model/tools_kwargs. So NONE of the four hardcoded keys exist, and
+                # DataProto.pop's `assert key in self.batch.keys()` (protocol.py:741) fired on
+                # the first step.
+                #
+                # _get_gen_batch pops no tensor keys at all and every non-tensor key except the
+                # reward keys (data_source/reward_model/extra_info/uid), then re-attaches those
+                # so the agent loop can score. Generic over both tokenized and untokenized data.
+                gen_batch = self._get_gen_batch(batch)
+
+                # pass global_steps to trace
+                gen_batch.meta_info["global_steps"] = self.global_steps
                 gen_batch_output = gen_batch.repeat(
                     repeat_times=self.config.actor_rollout_ref.rollout.n, interleave=True
                 )
@@ -208,9 +252,12 @@ class RaySPPOTrainer(RayPPOTrainer):
                             # compute reward model score on batch
                             rm_scores = None
                             if self.use_rm and "rm_scores" not in batch.batch.keys():
-                                rm_scores = self.rm_wg.compute_rm_score(batch)
+                                # self.rm_wg no longer exists; same modern API as the main
+                                # reward block. Dead code under GRPO (REMAX only), fixed to
+                                # match recipe/ioher/ioher_ray_trainer.py:865-868 anyway.
+                                rm_scores = self._compute_reward_colocate(batch)
                                 batch = batch.union(rm_scores)
-                            reward_baseline_tensor, _ = compute_reward(batch, self.reward_fn)
+                            reward_baseline_tensor, _ = extract_reward(batch)
                             reward_baseline_tensor = reward_baseline_tensor.sum(dim=-1)
 
                             keys_to_pop = set(gen_baseline_output.batch.keys())
@@ -241,16 +288,24 @@ class RaySPPOTrainer(RayPPOTrainer):
                     # compute global_valid tokens
                     batch.meta_info["global_token_num"] = torch.sum(batch.batch["attention_mask"], dim=-1).tolist()
 
+                # Modern verl reward API, copied from recipe/ioher/ioher_ray_trainer.py:896-900.
+                # SPPO's original code called compute_reward(batch, self.reward_fn), i.e. the
+                # OLD synchronous manager protocol. Two things broke on that path:
+                #   1. `self.config.reward_model.launch_reward_fn_async` -- key deleted from the
+                #      config schema; OmegaConf struct mode makes a missing key fatal.
+                #   2. `TypeError: 'NaiveRewardManager' object is not callable`. There are now
+                #      TWO classes with that name, and reward.reward_manager.source=register
+                #      (the default, reward.yaml:18-19) resolves to the EXPERIMENTAL one,
+                #      verl/experimental/reward_loop/reward_manager/naive.py:24, whose interface
+                #      is `async run_single` -- it is driven by RewardLoopManager, not called.
+                # RayPPOTrainer.init_workers() always builds self.reward_loop_manager
+                # (ray_trainer.py:904), and the RewardLoopWorker actors are already in the log,
+                # so the scores land in batch["rm_scores"] and extract_reward() reads them out.
                 with simple_timer("reward", timing_raw):
-                    # compute reward model score
                     if self.use_rm and "rm_scores" not in batch.batch.keys():
-                        reward_tensor = self.rm_wg.compute_rm_score(batch)
+                        reward_tensor = self._compute_reward_colocate(batch)
                         batch = batch.union(reward_tensor)
-
-                    if self.config.reward_model.launch_reward_fn_async:
-                        future_reward = compute_reward_async.remote(batch, self.config, self.tokenizer)
-                    else:
-                        reward_tensor, reward_extra_infos_dict = compute_reward(batch, self.reward_fn)
+                    reward_tensor, reward_extra_infos_dict = extract_reward(batch)
 
                 # recompute old_log_probs
                 with simple_timer("old_log_prob", timing_raw):
@@ -284,8 +339,8 @@ class RaySPPOTrainer(RayPPOTrainer):
                 with simple_timer("adv", timing_raw):
                     # we combine with rule-based rm
                     reward_extra_infos_dict: dict[str, list]
-                    if self.config.reward_model.launch_reward_fn_async:
-                        reward_tensor, reward_extra_infos_dict = ray.get(future_reward)
+                    # reward_tensor / reward_extra_infos_dict already came from extract_reward()
+                    # in the reward block above; the old async-join branch is gone with it.
                     batch.batch["token_level_scores"] = reward_tensor
 
                     if reward_extra_infos_dict:
@@ -301,8 +356,18 @@ class RaySPPOTrainer(RayPPOTrainer):
                         batch.batch["token_level_rewards"] = batch.batch["token_level_scores"]
                         batch.batch["seq_level_rewards"] = batch.batch["token_level_scores"]
 
-                    beta = self.config.algorithm.sppo_eta
-                    batch = compute_advantage(batch, beta=beta)
+                    # GRPO MODE: use verl's registered advantage estimator instead of SPPO's
+                    # own softmean-centred compute_advantage(). Writes batch["advantages"] /
+                    # ["returns"], which stock DataParallelPPOActor.update_policy consumes.
+                    batch = verl_compute_advantage(
+                        batch,
+                        adv_estimator=self.config.algorithm.adv_estimator,
+                        gamma=self.config.algorithm.gamma,
+                        lam=self.config.algorithm.lam,
+                        num_repeat=self.config.actor_rollout_ref.rollout.n,
+                        norm_adv_by_std_in_grpo=self.config.algorithm.get("norm_adv_by_std_in_grpo", True),
+                        config=self.config.algorithm,
+                    )
 
                 # update critic
                 if self.use_critic:
@@ -317,6 +382,9 @@ class RaySPPOTrainer(RayPPOTrainer):
                     with simple_timer("update_actor", timing_raw):
                         batch.meta_info["multi_turn"] = self.config.actor_rollout_ref.rollout.multi_turn.enable
                         actor_output = self.actor_rollout_wg.update_actor(batch)
+                        # Ship the updated policy to the rollout replicas; see the note next
+                        # to the initial update_weights() call above.
+                        self.checkpoint_manager.update_weights(self.global_steps)
                     actor_output_metrics = reduce_metrics(actor_output.meta_info["metrics"])
                     metrics.update(actor_output_metrics)
 
@@ -343,21 +411,47 @@ class RaySPPOTrainer(RayPPOTrainer):
                     with simple_timer("save_checkpoint", timing_raw):
                         self._save_checkpoint()
 
-            # training metrics
-            metrics.update(
-                {
-                    "training/global_step": self.global_steps,
-                    "training/epoch": epoch,
-                }
-            )
+            # NOTE: this whole block -- metrics, logger.log, is_last_step, global_steps --
+            # was written at the `for batch_dict` level, i.e. OUTSIDE the batch loop, in the
+            # original recipe (verified against sppo_ray_trainer.py.orig). That made a
+            # "training step" mean a whole EPOCH: the inner loop ran every batch, and only
+            # then logged one point and incremented global_steps by one. With
+            # total_training_steps=5 that is 5 epochs (~2335 rollout+train iterations), one
+            # W&B point each. Worse, global_steps stays constant across an epoch, so
+            # `global_steps % test_freq == 0` is either false all epoch or true after EVERY
+            # batch -- validating and checkpointing on each one. Re-indented into the loop.
+                # training metrics
+                metrics.update(
+                    {
+                        "training/global_step": self.global_steps,
+                        "training/epoch": epoch,
+                    }
+                )
+                # SPPO logged ONLY global_step/epoch plus whatever actor/* update_actor returned --
+                # no reward curve, no response lengths, no throughput. Stock ray_trainer and every
+                # other recipe (recipe/ioher/ioher_ray_trainer.py:992-995) call these three; SPPO
+                # simply never did. They are what makes a GRPO run readable:
+                #   critic/rewards/{mean,max,min}      the learning signal
+                #   critic/score/{mean,max,min}        raw reward-fn score before KL shaping
+                #   critic/advantages/*, critic/returns/*   GRPO group statistics
+                #   response_length/{mean,max,clip_ratio}   truncation detector -- clip_ratio near
+                #       1.0 means generations are hitting max_response_length and the answer marker
+                #       is being cut off, which silently zeroes the GRPO advantage
+                #   prompt_length/*, timing_s/*, timing_per_token_ms/*, perf/{throughput,mfu}
+                # use_critic is False here, so the critic/values/* and vf_explained_var entries are
+                # skipped; the rest are emitted regardless.
+                metrics.update(compute_data_metrics(batch=batch, use_critic=self.use_critic))
+                metrics.update(compute_timing_metrics(batch=batch, timing_raw=timing_raw))
+                n_gpus = self.resource_pool_manager.get_n_gpus()
+                metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
 
-            # TODO: make a canonical logger that supports various backend
-            logger.log(data=metrics, step=self.global_steps)
+                # TODO: make a canonical logger that supports various backend
+                logger.log(data=metrics, step=self.global_steps)
 
-            if is_last_step:
-                pprint(f"Final validation metrics: {last_val_metrics}")
-                progress_bar.close()
-                return
+                if is_last_step:
+                    pprint(f"Final validation metrics: {last_val_metrics}")
+                    progress_bar.close()
+                    return
 
-            progress_bar.update(1)
-            self.global_steps += 1
+                progress_bar.update(1)
+                self.global_steps += 1

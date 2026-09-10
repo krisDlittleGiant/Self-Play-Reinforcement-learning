@@ -383,7 +383,22 @@ class DataParallelPPOActor(BasePPOActor):
                             else torch.utils.checkpoint.checkpoint(self.calculate_sum_pi_squared_from_logits, logits)
                         )
 
-                # Clean any NaNs resulting from padded positions under use_remove_padding=False
+                # On HPU, stop at invalid attention results instead of disguising them as
+                # log-probability zero. Masking the loss cannot repair a NaN backward graph.
+                if log_probs.device.type == "hpu":
+                    checks = {"log_probs": log_probs}
+                    if calculate_entropy:
+                        checks["entropy"] = entropy
+                    if calculate_sum_pi_squared:
+                        checks["sum_pi_squared"] = sum_pi_squared
+                    for name, tensor in checks.items():
+                        if not torch.isfinite(tensor).all():
+                            raise FloatingPointError(
+                                f"HPU actor produced non-finite {name} before loss/backward; "
+                                "check attention outputs, mask and dtype. Values were not replaced with zero."
+                            )
+                # Retain the existing non-HPU padding behavior; the HPU checks above ensure
+                # these operations cannot conceal invalid HPU values.
                 log_probs = torch.nan_to_num(log_probs, nan=0.0)
                 if calculate_entropy:
                     entropy = torch.nan_to_num(entropy, nan=0.0)
@@ -417,6 +432,12 @@ class DataParallelPPOActor(BasePPOActor):
             self.scaler.update()
         else:
             if not torch.isfinite(grad_norm):
+                if grad_norm.device.type == "hpu":
+                    self.actor_optimizer.zero_grad()
+                    raise FloatingPointError(
+                        f"HPU actor rank {torch.distributed.get_rank()} has non-finite grad_norm={grad_norm}; "
+                        "stopping before optimizer.step() instead of silently skipping training."
+                    )
                 print(f"WARN: rank {torch.distributed.get_rank()} grad_norm is not finite: {grad_norm}")
                 self.actor_optimizer.zero_grad()
             else:

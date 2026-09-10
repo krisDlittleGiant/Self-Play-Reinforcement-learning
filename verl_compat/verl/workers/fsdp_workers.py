@@ -51,6 +51,7 @@ from verl.utils import hf_processor, hf_tokenizer
 from verl.utils.activation_offload import enable_activation_offloading
 from verl.utils.checkpoint.fsdp_checkpoint_manager import FSDPCheckpointManager
 from verl.utils.config import omega_conf_to_dataclass
+from verl.plugin.platform import get_platform
 from verl.utils.device import (
     get_device_id,
     get_device_name,
@@ -179,12 +180,37 @@ def _collect_hpu_runtime_metrics(prefix: str = "perf/hpu") -> dict:
         return {}
 
 
-def create_device_mesh(world_size, fsdp_size):
+def _mesh_device_type(strategy=None):
+    """Device type for the FSDP mesh.
+
+    PlatformHPU.device_name deliberately reports "cuda" (platform_hpu.py:45-48) so that
+    PyTorch's distributed APIs accept it under the GPU Migration Toolkit. FSDP1 is fine with
+    that because it never cross-checks. **FSDP2 does**: _fsdp_param.py:266 compares each
+    parameter's device against the mesh's, and parameters honestly report `hpu:0` -- migration
+    rewrites the torch.cuda API surface, not device identity. Hence:
+        AssertionError: Expects the parameter to already be moved to device cuda:0 but got hpu:0
+
+    Verified on this stack (torch 2.7.1 / SynapseAI 1.22.2) that `init_device_mesh("hpu", ...)`
+    now works, so the C++ type error the platform comment warns about no longer applies here.
+
+    Scoped to fsdp2 on purpose: FSDP1 runs are proven with the "cuda" mesh and are left exactly
+    as they were. VERL_FSDP_MESH_DEVICE overrides either way if this needs backing out.
+    """
+    override = os.environ.get("VERL_FSDP_MESH_DEVICE")
+    if override:
+        return override
+    if strategy == "fsdp2" and get_platform().vendor_name == "intel":
+        return "hpu"
+    return device_name
+
+
+def create_device_mesh(world_size, fsdp_size, strategy=None):
+    mesh_device = _mesh_device_type(strategy)
     if fsdp_size < 0 or fsdp_size >= world_size:
-        device_mesh = init_device_mesh(device_name, mesh_shape=(world_size,), mesh_dim_names=["fsdp"])
+        device_mesh = init_device_mesh(mesh_device, mesh_shape=(world_size,), mesh_dim_names=["fsdp"])
     else:
         device_mesh = init_device_mesh(
-            device_name, mesh_shape=(world_size // fsdp_size, fsdp_size), mesh_dim_names=["ddp", "fsdp"]
+            mesh_device, mesh_shape=(world_size // fsdp_size, fsdp_size), mesh_dim_names=["ddp", "fsdp"]
         )
     return device_mesh
 
@@ -259,10 +285,19 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
 
         apply_npu_fsdp_patches()
 
+        if self.config.actor.strategy == "fsdp2" and get_platform().vendor_name == "intel":
+            from verl.utils.hpu_fsdp2 import patch_hpu_fsdp2_reduce_scatter_copy_in
+
+            patch_hpu_fsdp2_reduce_scatter_copy_in()
+
         # build device mesh for FSDP
         world_size = torch.distributed.get_world_size()
         # TODO(sgm): support FSDP hybrid shard for larger model
-        self.device_mesh = create_device_mesh(world_size=world_size, fsdp_size=self.config.actor.fsdp_config.fsdp_size)
+        self.device_mesh = create_device_mesh(
+            world_size=world_size,
+            fsdp_size=self.config.actor.fsdp_config.fsdp_size,
+            strategy=self.config.actor.strategy,
+        )
 
         # build device mesh for Ulysses Sequence Parallel
         self.ulysses_device_mesh = None
@@ -849,7 +884,14 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
 
     async def rollout_mode(self):
         """Context switch hybridengine to rollout mode."""
+        weight_sync_debug = os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1"
+        rank = torch.distributed.get_rank()
+        if weight_sync_debug:
+            print(f"VERL HPU FSDP ROLLOUT rank={rank} stage=entry", flush=True)
+            print(f"VERL HPU FSDP ROLLOUT rank={rank} stage=pre_empty_cache", flush=True)
         aggressive_empty_cache(force_sync=True)
+        if weight_sync_debug:
+            print(f"VERL HPU FSDP ROLLOUT rank={rank} stage=post_empty_cache", flush=True)
 
         log_gpu_memory_usage("Before load_fsdp_model_to_gpu", logger=logger)
         if self._is_offload_param:
@@ -878,11 +920,46 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
                 if not self.base_sync_done:
                     params = {replace_lora_wrapper(k, peft_config): v for k, v in params.items()}
         else:
+            if weight_sync_debug:
+                print(f"VERL HPU FSDP ROLLOUT rank={rank} stage=pre_state_dict", flush=True)
             params = self.actor_module_fsdp.state_dict()
+            if weight_sync_debug:
+                print(
+                    f"VERL HPU FSDP ROLLOUT rank={rank} stage=post_state_dict "
+                    f"tensors={len(params)}",
+                    flush=True,
+                )
 
-        params = convert_weight_keys(
-            params, getattr(self.actor_module_fsdp, "_fsdp_wrapped_module", self.actor_module_fsdp)
+        rollout_weight_model = getattr(
+            self.actor_module_fsdp, "_fsdp_wrapped_module", self.actor_module_fsdp
         )
+        params = convert_weight_keys(params, rollout_weight_model)
+
+        # HF state_dict() materializes both aliases of a tied embedding under
+        # FSDP2, even though the rollout model stores only one Parameter.  Sending
+        # the duplicate lm_head is unnecessary (embed_tokens was already loaded)
+        # and, on HPU, makes each SGLang receiver submit another ~778 MB lazy copy
+        # at the end of the distributed update.  Keep the same 398-tensor set
+        # produced by named_parameters(), which is already covered by the
+        # standalone SGLang weight-update/graph-replay regression.
+        rollout_model_config = getattr(rollout_weight_model, "config", None)
+        if (
+            peft_config is None
+            and fsdp_version(self.actor_module_fsdp) == 2
+            and get_platform().vendor_name == "intel"
+            and isinstance(params, dict)
+            and getattr(rollout_model_config, "tie_word_embeddings", False)
+            and "model.embed_tokens.weight" in params
+            and "lm_head.weight" in params
+        ):
+            params.pop("lm_head.weight")
+            if weight_sync_debug:
+                print(
+                    f"VERL HPU FSDP ROLLOUT rank={rank} "
+                    "stage=drop_tied_lm_head tensors="
+                    f"{len(params)}",
+                    flush=True,
+                )
 
         # Special handling for LoRA with sleep_level=2:
         # When sleep_level=2, base model weights are destroyed during each sleep cycle.
@@ -930,6 +1007,29 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
             for name, param in _items
         )
 
+        # FSDP2 parameters are DTensors. On Gaudi, routing their full FP32 values
+        # through ForkingPickler/file_system shared memory made the initial 4B
+        # weight sync stall before step 1. The Miles disaggregated path instead
+        # broadcasts the materialized buckets directly over HCCL. Select that
+        # transport by default for HPU FSDP2 while preserving the existing tensor
+        # transport for FSDP1, CUDA, LoRA and an explicit diagnostic fallback.
+        default_weight_sync_transport = (
+            "distributed"
+            if fsdp_version(self.actor_module_fsdp) == 2
+            and get_platform().vendor_name == "intel"
+            and peft_config is None
+            and not self._qat_enabled
+            else "tensor"
+        )
+        weight_sync_transport = os.environ.get(
+            "VERL_HPU_WEIGHT_SYNC_TRANSPORT", default_weight_sync_transport
+        )
+        if weight_sync_transport not in {"tensor", "distributed"}:
+            raise ValueError(
+                "VERL_HPU_WEIGHT_SYNC_TRANSPORT must be 'tensor' or 'distributed', "
+                f"got {weight_sync_transport!r}"
+            )
+
         # QAT: quantize weights before sending to vLLM
         if self._qat_enabled:
             from verl.utils.qat.quantizer import QATQuantizer
@@ -966,13 +1066,45 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
                 (name, param.to(device, non_blocking=True).full_tensor() if isinstance(param, DTensor) else param)
                 for name, param in base_model_params.items()
             )
-            await self.rollout.update_weights(per_tensor_base_params, base_sync_done=False)
+            await self.rollout.update_weights(
+                per_tensor_base_params,
+                base_sync_done=False,
+                weight_sync_transport=weight_sync_transport,
+            )
             del base_model_params, per_tensor_base_params
 
-        await self.rollout.update_weights(per_tensor_param, peft_config=peft_config, base_sync_done=self.base_sync_done)
+        if weight_sync_debug:
+            print(
+                f"VERL HPU FSDP ROLLOUT rank={rank} stage=pre_update_weights "
+                f"transport={weight_sync_transport}",
+                flush=True,
+            )
+        await self.rollout.update_weights(
+            per_tensor_param,
+            peft_config=peft_config,
+            base_sync_done=self.base_sync_done,
+            weight_sync_transport=weight_sync_transport,
+        )
+        if weight_sync_debug:
+            print(f"VERL HPU FSDP ROLLOUT rank={rank} stage=post_update_weights", flush=True)
         log_gpu_memory_usage("After update_weights", logger=logger)
         del params, per_tensor_param
-        aggressive_empty_cache(force_sync=True)
+        # The Miles FSDP updater does not force a device allocator drain after
+        # its HCCL weight stream. On Gaudi this boundary can block in
+        # empty_cache()/synchronize() after every bucket, end_weight_update and
+        # all control barriers have already completed. The actor owns this HPU,
+        # so its released full-tensor buffers can safely remain in the allocator
+        # cache and be reused by subsequent training allocations. The normal
+        # trainer_mode cleanup remains unchanged.
+        if weight_sync_transport == "distributed" and get_platform().vendor_name == "intel":
+            if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                print(
+                    f"VERL HPU WEIGHT SYNC rank={torch.distributed.get_rank()} "
+                    "stage=actor_post_update_cleanup_skipped",
+                    flush=True,
+                )
+        else:
+            aggressive_empty_cache(force_sync=True)
 
         self.base_sync_done = True
         set_expandable_segments(True)

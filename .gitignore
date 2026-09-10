@@ -2,3 +2,11 @@ verl_compat/merged/
 verl_compat/tmpytzd57hk/
 verl_compat/.habana_cache/
 verl_compat/recipe/.git
+# Everything env/bootstrap.sh builds: the venv, the patched SGLang checkout, caches.
+# Reproduced from patches + pinned commit, never committed.
+.runtime/
+__pycache__/
+*.pyc
+# Backups of upstream files taken before patching, and patch regeneration scratch.
+*.orig
+*.bak

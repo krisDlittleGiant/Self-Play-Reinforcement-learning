@@ -1,0 +1,22 @@
+--- a/transformers/generation/continuous_batching/utils.py
++++ b/transformers/generation/continuous_batching/utils.py
+@@ -11,6 +11,8 @@
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
++from __future__ import annotations
++
+ import queue
+ from collections import OrderedDict
+ from contextlib import contextmanager
+--- a/transformers/generation/continuous_batching/input_outputs.py
++++ b/transformers/generation/continuous_batching/input_outputs.py
+@@ -11,6 +11,8 @@
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
++from __future__ import annotations
++
+ from contextlib import nullcontext
+ from dataclasses import dataclass
+ from functools import partial

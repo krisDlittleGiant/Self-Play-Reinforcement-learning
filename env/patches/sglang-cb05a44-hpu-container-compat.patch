@@ -1,0 +1,94 @@
+diff -u -r a/python/sglang/srt/distributed/device_communicators/pynccl_allocator.py b/python/sglang/srt/distributed/device_communicators/pynccl_allocator.py
+--- a/python/sglang/srt/distributed/device_communicators/pynccl_allocator.py	2026-09-06 16:32:32.622883886 -0700
++++ b/python/sglang/srt/distributed/device_communicators/pynccl_allocator.py	2026-09-06 16:32:32.409884030 -0700
+@@ -6,12 +6,27 @@
+ from contextlib import nullcontext
+ 
+ import torch
+-from torch.cuda.memory import (
+-    CUDAPluggableAllocator,
+-    _cuda_beginAllocateCurrentThreadToPool,
+-    _cuda_endAllocateToPool,
+-    _cuda_releasePool,
+-)
++try:
++    from torch.cuda.memory import (
++        CUDAPluggableAllocator,
++        _cuda_beginAllocateCurrentThreadToPool,
++        _cuda_endAllocateToPool,
++        _cuda_releasePool,
++    )
++except ImportError:
++    # Torch < 2.8 (the Gaudi 1.22.2 container ships 2.7.1+hpu) has no thread-scoped
++    # pool helpers. Every use of these names sits inside use_symmetric_memory() or
++    # get_nccl_mem_pool(), which are CUDA-only and unreachable on HPU, so resolve
++    # them leniently rather than failing this module's import. The call sites that
++    # must work on both releases are already gated on after_2_8_0 below.
++    from torch.cuda import memory as _cuda_memory
++
++    CUDAPluggableAllocator = getattr(_cuda_memory, "CUDAPluggableAllocator", None)
++    _cuda_beginAllocateCurrentThreadToPool = getattr(
++        _cuda_memory, "_cuda_beginAllocateCurrentThreadToPool", None
++    )
++    _cuda_endAllocateToPool = getattr(_cuda_memory, "_cuda_endAllocateToPool", None)
++    _cuda_releasePool = getattr(_cuda_memory, "_cuda_releasePool", None)
+ 
+ from sglang.srt.distributed.parallel_state import GroupCoordinator
+ from sglang.srt.environ import envs
+diff -u -r a/python/sglang/srt/model_executor/model_runner_components/weight_updater.py b/python/sglang/srt/model_executor/model_runner_components/weight_updater.py
+--- a/python/sglang/srt/model_executor/model_runner_components/weight_updater.py	2026-09-06 16:32:32.510883962 -0700
++++ b/python/sglang/srt/model_executor/model_runner_components/weight_updater.py	2026-09-06 16:32:32.414884026 -0700
+@@ -312,9 +312,12 @@
+         monkey_patch_torch_reductions()
+         if load_format == "flattened_bucket":
+             # Handle flattened bucket format
+-            return self._update_weights_from_flattened_bucket(
++            result = self._update_weights_from_flattened_bucket(
+                 flattened_tensor_bucket_dict=named_tensors
+             )
++            if _is_hpu_lazy_mode(self.device):
++                _hpu_mark_step()
++            return result
+ 
+         # We need to get device after patch otherwise the device would be wrong
+         device_module = torch.get_device_module(self.device)
+@@ -333,6 +336,21 @@
+             self.get_model().load_weights(named_tensors)
+         else:
+             raise NotImplementedError(f"Unknown load_format={load_format}")
++        if _is_hpu_lazy_mode(self.device):
++            # load_weights() only *enqueues* the parameter copies under HPU lazy mode.
++            # Without an execution boundary here they are not materialized before the
++            # next forward reads the parameters, so generation runs against partially
++            # updated weights: the rollout still produces fluent-looking text, but from
++            # a flatter distribution (rollout log-ppl 1.26 vs 0.29 healthy), responses
++            # ramble to the length cap and GSM8K rewards collapse to 0.
++            # miles added the same boundaries to update_weights_from_distributed above,
++            # but never to this path -- miles syncs weights by broadcast, while VERL
++            # sends serialized tensors over HTTP and lands here.
++            _hpu_mark_step()
++            # The serialized CPU tensors belong to the HTTP request and can be
++            # released as soon as this method returns. mark_step() only submits
++            # the lazy copies, so wait until parameters own the transferred data.
++            torch.hpu.synchronize()
+         return True, "Success"
+ 
+     def _update_weights_from_flattened_bucket(
+diff -u -r a/python/sglang/srt/utils/common.py b/python/sglang/srt/utils/common.py
+--- a/python/sglang/srt/utils/common.py	2026-09-06 16:32:32.441884008 -0700
++++ b/python/sglang/srt/utils/common.py	2026-09-06 16:32:32.380884049 -0700
+@@ -143,7 +143,13 @@
+ 
+ @lru_cache(maxsize=1)
+ def is_cuda():
+-    return torch.cuda.is_available() and torch.version.cuda is not None
++    # VERL's actor processes enable Habana's gpu_migration layer, which makes
++    # torch.cuda.is_available() true and spoofs torch.version.cuda ("11.8"). Without
++    # the is_hpu() veto sglang then believes it is on CUDA and imports CUDA-only
++    # kernels (flashinfer.sampling in layers/sampler.py, sgl_kernel, ...), which are
++    # not installed on Gaudi. miles avoids this only by never enabling migration.
++    # On a real CUDA host torch.hpu does not exist, so this is a no-op there.
++    return torch.cuda.is_available() and torch.version.cuda is not None and not is_hpu()
+ 
+ 
+ @lru_cache(maxsize=1)

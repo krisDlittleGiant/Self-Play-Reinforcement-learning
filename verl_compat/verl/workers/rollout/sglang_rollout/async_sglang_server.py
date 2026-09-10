@@ -166,6 +166,80 @@ class SGLangHttpServer:
             f"{nnodes=}, {cuda_visible_devices=}, role={disaggregation_role}"
         )
         os.environ[visible_devices_keyword] = cuda_visible_devices
+        # Process identity, independent of imports. FSDP workers also import the
+        # scheduler module through SGLangRollout -> Engine; they must retain the
+        # training SDPA adapter. Only this server and its spawned children opt out.
+        os.environ["VERL_HPU_SGLANG_PROCESS"] = "1"
+
+        # HPU: captured decode graphs need LAZY mode, while a graph-disabled
+        # EagerRunner must use EAGER mode. The training workers always stay eager.
+        # PT_HPU_LAZY_MODE=0 is set globally because lazy mode breaks FSDP flat-param
+        # sharding, but sglang's HPUGraphRunner only calls htorch.hpu.wrap_in_hpu_graph()
+        # when htorch.utils.internal.is_lazy() is true (hpu_graph_runner.py:425-439).
+        # Under eager it skips the wrap, then still runs capture() -> model.forward() ->
+        # torch.hpu.synchronize(), compiling attention graphs outside any graph context.
+        # That is what aborted every scheduler with
+        #   Graph compile failed. Recipe: .graph_dumps/hpu::sdpa_recomp_fwd_*, synStatus 26
+        # This is safe to set here even though this actor already imported habana in eager:
+        # sglang calls mp.set_start_method("spawn", force=True) (entrypoints/engine.py:696),
+        # so each scheduler is a FRESH interpreter that re-reads os.environ and re-imports
+        # habana_frameworks under lazy mode. FSDP lives in the WorkerDict actors, which are
+        # separate processes and keep eager. Set VERL_HPU_SGLANG_LAZY=0 to opt out.
+        if os.environ.get("VERL_PLATFORM") == "hpu":
+            _hpu_sglang_lazy = os.environ.get("VERL_HPU_SGLANG_LAZY", "1") == "1"
+            _hpu_sglang_kwargs = config.get("engine_kwargs", {}).get("sglang", {}) or {}
+            _hpu_decode_backend = _hpu_sglang_kwargs.get("cuda_graph_backend_decode", "full")
+            # Miles' inference backend uses native HPU APIs. The CUDA migration
+            # layer remains enabled only in the separate FSDP worker processes.
+            os.environ["PT_HPU_GPU_MIGRATION"] = "0"
+            if not _hpu_sglang_lazy:
+                if _hpu_decode_backend != "disabled":
+                    raise ValueError(
+                        "VERL_HPU_SGLANG_LAZY=0 requires "
+                        "cuda_graph_backend_decode=disabled"
+                    )
+                os.environ["PT_HPU_LAZY_MODE"] = "0"
+                os.environ["SGLANG_EXPERIMENTAL_HPU_DECODE_GRAPH"] = "0"
+                os.environ.pop("PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES", None)
+                print(
+                    "VERL HPU: sglang scheduler processes will spawn with "
+                    "PT_HPU_LAZY_MODE=0 and decode graphs disabled"
+                )
+            else:
+                os.environ["PT_HPU_LAZY_MODE"] = "1"
+                os.environ["PT_HPU_ENABLE_LAZY_COLLECTIVES"] = "1"
+                os.environ["PT_HPU_AUTOLOAD"] = "1"
+                os.environ.setdefault("SGLANG_EXPERIMENTAL_HPU_DECODE_GRAPH", "1")
+                # Decode-graph bucketing/warmup, copied from the miles rollout config that
+                # reached iteration 50 on Gaudi (run_qwen2p5_3b_inst_fsdp_gaudi.py).
+                _hpu_decode_graph_max = int(
+                    _hpu_sglang_kwargs.get("cuda_graph_max_bs_decode")
+                    or config.get("max_num_seqs")
+                    or 64
+                )
+                if _hpu_decode_graph_max <= 0:
+                    raise ValueError("HPU decode graph maximum must be positive")
+                _hpu_warmup_batches = ",".join(
+                    str(batch_size)
+                    for batch_size in (1, 16, 32, 64)
+                    if batch_size <= _hpu_decode_graph_max
+                )
+                for _hpu_var, _hpu_val in (
+                    ("SGLANG_HPU_DECODE_BATCH_BUCKET_STEP", "32"),
+                    ("SGLANG_HPU_DENSE_DECODE_SEQ_BUCKET_STEP", "128"),
+                    ("SGLANG_HPU_DECODE_GRAPH_WARMUP_BATCHES", _hpu_warmup_batches),
+                    ("SGLANG_HPU_DECODE_GRAPH_WARMUP_MAX_SEQUENCE_LENGTH", "512"),
+                    ("SGLANG_HPU_DECODE_GRAPH_WARMUP_SMALL_BATCH_MAX_SEQUENCE_LENGTH", "512"),
+                ):
+                    os.environ.setdefault(_hpu_var, _hpu_val)
+                # Refinement conflicts with the fixed buckets captured above.
+                os.environ.pop("PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES", None)
+                print(
+                    "VERL HPU: sglang scheduler processes will spawn with PT_HPU_LAZY_MODE=1, "
+                    "PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES unset, "
+                    f"decode_graph_max={_hpu_decode_graph_max}, "
+                    f"warmup_seeds={os.environ['SGLANG_HPU_DECODE_GRAPH_WARMUP_BATCHES']}"
+                )
 
         assert disaggregation_role in ("null", "prefill", "decode"), (
             f"disaggregation_role must be 'null'|'prefill'|'decode', got {disaggregation_role!r}"
@@ -276,11 +350,13 @@ class SGLangHttpServer:
                 self._master_address = master_address
                 self._master_port = master_port
 
-        engine_kwargs = self.config.get("engine_kwargs", {}).get("sglang", {}) or {}
+        engine_kwargs = dict(self.config.get("engine_kwargs", {}).get("sglang", {}) or {})
         attention_backend = engine_kwargs.pop("attention_backend", None)
         mm_attention_backend = engine_kwargs.pop("mm_attention_backend", None)
         if attention_backend is None:
-            if torch.version.hip is not None:
+            if _IS_HPU_HOST:
+                attention_backend = "hpu_fused"
+            elif torch.version.hip is not None:
                 attention_backend = "aiter"
             elif version.parse(sglang.__version__) >= version.parse("0.5.12"):
                 # FA3 CUDA-graph capture is broken on sglang>=0.5.12 (#22800);
@@ -340,6 +416,13 @@ class SGLangHttpServer:
             else json.dumps({}),
             **engine_kwargs,
         }
+        if _IS_HPU_HOST:
+            args.setdefault("device", "hpu")
+            args.setdefault("decode_attention_backend", "hpu_fused")
+            args.setdefault("sampling_backend", "pytorch")
+            args.setdefault("grammar_backend", "none")
+            args.setdefault("cuda_graph_backend_prefill", "disabled")
+            args.setdefault("cuda_graph_backend_decode", "full")
 
         # update lora-related args
         if self.model_config.lora_rank > 0:
@@ -420,12 +503,22 @@ class SGLangHttpServer:
         if version.parse(sglang.__version__) >= version.parse("0.5.10"):
             from sglang.srt.entrypoints.http_server import Engine
 
-            self.tokenizer_manager, self.template_manager, self.scheduler_info, *_ = Engine._launch_subprocesses(
+            launch_result = Engine._launch_subprocesses(
                 server_args=server_args,
                 init_tokenizer_manager_func=sglang.srt.entrypoints.engine.init_tokenizer_manager,
                 run_scheduler_process_func=sglang.srt.entrypoints.engine.run_scheduler_process,
                 run_detokenizer_process_func=sglang.srt.entrypoints.engine.run_detokenizer_process,
             )
+            self.tokenizer_manager, self.template_manager = launch_result[:2]
+            if len(launch_result) >= 4 and hasattr(launch_result[3], "scheduler_infos"):
+                # cb05a44 returns PortArgs third, not scheduler metadata.
+                self.port_args = launch_result[2]
+                self.scheduler_info = launch_result[3].scheduler_infos[0]
+                self.subprocess_watchdog = launch_result[4] if len(launch_result) > 4 else None
+                if self.tokenizer_manager is not None:
+                    self.tokenizer_manager._subprocess_watchdog = self.subprocess_watchdog
+            else:
+                self.scheduler_info = launch_result[2]
         elif version.parse(sglang.__version__) >= version.parse("0.5.7"):
             from sglang.srt.entrypoints.http_server import _launch_subprocesses
 
@@ -839,20 +932,46 @@ class SGLangReplica(RolloutReplica):
             # "synStatus=8 [Device not found] Device acquire failed" the instant it touches the
             # device. Pin the rollout to FREE card(s) on this node instead. No-op on CUDA.
             if _IS_HPU_HOST:
-                train_cards = {int(d) for d in node_cuda_visible_devices.split(",") if d.strip()}
-                # self.gpus_per_node is the ROLLOUT's configured gpu count (rollout.n_gpus_per_node),
-                # not the number of physical cards on the node, so ask Ray how many HPUs exist.
+                # train_cards must be EVERY card the TRAINING GROUP holds on this node, not
+                # just the card(s) of THIS replica's own worker(s). node_cuda_visible_devices
+                # above is a per-replica slice of self.workers, so with TP=1 it names exactly
+                # one training card -- and the other three then looked "free". Measured: with
+                # 4 trainers on cards 0-3, replica 0 pinned itself to card 1 and replica 2 to
+                # card 0, i.e. straight on top of the trainers, and every scheduler died.
+                #
+                # Under RAY_EXPERIMENTAL_NOSET_<visible-devices> each training rank selects the
+                # card matching its LOCAL_RANK, so the group occupies [0, gpus_per_node).
+                # gpus_per_node here is rollout.n_gpus_per_node, which defaults to
+                # trainer.n_gpus_per_node (rollout.yaml:14) -- the training card count. Union it
+                # with the observed slice so an explicit-affinity setup still contributes.
+                train_cards = set(range(self.gpus_per_node))
+                train_cards |= {int(d) for d in node_cuda_visible_devices.split(",") if d.strip()}
+                # Ask Ray for the PHYSICAL card count; gpus_per_node is the training count.
                 total_cards = int(ray.cluster_resources().get("HPU", self.gpus_per_node))
                 free_cards = [c for c in range(total_cards) if c not in train_cards]
+                # Every replica computes the SAME free list, so each must take a DISTINCT slice
+                # of it -- otherwise all N replicas pin themselves to free_cards[0] and fight
+                # over one card. replica_rank is unique across the replicas of this group.
+                start = self.replica_rank * self.gpus_per_replica_node
                 logger.info(
                     f"HPU rollout placement: {total_cards} card(s) total, training holds "
-                    f"{sorted(train_cards)}, free {free_cards}, need {self.gpus_per_replica_node}"
+                    f"{sorted(train_cards)}, free {free_cards}, replica {self.replica_rank} "
+                    f"takes [{start}:{start + self.gpus_per_replica_node}]"
                 )
-                assert len(free_cards) >= self.gpus_per_replica_node, (
-                    f"HPU rollout needs {self.gpus_per_replica_node} free card(s), but only "
-                    f"{len(free_cards)} of {total_cards} are free (training holds {sorted(train_cards)})."
+                assert len(free_cards) >= start + self.gpus_per_replica_node, (
+                    f"HPU rollout replica {self.replica_rank} needs free cards "
+                    f"[{start}:{start + self.gpus_per_replica_node}], but only {len(free_cards)} "
+                    f"of {total_cards} are free (training holds {sorted(train_cards)}). "
+                    f"Check HPU_CARDS_COUNT -- Ray must be started with every card you own."
                 )
-                node_cuda_visible_devices = ",".join(map(str, free_cards[: self.gpus_per_replica_node]))
+                node_cuda_visible_devices = ",".join(
+                    map(str, free_cards[start : start + self.gpus_per_replica_node])
+                )
+                # The server sees ONLY the card(s) named above, renumbered from 0, so it must
+                # address them from 0. base_gpu_id was computed as replica_rank * world_size %
+                # gpus_per_node (= 1, 2, 3 for replicas 1-3), which indexes past the single
+                # visible card.
+                base_gpu_id = 0
                 logger.info(f"HPU: pinning sglang rollout server to free card(s) {node_cuda_visible_devices}")
 
             node_id = worker_node_ids[node_rank * self.gpus_per_replica_node]

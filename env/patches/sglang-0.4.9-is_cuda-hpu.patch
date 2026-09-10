@@ -1,0 +1,18 @@
+--- a/python/sglang/srt/utils.py
++++ b/python/sglang/srt/utils.py
+@@ -118,6 +118,15 @@
+ 
+ 
+ def is_cuda():
++    # Gaudi: the GPU Migration Toolkit (PT_HPU_GPU_MIGRATION=1) spoofs
++    # torch.cuda.is_available()=True and torch.version.cuda="11.8" so that CUDA-written
++    # code runs on HPU. That makes this probe answer True on Gaudi, which turns on every
++    # _is_cuda-gated CUDA path in sglang -- e.g. fp8_utils.cutlass_fp8_supported() then
++    # calls get_device_capability(), which returns (None, None) on HPU by design, and the
++    # module fails to import with "'>=' not supported between NoneType and int".
++    # The fork's HPU paths are gated on is_hpu(), so HPU must win here.
++    if is_hpu():
++        return False
+     return torch.cuda.is_available() and torch.version.cuda
+ 
+ 

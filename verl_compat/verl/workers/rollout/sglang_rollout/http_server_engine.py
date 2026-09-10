@@ -660,6 +660,7 @@ class AsyncHttpServerAdapter(HttpServerAdapter):
         method: str = "POST",
         timeout: float = DEFAULT_TIMEOUT,
         only_master: bool = True,
+        max_attempts: Optional[int] = None,
     ) -> dict[str, Any]:
         """Make an async HTTP request with retry logic and consistent error handling.
 
@@ -686,7 +687,11 @@ class AsyncHttpServerAdapter(HttpServerAdapter):
 
         url = f"http://{self.server_args.host}:{self.server_args.port}/{endpoint}"
 
-        for attempt in range(self.max_attempts):
+        attempt_count = self.max_attempts if max_attempts is None else max_attempts
+        if attempt_count < 1:
+            raise ValueError(f"max_attempts must be positive, got {attempt_count}")
+
+        for attempt in range(attempt_count):
             try:
                 async with self._get_session() as session:
                     if method.upper() == "GET":
@@ -707,13 +712,13 @@ class AsyncHttpServerAdapter(HttpServerAdapter):
                 raise
             except Exception as e:
                 logger.error(f"Unexpected error for {endpoint}: {e}")
-                if attempt == self.max_attempts - 1:
+                if attempt == attempt_count - 1:
                     raise
 
-            if attempt < self.max_attempts - 1:
+            if attempt < attempt_count - 1:
                 await asyncio.sleep(self.retry_delay * (2**attempt))
 
-        raise RuntimeError(f"Failed to complete async request to {endpoint} after {self.max_attempts} attempts")
+        raise RuntimeError(f"Failed to complete async request to {endpoint} after {attempt_count} attempts")
 
     async def release_memory_occupation(self, tags: Optional[list[str]] = None) -> dict[str, Any]:
         """Release GPU memory occupation temporarily (async version).
@@ -772,6 +777,88 @@ class AsyncHttpServerAdapter(HttpServerAdapter):
                 "load_format": load_format,
                 "flush_cache": flush_cache,
             },
+        )
+
+    async def init_weights_update_group(
+        self,
+        master_address: str,
+        master_port: int,
+        rank_offset: int,
+        world_size: int,
+        group_name: str,
+        backend: str = "hccl",
+    ) -> dict[str, Any]:
+        """Join this SGLang server to a trainer-owned weight-update group."""
+        return await self._make_async_request(
+            "init_weights_update_group",
+            {
+                "master_address": master_address,
+                "master_port": master_port,
+                "rank_offset": rank_offset,
+                "world_size": world_size,
+                "group_name": group_name,
+                "backend": backend,
+            },
+            timeout=300.0,
+            max_attempts=1,
+        )
+
+    async def update_weights_from_distributed(
+        self,
+        names: list[str],
+        dtypes: list[str],
+        shapes: list[list[int]],
+        group_name: str,
+        flush_cache: bool = False,
+        load_format: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Make SGLang receive one weight bucket from a process group."""
+        return await self._make_async_request(
+            "update_weights_from_distributed",
+            {
+                "names": names,
+                "dtypes": dtypes,
+                "shapes": shapes,
+                "group_name": group_name,
+                "flush_cache": flush_cache,
+                "load_format": load_format,
+            },
+            timeout=300.0,
+            max_attempts=1,
+        )
+
+    async def destroy_weights_update_group(self, group_name: str) -> dict[str, Any]:
+        """Remove a previously initialized trainer/SGLang process group."""
+        return await self._make_async_request(
+            "destroy_weights_update_group",
+            {"group_name": group_name},
+            timeout=300.0,
+            max_attempts=1,
+        )
+
+    async def begin_weight_update(self, selector: str = "all") -> dict[str, Any]:
+        """Open a weight-update session on the server.
+
+        SGLang >= 0.5.19 requires every update_weights_from_tensor call to sit inside a
+        session opened here and closed by end_weight_update(). Without it the scheduler
+        raises "update_weights_from_tensor requires an open begin_weight_update session"
+        and the whole server process dies. The 0.4.9 engine VERL was written against had
+        no such protocol, so this endpoint had no caller before the miles migration.
+        """
+        return await self._make_async_request(
+            "begin_weight_update",
+            {"selector": selector},
+            timeout=300.0,
+            max_attempts=1,
+        )
+
+    async def end_weight_update(self) -> dict[str, Any]:
+        """Close the weight-update session opened by begin_weight_update()."""
+        return await self._make_async_request(
+            "end_weight_update",
+            {},
+            timeout=300.0,
+            max_attempts=1,
         )
 
     async def load_lora_adapter_from_tensor(self, req):

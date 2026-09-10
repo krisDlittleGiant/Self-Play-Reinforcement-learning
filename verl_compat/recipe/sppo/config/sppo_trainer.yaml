@@ -10,29 +10,25 @@ defaults:
 
 actor_rollout_ref:
   actor:
-    _target_: recipe.sppo.config.SPPOActorConfig
-
-    # sppo_eta is an additional hyperparameter for SPPO, not available in
-    # verl core. specifying _target_ with SPPOActorConfig is needed to
-    # extend verl ActorConfig with custom fields.
-    # additional, it is also possible to use the `extra` field natively supported
-    # by all verl core dataclasses, without having to define SPPOActorConfig
-    # extra:
-    #   sppo_eta: 1.0
-    sppo_eta: 1.0
-
+    # GRPO MODE: stock FSDPActorConfig. _target_/sppo_eta removed -- we add no custom
+    # actor fields, and DataParallelSPPOActor (which read sppo_eta) is no longer used.
     optim:
       lr_warmup_steps: 15
   rollout:
     name: sglang
-    tensor_model_parallel_size: 2
+    # HPU: everything on Gaudi is validated at TP=1, and TP feeds the card arithmetic
+    # (total HPUs = n_gpus_per_node * (1 + 1/TP)). TP=2 was the SPPO/CUDA default.
+    tensor_model_parallel_size: 1
     gpu_memory_utilization: 0.5
     val_kwargs:
       n: 2  # 2 will trigger validation, 1 will bypass
 
 algorithm:
-  adv_estimator: null
-  sppo_eta: 1.0
+  # GRPO MODE: was `null` -- SPPO bypassed verl's estimator registry entirely and used its
+  # own softmean-centred compute_advantage(). sppo_eta removed with it.
+  adv_estimator: grpo
+  norm_adv_by_std_in_grpo: true
+  use_kl_in_reward: false
 
 trainer:
   log_val_generations: 0

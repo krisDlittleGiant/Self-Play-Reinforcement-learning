@@ -15,10 +15,12 @@
 # limitations under the License.
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import logging
 import multiprocessing as mp
 import os
+import time
 from dataclasses import asdict
 from typing import Generator
 
@@ -35,6 +37,10 @@ from sglang.srt.utils import (
     set_ulimit,
 )
 try:
+    if importlib.util.find_spec("habana_frameworks") is not None:
+        # New SGLang's generic helper uses CUDA IPC/reduction hooks. Retain the
+        # CPU-staged, file_system transport for disaggregated HPU workers.
+        raise ImportError("HPU requires CPU-staged weight transfer")
     from sglang.srt.weight_sync.utils import _preprocess_tensor_for_update_weights
     from sglang.srt.weight_sync.utils import update_weights as sgl_update_weights
 except ImportError:
@@ -70,6 +76,14 @@ except ImportError:
     async def sgl_update_weights(engine, params_batch, device_mesh_key=None, device_mesh=None):
         from sglang.srt.managers.io_struct import UpdateWeightsFromTensorReqInput
 
+        # DTensor.full_tensor() above issues an HCCL all-gather. With Habana lazy
+        # collectives enabled, returning from full_tensor() does not guarantee that the
+        # gathered values are materialized yet. Serializing its CPU copy immediately can
+        # therefore capture stale/uninitialized storage without raising an exception.
+        # Miles drains the async gather handle before sending each bucket; this is the
+        # equivalent boundary for VERL's synchronous-generator path.
+        torch.hpu.synchronize()
+
         # A list of (name, tensor) pairs, not a dict: model_runner.py's
         # update_weights_from_tensor does `for name, tensor in named_tensors` on the
         # deserialized object, which walks a dict's *keys* only -- unpacking each (multi-
@@ -79,6 +93,32 @@ except ImportError:
         processed_weights = [
             (name, _preprocess_tensor_for_update_weights(tensor.detach())) for name, tensor in params_batch
         ]
+        # Do not allow the shared-memory pickle to observe an in-flight HPU->CPU copy.
+        torch.hpu.synchronize()
+
+        if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+            debug_names = {
+                "model.embed_tokens.weight",
+                "model.layers.0.self_attn.q_proj.weight",
+                "model.layers.17.mlp.down_proj.weight",
+                "model.layers.35.self_attn.o_proj.weight",
+                "model.norm.weight",
+            }
+            for name, tensor in processed_weights:
+                if name not in debug_names:
+                    continue
+                flat = tensor.reshape(-1)
+                stride = max(flat.numel() // 4096, 1)
+                sample = flat[::stride][:4096].float()
+                rank = torch.distributed.get_rank() if torch.distributed.is_initialized() else -1
+                print(
+                    "VERL HPU WEIGHT FINGERPRINT "
+                    f"rank={rank} name={name} shape={tuple(tensor.shape)} dtype={tensor.dtype} "
+                    f"sample_sum={sample.double().sum().item():.12g} "
+                    f"sample_absmax={sample.abs().max().item():.12g} "
+                    f"first8={flat[:8].float().tolist()}",
+                    flush=True,
+                )
 
         infer_tp_size = (
             device_mesh[device_mesh_key].mesh.size()[0] if device_mesh_key and device_mesh is not None else 1
@@ -99,7 +139,7 @@ except ImportError:
         return await engine.update_weights_from_tensor(req)
 from torch.distributed.device_mesh import DeviceMesh, init_device_mesh
 
-from verl.utils.net_utils import is_valid_ipv6_address
+from verl.utils.net_utils import get_free_port, is_valid_ipv6_address
 from verl.workers.config import HFModelConfig, RolloutConfig
 from verl.workers.rollout.base import BaseRollout
 from verl.workers.rollout.sglang_rollout.http_server_engine import AsyncHttpServerAdapter
@@ -111,6 +151,17 @@ from verl.workers.rollout.sglang_rollout.utils import (
 logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 
+_original_sglang_set_envs = sglang.srt.entrypoints.engine._set_envs_and_config
+
+# A WorkerDict process may construct more than one ServerAdapter for the same
+# actor process group (for example, the checkpoint-manager update followed by
+# the actor rollout path).  torch.distributed.new_group() is a collective and
+# must be called by every actor rank in exactly the same order.  Keeping these
+# handles only on a ServerAdapter instance therefore lets a later adapter issue
+# a second, mismatched new_group() and block forever.  Cache them at module
+# scope, which is the lifetime of the Ray worker process.
+_HPU_WEIGHT_SYNC_GROUP_CACHE: dict[tuple[int, int, int, str], dict[str, object]] = {}
+
 # Under Habana's GPU Migration Toolkit (PT_HPU_GPU_MIGRATION=1), torch.cuda reports as
 # available, so sglang's is_cuda() evaluates True on Gaudi too. Gate the CUDA-only checks
 # below (sgl_kernel/sglang_kernel package version asserts) behind a real vendor check.
@@ -119,6 +170,10 @@ _IS_HPU_HOST = importlib.util.find_spec("habana_frameworks") is not None
 
 # patch to avoid issue https://github.com/sgl-project/sglang/issues/6723
 def _set_envs_and_config(server_args: ServerArgs):
+    if _IS_HPU_HOST and hasattr(server_args, "cuda_graph_backend_decode"):
+        # The pinned Miles source already guards CUDA-only checks on HPU.
+        # Keep its current process setup instead of replacing it with the 0.4.9 shim.
+        return _original_sglang_set_envs(server_args)
     # Set global environments
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
     os.environ["NCCL_CUMEM_ENABLE"] = "0"
@@ -201,6 +256,10 @@ class ServerAdapter(BaseRollout):
             fp8_block_quant_kwargs = dict(FP8_BLOCK_QUANT_KWARGS)
             self.model_config.hf_config.quantization_config = fp8_block_quant_kwargs
         self._engine: AsyncHttpServerAdapter = None
+        self._distributed_weight_group = None
+        self._distributed_weight_group_name = None
+        self._distributed_weight_engines: list[AsyncHttpServerAdapter] = []
+        self._hpu_actor_control_group = None
 
         rank = int(os.environ["RANK"])
         local_world_size = int(os.environ["RAY_LOCAL_WORLD_SIZE"])
@@ -332,6 +391,297 @@ class ServerAdapter(BaseRollout):
             return self._pd_tp_local_rank == 0
         return self.device_mesh["infer_tp"].get_local_rank() == 0
 
+    async def _init_hpu_distributed_weight_group(self) -> None:
+        """Create the Miles-style trainer-to-rollout HCCL group once.
+
+        FSDP rank 0 is the only sender. Every SGLang TP rank is a receiver. All
+        other FSDP ranks still iterate the weight generator because materializing
+        a DTensor requires their participation in the FSDP all-gather.
+        """
+        # Keep weight traffic and control synchronization on separate process
+        # groups. Miles deliberately uses Gloo for the barriers around its HCCL
+        # weight broadcasts. Reusing the default HCCL/FSDP group here can leave
+        # all actor devices blocked after the final full_tensor() collective and
+        # eventually trigger Synapse's fatal "No progress error" watchdog.
+        # new_group() must be called by every rank in the default actor group.
+        debug = os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1"
+        rank = torch.distributed.get_rank()
+        actor_world_size = torch.distributed.get_world_size()
+        infer_tp = self.config.tensor_model_parallel_size
+        cache_key = (
+            id(torch.distributed.group.WORLD),
+            actor_world_size,
+            infer_tp,
+            str(self.model_config.local_path),
+        )
+        cached = _HPU_WEIGHT_SYNC_GROUP_CACHE.setdefault(cache_key, {})
+        if self._hpu_actor_control_group is None and "control_group" in cached:
+            self._hpu_actor_control_group = cached["control_group"]
+        if rank == 0 and self._distributed_weight_group is None and "weight_group" in cached:
+            self._distributed_weight_group = cached["weight_group"]
+            self._distributed_weight_group_name = cached["weight_group_name"]
+            self._distributed_weight_engines = cached["engines"]
+        if debug:
+            print(f"VERL HPU WEIGHT GROUP rank={rank} stage=entry", flush=True)
+        if self._hpu_actor_control_group is None:
+            if debug:
+                print(f"VERL HPU WEIGHT GROUP rank={rank} stage=pre_gloo_new_group", flush=True)
+            self._hpu_actor_control_group = torch.distributed.new_group(backend="gloo")
+            cached["control_group"] = self._hpu_actor_control_group
+            if debug:
+                print(f"VERL HPU WEIGHT GROUP rank={rank} stage=post_gloo_new_group", flush=True)
+        elif debug:
+            print(f"VERL HPU WEIGHT GROUP rank={rank} stage=reuse_gloo_group", flush=True)
+
+        if rank != 0 or self._distributed_weight_group is not None:
+            if debug:
+                print(f"VERL HPU WEIGHT GROUP rank={rank} stage=non_sender_ready", flush=True)
+            return
+        if not _IS_HPU_HOST:
+            raise RuntimeError("distributed HPU weight sync was requested on a non-HPU host")
+        if self._pd_role is not None:
+            raise NotImplementedError("distributed HPU weight sync does not yet support SGLang PD disaggregation")
+        if self.config.pipeline_model_parallel_size != 1 or self.config.data_parallel_size != 1:
+            raise NotImplementedError(
+                "distributed HPU weight sync currently requires rollout pipeline/data parallel size 1"
+            )
+
+        if actor_world_size % infer_tp != 0:
+            raise RuntimeError(f"actor world size {actor_world_size} is not divisible by rollout TP {infer_tp}")
+        num_replicas = actor_world_size // infer_tp
+
+        if debug:
+            print(f"VERL HPU WEIGHT GROUP rank=0 stage=pre_server_discovery", flush=True)
+        engines: list[AsyncHttpServerAdapter] = []
+        for replica_rank in range(num_replicas):
+            actor_name = f"sglang_server_{replica_rank}_0"
+            server_actor = ray.get_actor(actor_name)
+            server_address, server_port = await server_actor.get_server_address.remote()
+            host = f"[{server_address}]" if is_valid_ipv6_address(server_address) else server_address
+            engines.append(
+                AsyncHttpServerAdapter(
+                    model_path=self.model_config.local_path,
+                    host=host,
+                    port=server_port,
+                    launch_server=False,
+                    trust_remote_code=self.model_config.trust_remote_code,
+                )
+            )
+        if debug:
+            print(
+                f"VERL HPU WEIGHT GROUP rank=0 stage=post_server_discovery engines={len(engines)}",
+                flush=True,
+            )
+
+        master_address = ray.util.get_node_ip_address().strip("[]")
+        master_port, _ = get_free_port(master_address)
+        group_name = f"verl_hpu_weights_{os.getpid()}"
+        receiver_world_size = num_replicas * infer_tp
+        world_size = receiver_world_size + 1
+
+        # The HTTP handlers block while their scheduler ranks join rendezvous, so
+        # initialize the trainer process group concurrently rather than awaiting
+        # either side first.
+        remote_inits = [
+            engine.init_weights_update_group(
+                master_address=master_address,
+                master_port=master_port,
+                rank_offset=1 + replica_rank * infer_tp,
+                world_size=world_size,
+                group_name=group_name,
+                backend="hccl",
+            )
+            for replica_rank, engine in enumerate(engines)
+        ]
+
+        from sglang.srt.utils import init_custom_process_group
+
+        init_method_address = (
+            f"[{master_address}]" if is_valid_ipv6_address(master_address) else master_address
+        )
+        local_init = asyncio.to_thread(
+            init_custom_process_group,
+            backend="hccl",
+            init_method=f"tcp://{init_method_address}:{master_port}",
+            world_size=world_size,
+            rank=0,
+            group_name=group_name,
+        )
+        if debug:
+            print(
+                f"VERL HPU WEIGHT GROUP rank=0 stage=pre_hccl_rendezvous world_size={world_size}",
+                flush=True,
+            )
+        init_results = await asyncio.gather(local_init, *remote_inits)
+        if debug:
+            print("VERL HPU WEIGHT GROUP rank=0 stage=post_hccl_rendezvous", flush=True)
+        group = init_results[0]
+        for replica_rank, result in enumerate(init_results[1:]):
+            if not result.get("success", False):
+                raise RuntimeError(f"SGLang replica {replica_rank} failed to join HCCL weight group: {result}")
+
+        self._distributed_weight_group = group
+        self._distributed_weight_group_name = group_name
+        self._distributed_weight_engines = engines
+        cached["weight_group"] = group
+        cached["weight_group_name"] = group_name
+        cached["engines"] = engines
+        print(
+            "VERL HPU: initialized distributed weight sync "
+            f"backend=hccl world_size={world_size} receivers={receiver_world_size}",
+            flush=True,
+        )
+
+    async def _hpu_distributed_update_bucket(self, params_batch, bucket_index: int) -> None:
+        """Broadcast one already-materialized FSDP bucket directly to SGLang."""
+        rank = torch.distributed.get_rank()
+        debug_weight_sync = os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1"
+
+        # DTensor.full_tensor() is evaluated while every FSDP rank builds this
+        # bucket. In HPU lazy mode the non-sender ranks previously returned here
+        # without submitting those all-gathers: rank 1 could queue the entire
+        # state dict and enter the final Gloo barrier while rank 0 was still
+        # broadcasting bucket 0. Besides exposing partially materialized values,
+        # that cross-process-group reordering can deadlock on a later full_tensor
+        # (Qwen3-4B most often stopped before the final lm_head bucket). Drain the
+        # FSDP gather on *every* actor rank before rank 0 starts the rollout-group
+        # broadcast and before the other ranks are allowed to advance.
+        if _IS_HPU_HOST:
+            import habana_frameworks.torch as htorch
+
+            htorch.core.mark_step()
+            torch.hpu.synchronize()
+        if debug_weight_sync:
+            print(
+                f"VERL HPU FSDP FULL TENSOR rank={rank} bucket={bucket_index} stage=materialized",
+                flush=True,
+            )
+
+        if rank != 0:
+            return
+        if self._distributed_weight_group is None:
+            raise RuntimeError("distributed HPU weight group has not been initialized")
+
+        rollout_dtype_name = str(self.config.dtype).removeprefix("torch.")
+        rollout_dtype = getattr(torch, rollout_dtype_name, None)
+        if not isinstance(rollout_dtype, torch.dtype):
+            raise ValueError(f"Unsupported rollout dtype for HPU weight sync: {self.config.dtype!r}")
+        # FSDP keeps FP32 master parameters, while SGLang was launched with the
+        # rollout dtype (BF16 for this workflow). Miles records an outbound sync
+        # dtype and casts after gathering the full parameter. Do the same here so
+        # SGLang does not build hundreds of lazy FP32-to-BF16 parameter-copy graphs.
+        named_tensors = [
+            (
+                name,
+                tensor.to(dtype=rollout_dtype).contiguous() if tensor.is_floating_point() else tensor.contiguous(),
+            )
+            for name, tensor in params_batch
+        ]
+        names = [name for name, _ in named_tensors]
+        dtypes = [str(tensor.dtype).removeprefix("torch.") for _, tensor in named_tensors]
+        shapes = [list(tensor.shape) for _, tensor in named_tensors]
+        nbytes = sum(tensor.numel() * tensor.element_size() for _, tensor in named_tensors)
+        started = time.monotonic()
+
+        # The FP32 DTensor full-gather and the FP32->BF16 casts above are lazy
+        # HPU operations. HCCL may otherwise read their backing storage before
+        # those producers have executed: the broadcasts still complete, but the
+        # rollout model receives garbage weights (gibberish generations and a
+        # many-orders-of-magnitude trainer/rollout perplexity mismatch). Submit
+        # and drain the source tensors before HCCL consumes this bucket.
+        if _IS_HPU_HOST:
+            import habana_frameworks.torch as htorch
+
+            htorch.core.mark_step()
+            torch.hpu.synchronize()
+
+        if debug_weight_sync:
+            debug_names = {
+                "model.embed_tokens.weight",
+                "model.layers.17.mlp.down_proj.weight",
+                "model.norm.weight",
+                "lm_head.weight",
+            }
+            for name, tensor in named_tensors:
+                if name in debug_names:
+                    first_values = tensor.reshape(-1)[:8].float().cpu().tolist()
+                    print(
+                        "VERL HPU WEIGHT VALUE side=sender "
+                        f"name={name} dtype={tensor.dtype} first8={first_values}",
+                        flush=True,
+                    )
+            print(
+                "VERL HPU DISTRIBUTED WEIGHT BUCKET START "
+                f"index={bucket_index} tensors={len(named_tensors)} bytes={nbytes} "
+                f"first={names[0]} last={names[-1]}",
+                flush=True,
+            )
+
+        # The receiver request must remain live while this actor blocks in HCCL.
+        # Run each self-contained aiohttp request on its own event-loop thread;
+        # Habana HCCL Work.wait() must stay on the actor's accelerator thread.
+        def request_receiver(engine):
+            return asyncio.run(
+                engine.update_weights_from_distributed(
+                    names=names,
+                    dtypes=dtypes,
+                    shapes=shapes,
+                    group_name=self._distributed_weight_group_name,
+                    flush_cache=False,
+                )
+            )
+
+        loop = asyncio.get_running_loop()
+        request_futures = [
+            loop.run_in_executor(None, request_receiver, engine)
+            for engine in self._distributed_weight_engines
+        ]
+        if debug_weight_sync:
+            print(
+                f"VERL HPU DISTRIBUTED WEIGHT BUCKET REQUESTED index={bucket_index}",
+                flush=True,
+            )
+        handles = [
+            torch.distributed.broadcast(
+                tensor,
+                src=0,
+                group=self._distributed_weight_group,
+                async_op=True,
+            )
+            for _, tensor in named_tensors
+        ]
+        if debug_weight_sync:
+            print(
+                f"VERL HPU DISTRIBUTED WEIGHT BUCKET BROADCAST_LAUNCHED index={bucket_index}",
+                flush=True,
+            )
+        # The SGLang receivers synchronize their lazy parameter copies before
+        # replying. Complete sender-side HCCL work first, exactly as Miles does,
+        # while the HTTP request threads continue independently.
+        for handle in handles:
+            handle.wait()
+        if debug_weight_sync:
+            print(
+                f"VERL HPU DISTRIBUTED WEIGHT BUCKET BROADCAST_DONE index={bucket_index}",
+                flush=True,
+            )
+        results = await asyncio.gather(*request_futures)
+        if debug_weight_sync:
+            print(
+                f"VERL HPU DISTRIBUTED WEIGHT BUCKET RECEIVERS_DONE index={bucket_index}",
+                flush=True,
+            )
+        for replica_rank, result in enumerate(results):
+            if not result.get("success", False):
+                raise RuntimeError(f"SGLang replica {replica_rank} rejected weight bucket {bucket_index}: {result}")
+        if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+            print(
+                "VERL HPU DISTRIBUTED WEIGHT BUCKET "
+                f"index={bucket_index} tensors={len(named_tensors)} bytes={nbytes} "
+                f"elapsed={time.monotonic() - started:.3f}s first={names[0]} last={names[-1]}",
+                flush=True,
+            )
+
     async def resume(self, tags: list[str]):
         """Resume rollout weights or kv cache in GPU memory.
 
@@ -385,6 +735,8 @@ class ServerAdapter(BaseRollout):
         # Only HTTP dispatch is gated on self._engine.
 
         peft_config, base_sync_done = kwargs.get("peft_config", None), kwargs.get("base_sync_done", False)
+        weight_sync_transport = kwargs.get("weight_sync_transport", "tensor")
+        use_distributed = weight_sync_transport == "distributed"
         if peft_config and base_sync_done:
             if self.device_mesh["infer_tp"].get_local_rank() == 0:
                 # unload lora
@@ -418,16 +770,120 @@ class ServerAdapter(BaseRollout):
             else:
                 weights = weights
 
-            async for params_batch in get_named_tensor_buckets(weights, update_weights_bucket_bytes):
-                await sgl_update_weights(
-                    engine=self._engine,
-                    params_batch=params_batch,
-                    device_mesh_key="infer_tp",
-                    device_mesh=self.device_mesh,
+            if use_distributed:
+                await self._init_hpu_distributed_weight_group()
+
+            # SGLang >= 0.5.19 requires the tensor transfers to run inside an explicit
+            # weight-update session. Without it the scheduler raises
+            #   AssertionError: update_weights_from_tensor requires an open
+            #   begin_weight_update session
+            # and the server process dies, which surfaces here only as "Server
+            # disconnected" / "Failed to complete async request". Opened on the same rank
+            # that owns the other server-level calls so that exactly one session exists
+            # per server. The try/finally matters: a failure partway
+            # through the buckets must still close the session, or the server refuses the
+            # next step's update with "begin_weight_update called while a weight-update
+            # session is already open".
+            if use_distributed:
+                session_engines = (
+                    self._distributed_weight_engines if torch.distributed.get_rank() == 0 else []
                 )
+            else:
+                session_engines = (
+                    [self._engine] if self._engine is not None and self._is_server_tp_leader() else []
+                )
+            weight_session_open = False
+            if session_engines:
+                # Match Miles' FSDP update ordering: generation is already paused
+                # by CheckpointEngine, so clear every rollout cache before opening
+                # the session and issuing HCCL weight traffic. A second flush after
+                # end_weight_update wedged the HPU schedulers/allocator after all
+                # 146 Qwen3-4B buckets and every Gloo barrier had completed.
+                if use_distributed:
+                    if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                        print("VERL HPU WEIGHT SYNC rank=0 stage=pre_session_flush_start", flush=True)
+                    await asyncio.gather(*(engine.flush_cache() for engine in session_engines))
+                    if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                        print("VERL HPU WEIGHT SYNC rank=0 stage=pre_session_flush_done", flush=True)
+                await asyncio.gather(*(engine.begin_weight_update() for engine in session_engines))
+                weight_session_open = True
+            if use_distributed:
+                if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                    print(
+                        f"VERL HPU WEIGHT SYNC rank={torch.distributed.get_rank()} "
+                        "stage=pre_stream_gloo_barrier_start",
+                        flush=True,
+                    )
+                torch.distributed.barrier(group=self._hpu_actor_control_group)
+                if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                    print(
+                        f"VERL HPU WEIGHT SYNC rank={torch.distributed.get_rank()} "
+                        "stage=pre_stream_gloo_barrier_done",
+                        flush=True,
+                    )
+            update_succeeded = False
+            try:
+                bucket_index = 0
+                async for params_batch in get_named_tensor_buckets(weights, update_weights_bucket_bytes):
+                    if use_distributed:
+                        await self._hpu_distributed_update_bucket(params_batch, bucket_index)
+                    else:
+                        await sgl_update_weights(
+                            engine=self._engine,
+                            params_batch=params_batch,
+                            device_mesh_key="infer_tp",
+                            device_mesh=self.device_mesh,
+                        )
+                    bucket_index += 1
+                # Non-source FSDP ranks can reach the end while rank 0 is still
+                # sending its final bucket. Coordinate this control transition on
+                # CPU/Gloo, not on the HCCL group used by FSDP and weight traffic.
+                if use_distributed:
+                    if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                        print(
+                            f"VERL HPU WEIGHT SYNC rank={torch.distributed.get_rank()} "
+                            "stage=post_stream_gloo_barrier_start",
+                            flush=True,
+                        )
+                    torch.distributed.barrier(group=self._hpu_actor_control_group)
+                    if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                        print(
+                            f"VERL HPU WEIGHT SYNC rank={torch.distributed.get_rank()} "
+                            "stage=post_stream_gloo_barrier_done",
+                            flush=True,
+                        )
+                update_succeeded = True
+            finally:
+                # A timed-out distributed receive may still be blocked inside an
+                # HCCL collective. end_weight_update cannot overtake it, and trying
+                # only hides the original failure behind another long timeout.
+                if weight_session_open and (update_succeeded or not use_distributed):
+                    if use_distributed and os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                        print("VERL HPU WEIGHT SYNC rank=0 stage=end_weight_update_start", flush=True)
+                    await asyncio.gather(*(engine.end_weight_update() for engine in session_engines))
+                    if use_distributed and os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                        print("VERL HPU WEIGHT SYNC rank=0 stage=end_weight_update_done", flush=True)
+            if use_distributed:
+                if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                    print(
+                        f"VERL HPU WEIGHT SYNC rank={torch.distributed.get_rank()} "
+                        "stage=post_session_gloo_barrier_start",
+                        flush=True,
+                    )
+                torch.distributed.barrier(group=self._hpu_actor_control_group)
+                if os.environ.get("VERL_HPU_WEIGHT_SYNC_DEBUG", "0") == "1":
+                    print(
+                        f"VERL HPU WEIGHT SYNC rank={torch.distributed.get_rank()} "
+                        "stage=post_session_gloo_barrier_done",
+                        flush=True,
+                    )
 
         if self._engine is not None and self._is_server_tp_leader():
-            await self._engine.flush_cache()
+            # The distributed HPU path flushed all replicas before the update,
+            # following Miles. Keep the legacy post-update flush for the tensor
+            # transport, where each adapter owns only its local server.
+            if not use_distributed:
+                await self._engine.flush_cache()
             if global_steps is not None:
                 await self.server_actor.set_global_steps.remote(global_steps)
 

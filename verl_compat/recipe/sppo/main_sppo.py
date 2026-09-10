@@ -18,6 +18,7 @@ Note that we don't combine the main with ray_trainer as ray_trainer is used by o
 """
 
 import os
+import sys
 
 import hydra
 import ray
@@ -40,14 +41,44 @@ def run_ppo(config) -> None:
     # isolation, will solve in the future
     os.environ["ENSURE_CUDA_VISIBLE_DEVICES"] = os.environ.get("CUDA_VISIBLE_DEVICES", "")
     if not ray.is_initialized():
-        # this is for local ray cluster
-        default_runtime_env = {
-            "env_vars": {"TOKENIZERS_PARALLELISM": "true", "NCCL_DEBUG": "WARN", "VLLM_LOGGING_LEVEL": "WARN"}
-        }
+        env_vars = {"TOKENIZERS_PARALLELISM": "true", "NCCL_DEBUG": "WARN", "VLLM_LOGGING_LEVEL": "WARN"}
+
+        # Ray actors inherit their environment from the RAYLET, not from the shell that
+        # launched this command. Anything set on the command line is invisible to workers
+        # unless forwarded here. main_sppo.py predates the fork's HPU work, so unlike
+        # main_ioher.py it forwarded nothing -- add the same set.
+        #
+        # PYTHONPATH and HF_* matter even on the stock path: verl's own
+        # get_ppo_ray_runtime_env() forwards neither.
+        # PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION must be set before protobuf is imported,
+        # or Ray fails to serialize the colocated WorkerDict and reports a misleading
+        # "you set the async flag, but the actor has no coroutine functions" error.
+        _named = (
+            "VERL_PLATFORM", "HABANA_LOGS", "HABANA_SYSTEM_FORK_UNSAFE_EXEC",
+            "RAY_EXPERIMENTAL_NOSET_HABANA_VISIBLE_MODULES",
+            "RAY_gcs_rpc_server_reconnect_timeout_s",
+            "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION",
+            "PYTHONPATH", "PYTHONNOUSERSITE",
+            "HF_HOME", "HF_DATASETS_CACHE", "HF_HUB_CACHE", "HF_HUB_DISABLE_SYMLINKS_WARNING",
+            "TMPDIR", "XDG_CACHE_HOME", "TRITON_CACHE_DIR", "TORCHINDUCTOR_CACHE_DIR",
+            "TORCH_HOME", "TORCH_EXTENSIONS_DIR",
+            "WANDB_API_KEY", "WANDB_ENTITY", "WANDB_DIR", "WANDB_CACHE_DIR", "WANDB_MODE",
+        )
+        for k, v in os.environ.items():
+            if k.startswith(("PT_HPU_", "VERL_HPU_", "SGLANG_")) or k in _named:
+                env_vars[k] = v
+
+        # A reused Ray head may have been started from the legacy venv. Workers
+        # must use the driver's migrated environment, even when Ray versions match.
+        default_runtime_env = {"env_vars": env_vars, "py_executable": sys.executable}
         ray_init_kwargs = config.ray_kwargs.get("ray_init", {})
         runtime_env_kwargs = ray_init_kwargs.get("runtime_env", {})
         runtime_env = OmegaConf.merge(default_runtime_env, runtime_env_kwargs)
-        ray_init_kwargs = OmegaConf.create({**ray_init_kwargs, "runtime_env": runtime_env})
+        # include_dashboard=False: the dashboard subprocess times out on this box and is
+        # not needed. start_ray.sh already starts the cluster with it disabled.
+        ray_init_kwargs = OmegaConf.create(
+            {**ray_init_kwargs, "runtime_env": runtime_env, "include_dashboard": False}
+        )
         print(f"ray init kwargs: {ray_init_kwargs}")
         ray.init(**OmegaConf.to_container(ray_init_kwargs))
 
