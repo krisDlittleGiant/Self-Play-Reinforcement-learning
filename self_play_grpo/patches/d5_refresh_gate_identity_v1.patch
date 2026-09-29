@@ -1,0 +1,21 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/refresh_gate.py b/self_play_grpo/src/self_play_grpo/training/refresh_gate.py
+--- a/self_play_grpo/src/self_play_grpo/training/refresh_gate.py
++++ b/self_play_grpo/src/self_play_grpo/training/refresh_gate.py
+@@ -165 +165 @@
+-        "status": "refresh_evidence_verified_ledger_pending",
++        "status": "refresh_reports_verified",
+@@ -181 +181 @@
+-    if evidence.get("status") != "refresh_evidence_verified_ledger_pending":
++    if evidence.get("status") != "refresh_reports_verified":
+diff --git a/self_play_grpo/tests/test_refresh_gate.py b/self_play_grpo/tests/test_refresh_gate.py
+--- a/self_play_grpo/tests/test_refresh_gate.py
++++ b/self_play_grpo/tests/test_refresh_gate.py
+@@ -72 +72 @@
+-    evidence = {"status": "refresh_evidence_verified_ledger_pending"}
++    evidence = {"status": "refresh_reports_verified"}
+diff --git a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+--- a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
++++ b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+@@ -38 +38,2 @@
+     "training/policy_refresh.py",
++    "training/refresh_gate.py",

@@ -1,0 +1,6 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py b/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py
+@@ -131,1 +131,2 @@
+         metrics = _global_metrics(result, trainer=trainer, torch=torch, dist=dist, device=device)
++        metrics = replace(metrics, optimizer_steps=trainer.update_index)

@@ -1,0 +1,24 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/identity.py b/self_play_grpo/src/self_play_grpo/training/identity.py
+--- a/self_play_grpo/src/self_play_grpo/training/identity.py
++++ b/self_play_grpo/src/self_play_grpo/training/identity.py
+@@ -30,7 +30,7 @@ def _encode(value: Any, hasher: Any, torch: Any) -> None:
+         _encode(tuple(detached.shape), hasher, torch)
+         # Viewing raw bytes also supports bfloat16, which NumPy cannot encode
+         # directly.  The dtype and shape are hashed separately above.
+-        raw = detached.view(torch.uint8).numpy().tobytes()
++        raw = detached.reshape(-1).view(torch.uint8).numpy().tobytes()
+         _field(hasher, b"tensor_data", raw)
+     elif value is None:
+         _field(hasher, b"none", b"")
+diff --git a/self_play_grpo/tests/test_training_ledger.py b/self_play_grpo/tests/test_training_ledger.py
+--- a/self_play_grpo/tests/test_training_ledger.py
++++ b/self_play_grpo/tests/test_training_ledger.py
+@@ -91,7 +91,7 @@ def test_broken_chain_and_sparse_update_rejected(tmp_path, checkpoint_contract):
+ def test_validation_checkpoint_and_path_escape_rejected(tmp_path, checkpoint_contract, monkeypatch):
+     record = _record(tmp_path, 1, "a" * 64)
+     with pytest.raises(ValueError, match="safe root-relative"):
+-        replace(record, checkpoint_path="../elsewhere")
++        replace(record, checkpoint_path="../elsewhere").validate()
+     monkeypatch.setattr(module, "read_distributed_manifest", lambda _: SimpleNamespace(run_kind="validation"))
+     with pytest.raises(ValueError, match="Validation-only"):
+         publish_commit(tmp_path, record)

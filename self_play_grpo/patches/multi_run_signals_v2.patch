@@ -1,0 +1,25 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/multi_run.py b/self_play_grpo/src/self_play_grpo/training/multi_run.py
+--- a/self_play_grpo/src/self_play_grpo/training/multi_run.py
++++ b/self_play_grpo/src/self_play_grpo/training/multi_run.py
+@@ -10,7 +10,8 @@
+ import json
+ import math
+ import os
+ import re
++import signal
+ import time
+ import uuid
+ from contextlib import contextmanager
+@@ -260,7 +261,12 @@
+                                   expected_run_id=args.run_id)
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
++    def terminate(signum, frame):
++        raise KeyboardInterrupt(f"Received signal {signum}")
++
++    signal.signal(signal.SIGTERM, terminate)
++
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--config", required=True, type=Path)
+     parser.add_argument("--run-root", required=True, type=Path)

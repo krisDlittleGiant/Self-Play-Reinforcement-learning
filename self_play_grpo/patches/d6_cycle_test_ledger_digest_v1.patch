@@ -1,0 +1,6 @@
+diff --git a/self_play_grpo/tests/test_d6_cycle_flow.py b/self_play_grpo/tests/test_d6_cycle_flow.py
+--- a/self_play_grpo/tests/test_d6_cycle_flow.py
++++ b/self_play_grpo/tests/test_d6_cycle_flow.py
+@@ -51,1 +51,1 @@
+-    previous = SimpleNamespace(policy_version=prior.version)
++    previous = SimpleNamespace(policy_version=prior.version, checkpoint_manifest_sha256=plan.checkpoint_manifest_sha256)

@@ -1,0 +1,13 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/multi_run.py b/self_play_grpo/src/self_play_grpo/training/multi_run.py
+--- a/self_play_grpo/src/self_play_grpo/training/multi_run.py
++++ b/self_play_grpo/src/self_play_grpo/training/multi_run.py
+@@ -13,1 +13,2 @@
+ import re
++import signal
+@@ -307,1 +308,6 @@
+ def main(argv: list[str] | None = None) -> int:
++    def terminate(signum, frame):
++        raise KeyboardInterrupt(f"Received signal {signum}")
++
++    signal.signal(signal.SIGTERM, terminate)
++

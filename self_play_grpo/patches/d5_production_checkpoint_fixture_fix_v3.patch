@@ -1,0 +1,11 @@
+diff --git a/self_play_grpo/tests/test_production_checkpoint.py b/self_play_grpo/tests/test_production_checkpoint.py
+--- a/self_play_grpo/tests/test_production_checkpoint.py
++++ b/self_play_grpo/tests/test_production_checkpoint.py
+@@ -101,5 +101,6 @@ def test_template_rejects_stale_or_validation_only_policy(tmp_path):
+     with pytest.raises(ValueError, match="production policy"):
+         _build(root, receipt, replace(policy, run_kind="validation"), trainer)
+     with pytest.raises(ValueError, match="exactly one"):
+-        _build(root, receipt, policy, replace(trainer, update_index=2))
++        trainer.update_index = 2
++        _build(root, receipt, policy, trainer)
+ 

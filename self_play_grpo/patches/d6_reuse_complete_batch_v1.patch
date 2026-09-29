@@ -1,0 +1,71 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_cycle.py b/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
+@@ -168,25 +168,42 @@
+-        if rollout_root.exists():
+-            # Prepared but unpublished, with no rank output, is safe to run.
+-            _validate_prepared(rollout_root, config, prior)
+-            if any((rollout_root / "ranks").glob("*") ) or any((rollout_root / "matches").glob("*")):
+-                raise FileExistsError("D6 partial rollout exists; no automatic overwrite or recollection")
+-        else:
+-            prepare_next_collection(
+-                root, config_path=args.config, experiment_seed=args.seed,
+-                expected_run_id=args.run_id, replay_tolerance=args.replay_tolerance,
+-            )
+-        rollout_args = [
+-            "self_play_grpo.training.rollout_worker",
+-            "--config", str(args.config), "--root", str(rollout_root),
+-            "--policy-descriptor", str(rollout_root / "policy_descriptor.json"),
+-        ]
+-        supervise_role_phase(
+-            _commands("rollout", layout.rollout_modules, rollout_args),
+-            layout, root / "logs-rollout-000001", role="rollout",
+-            trainer_master_port=args.trainer_master_port,
+-            timeout_seconds=args.rollout_timeout_seconds,
+-        )
+-        aggregate_rank_shards(
+-            rollout_root, config=config, policy=prior,
+-            expected_modules=layout.rollout_modules,
+-        )
++        reuse_complete_batch = False
++        if rollout_root.exists():
++            manifest = read_pilot_manifest(rollout_root)
++            if (manifest.base_seed != plan.next_base_seed
++                    or manifest.replay_tolerance != args.replay_tolerance):
++                raise ValueError("D6 existing rollout seed or tolerance differs")
++            if len(manifest.matches) == 64:
++                recorded = PolicyDescriptor(**json.loads(
++                    (rollout_root / "policy_descriptor.json").read_text(encoding="utf-8")
++                ))
++                if (recorded != prior or
++                        directory_sha256(rollout_root / "policy_adapter") != prior.adapter_sha256):
++                    raise ValueError("D6 complete rollout differs from the committed policy")
++                reuse_complete_batch = True
++            elif not manifest.matches:
++                _validate_prepared(rollout_root, config, prior)
++                if (any((rollout_root / "ranks").glob("*")) or
++                        any((rollout_root / "matches").glob("*"))):
++                    raise FileExistsError("D6 partial rollout exists; no automatic overwrite")
++            else:
++                raise FileExistsError("D6 partial rollout manifest exists; no automatic recollection")
++        else:
++            prepare_next_collection(
++                root, config_path=args.config, experiment_seed=args.seed,
++                expected_run_id=args.run_id, replay_tolerance=args.replay_tolerance,
++            )
++        if not reuse_complete_batch:
++            rollout_args = [
++                "self_play_grpo.training.rollout_worker",
++                "--config", str(args.config), "--root", str(rollout_root),
++                "--policy-descriptor", str(rollout_root / "policy_descriptor.json"),
++            ]
++            supervise_role_phase(
++                _commands("rollout", layout.rollout_modules, rollout_args),
++                layout, root / "logs-rollout-000001", role="rollout",
++                trainer_master_port=args.trainer_master_port,
++                timeout_seconds=args.rollout_timeout_seconds,
++            )
++            aggregate_rank_shards(
++                rollout_root, config=config, policy=prior,
++                expected_modules=layout.rollout_modules,
++            )

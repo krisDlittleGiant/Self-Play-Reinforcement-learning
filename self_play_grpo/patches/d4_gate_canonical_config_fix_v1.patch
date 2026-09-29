@@ -1,0 +1,56 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/distributed_resume_gate.py b/self_play_grpo/src/self_play_grpo/training/distributed_resume_gate.py
+--- a/self_play_grpo/src/self_play_grpo/training/distributed_resume_gate.py
++++ b/self_play_grpo/src/self_play_grpo/training/distributed_resume_gate.py
+@@ -428,5 +428,5 @@
+     if state.get("update_index") != 1 or state.get("policy_version") != "policy-000001":
+         raise ValueError("D4 bridge requires the saved D3 policy-000001 checkpoint")
+-    if state.get("config") != config.to_dict():
++    if canonical_sha256(state.get("config")) != canonical_sha256(config.to_dict()):
+         raise ValueError("D3 checkpoint configuration differs from D4 source rollout")
+     summary_path = args.source_checkpoint.parent.parent / "summary.json"
+diff --git a/self_play_grpo/tests/test_distributed_resume_gate.py b/self_play_grpo/tests/test_distributed_resume_gate.py
+--- a/self_play_grpo/tests/test_distributed_resume_gate.py
++++ b/self_play_grpo/tests/test_distributed_resume_gate.py
+@@ -5,3 +5,4 @@
++import json
+ from pathlib import Path
+ from types import SimpleNamespace
+ 
+@@ -124,2 +124,37 @@
+     with pytest.raises(RuntimeError, match="fixture error"):
+         _collective_phase(torch, FakeDist(), runtime, "bad", fail)
++
++
++def test_preflight_accepts_json_equivalent_config_but_rejects_real_drift(
++    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
++) -> None:
++    from self_play_grpo.training import distributed_resume_gate as gate
++
++    monkeypatch.setattr(gate, "validate_manifest_request", lambda *a, **k: None)
++    source = tmp_path / "checkpoints" / "policy-000001"
++    source.mkdir(parents=True)
++    state = {
++        "checkpoint_format": 2, "validation_only": True,
++        "update_index": 1, "policy_version": "policy-000001",
++        "config": {"evaluation": {"training_seeds": [11, 22, 33]}},
++    }
++    (source / "trainer_state.json").write_text(json.dumps(state))
++    (tmp_path / "summary.json").write_text(json.dumps({
++        "behavior_adapter_sha256": "a" * 64,
++        "checkpoint": str(source),
++    }))
++    config = SimpleNamespace(
++        to_dict=lambda: {"evaluation": {"training_seeds": (11, 22, 33)}}
++    )
++    manifest = SimpleNamespace(
++        adapter_sha256="a" * 64, base_seed=11, replay_tolerance=2e-4
++    )
++    args = SimpleNamespace(
++        allow_validation_source=True, output=tmp_path / "new-output",
++        joint_step=0, match_offset=0, seed=741, source_checkpoint=source,
++    )
++    _prepare_source(args, config, manifest)
++    state["config"]["evaluation"]["training_seeds"] = [99]
++    (source / "trainer_state.json").write_text(json.dumps(state))
++    with pytest.raises(ValueError, match="configuration differs"):
++        _prepare_source(args, config, manifest)

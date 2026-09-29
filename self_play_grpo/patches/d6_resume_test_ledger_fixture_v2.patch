@@ -1,0 +1,12 @@
+diff --git a/self_play_grpo/tests/test_d6_trainer_resume.py b/self_play_grpo/tests/test_d6_trainer_resume.py
+--- a/self_play_grpo/tests/test_d6_trainer_resume.py
++++ b/self_play_grpo/tests/test_d6_trainer_resume.py
+@@ -44,1 +44,8 @@
++    ledger_head = SimpleNamespace(
++        run_id=plan.run_id, update_index=plan.committed_update,
++        policy_version=plan.policy_version, checkpoint_path=plan.checkpoint,
++        checkpoint_manifest_sha256=plan.checkpoint_manifest_sha256,
++        source_manifest_sha256=plan.source_manifest_sha256,
++    )
++    monkeypatch.setattr(module, "read_commits", lambda _: (ledger_head,))
+     calls = []

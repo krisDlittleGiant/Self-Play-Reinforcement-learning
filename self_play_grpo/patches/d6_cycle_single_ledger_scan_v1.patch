@@ -1,0 +1,8 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_cycle.py b/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
+@@ -265,1 +265,3 @@ def run_second_cycle(args: Any) -> dict[str, Any]:
+-        if read_commits(root) != (read_commits(root)[0], record):
++        commits = read_commits(root)
++        if (len(commits) != 2 or commits[-1] != record or
++                commits[0].checkpoint_manifest_sha256 != plan.checkpoint_manifest_sha256):

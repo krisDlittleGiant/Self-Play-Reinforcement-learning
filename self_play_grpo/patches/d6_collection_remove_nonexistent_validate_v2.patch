@@ -1,0 +1,9 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_collection.py b/self_play_grpo/src/self_play_grpo/training/d6_collection.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_collection.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_collection.py
+@@ -69,5 +69,4 @@ def descriptor_from_commit(
+         tokenizer_sha256=prior.tokenizer_sha256,
+         grammar_sha256=prior.grammar_sha256, run_kind="production",
+     )
+-    descriptor.validate()
+     return descriptor

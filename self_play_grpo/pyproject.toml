@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "self-play-grpo"
+version = "0.1.0"
+description = "Four-player Quoridor self-play with a GRPO-style grouped objective"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26,<3",
+  "PyYAML>=6,<7",
+]
+
+[project.optional-dependencies]
+# OpenSpiel uses the repository's reproducible source builder because a direct
+# VCS install omits bundled C++ dependencies. See scripts/install_open_spiel.sh.
+# Torch is intentionally not declared here: the workspace supplies a
+# Gaudi-enabled build that must not be replaced by PyPI's CUDA/CPU wheel.
+train = [
+  "accelerate==1.14.0",
+  "peft==0.20.0",
+  "transformers==5.12.1",
+]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+self-play-grpo = "self_play_grpo.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+  "engine: requires the pinned OpenSpiel build",
+  "model: requires a local model checkpoint and accelerator stack",
+  "torch: requires the container's compatible Torch runtime",
+]

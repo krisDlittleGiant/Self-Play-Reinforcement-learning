@@ -1,0 +1,39 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d5_preflight.py b/self_play_grpo/src/self_play_grpo/training/d5_preflight.py
+--- a/self_play_grpo/src/self_play_grpo/training/d5_preflight.py
++++ b/self_play_grpo/src/self_play_grpo/training/d5_preflight.py
+@@ -25 +25,2 @@
+     environ: Mapping[str, str] | None = None,
++    worker_role: str | None = None,
+@@ -47 +48,13 @@
+-    validate_worker_allocation(layout, os.environ if environ is None else environ)
++    environment = dict(os.environ if environ is None else environ)
++    if worker_role is not None:
++        if worker_role not in {"rollout", "trainer"} or environment.get("SP_GRPO_ROLE") != worker_role:
++            raise ValueError("D5 role-scoped preflight requires a matching worker role")
++        modules = layout.rollout_modules if worker_role == "rollout" else layout.trainer_modules
++        if environment.get("HABANA_VISIBLE_MODULES") != ",".join(str(module) for module in modules):
++            raise ValueError("D5 role-scoped visibility differs from the assigned modules")
++        # The parent already checks eight-module visibility. A worker is
++        # intentionally restricted to only its own four-module role map.
++        environment.pop("HABANA_VISIBLE_MODULES")
++    validate_worker_allocation(layout, environment)
+diff --git a/self_play_grpo/src/self_play_grpo/training/trainer_worker.py b/self_play_grpo/src/self_play_grpo/training/trainer_worker.py
+--- a/self_play_grpo/src/self_play_grpo/training/trainer_worker.py
++++ b/self_play_grpo/src/self_play_grpo/training/trainer_worker.py
+@@ -116,2 +116,3 @@
+         config_path=args.config, two_rank_d4_summary=args.d4_two_summary,
+         four_rank_d4_summary=args.d4_four_summary, layout=layout,
++        worker_role="trainer",
+diff --git a/self_play_grpo/src/self_play_grpo/training/policy_refresh.py b/self_play_grpo/src/self_play_grpo/training/policy_refresh.py
+--- a/self_play_grpo/src/self_play_grpo/training/policy_refresh.py
++++ b/self_play_grpo/src/self_play_grpo/training/policy_refresh.py
+@@ -135,2 +135,3 @@
+         config_path=args.config, two_rank_d4_summary=args.d4_two_summary,
+         four_rank_d4_summary=args.d4_four_summary, layout=layout,
++        worker_role="rollout",
+diff --git a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+--- a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
++++ b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+@@ -35 +35,2 @@
+     "training/process_supervisor.py",
++    "training/policy_refresh.py",

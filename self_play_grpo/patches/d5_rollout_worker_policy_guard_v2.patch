@@ -1,0 +1,57 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/rollout_worker.py b/self_play_grpo/src/self_play_grpo/training/rollout_worker.py
+--- a/self_play_grpo/src/self_play_grpo/training/rollout_worker.py
++++ b/self_play_grpo/src/self_play_grpo/training/rollout_worker.py
+@@ -15,6 +15,7 @@ import math
+ import os
+ import shutil
+ import tempfile
++from dataclasses import asdict
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -51,7 +52,15 @@ def _require_profile(config: ExperimentConfig) -> None:
+     if config.rollout.parallel_games_per_rank != PARALLEL_GAMES:
+         raise ValueError("D5 rollout worker requires two active games per rank")
+-    if config.training.reward_mode != "outcome" or config.training.group_size != 4:
++    if (config.training.reward_mode != "outcome" or config.training.group_size != 4
++            or config.environment.players != 4):
+         raise ValueError("D5 rollout worker requires four-seat outcome credit")
++    if config.training.optimizer_epochs_per_batch != 1:
++        raise ValueError("D5 rollout worker requires one optimizer epoch per batch")
++
++
++def _require_production_policy(policy: PolicyDescriptor) -> None:
++    if policy.run_kind != "production":
++        raise ValueError("D5 rollout worker requires a production policy")
+ 
+ 
+ def _safe_adapter_source(source: Path) -> None:
+@@ -73,5 +82,6 @@ def prepare_frozen_batch(
+     """Atomically publish an empty 64-game manifest and frozen adapter copy."""
+ 
+     _require_profile(config)
++    _require_production_policy(policy)
+     if base_seed < 0 or not math.isfinite(replay_tolerance) or replay_tolerance <= 0:
+         raise ValueError("D5 seed and replay tolerance must be valid")
+@@ -99,5 +109,8 @@ def prepare_frozen_batch(
+             target_games=ROLL_OUT_RANKS * GAMES_PER_RANK,
+             replay_tolerance=replay_tolerance,
+         )
++        (staging / "policy_descriptor.json").write_text(
++            json.dumps(asdict(policy), indent=2, sort_keys=True) + "\n", encoding="utf-8",
++        )
+         write_pilot_manifest(staging, manifest)
+         staging.replace(target)
+@@ -106,6 +119,12 @@ def prepare_frozen_batch(
+ 
+ def _validate_prepared(root: Path, config: ExperimentConfig, policy: PolicyDescriptor) -> PilotManifest:
+     _require_profile(config)
++    _require_production_policy(policy)
+     manifest = read_pilot_manifest(root)
++    recorded_policy = PolicyDescriptor(**json.loads(
++        (root / "policy_descriptor.json").read_text(encoding="utf-8")
++    ))
++    if recorded_policy != policy:
++        raise ValueError("D5 prepared policy descriptor changed")
+     if manifest.matches:
+         raise ValueError("D5 rank collection requires an unpublished empty manifest")

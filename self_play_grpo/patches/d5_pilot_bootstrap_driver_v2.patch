@@ -1,0 +1,40 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/initial_cycle.py b/self_play_grpo/src/self_play_grpo/training/initial_cycle.py
+--- a/self_play_grpo/src/self_play_grpo/training/initial_cycle.py
++++ b/self_play_grpo/src/self_play_grpo/training/initial_cycle.py
+@@ -4,3 +4,3 @@
+ module does not initialize HPUs or launch child processes. The caller must
+-provide a fresh initial adapter, its production descriptor, real D4 evidence,
++provide a recorded pilot root, real D4 evidence,
+ and an allocation of all eight assigned HPUs.
+@@ -33 +33,2 @@
+ from self_play_grpo.training.ledger import read_commits
++from self_play_grpo.training.initial_policy import prepare_initial_policy
+@@ -207 +208,0 @@
+-    prior = _initial_policy(args.initial_policy_descriptor, args.initial_adapter, config)
+@@ -211 +212,2 @@
+     root.mkdir(parents=True)
++    initial_bundle = root / "initial-policy"
+@@ -215,6 +217,12 @@
+     try:
++        prepare_initial_policy(
++            pilot_root=args.pilot_root, config=config, output=initial_bundle,
++        )
++        prior = _initial_policy(
++            initial_bundle / "policy_descriptor.json", initial_bundle / "policy_adapter", config,
++        )
+         prepare_frozen_batch(
+-            rollout_root, config=config, source_adapter=args.initial_adapter,
++            rollout_root, config=config, source_adapter=initial_bundle / "policy_adapter",
+             policy=prior, base_seed=args.seed,
+             replay_tolerance=args.replay_tolerance,
+         )
+@@ -338,2 +344 @@
+-    parser.add_argument("--initial-adapter", required=True, type=Path)
+-    parser.add_argument("--initial-policy-descriptor", required=True, type=Path)
++    parser.add_argument("--pilot-root", required=True, type=Path)
+diff --git a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+--- a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
++++ b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+@@ -34 +34,2 @@
+     "training/identity.py",
++    "training/initial_policy.py",

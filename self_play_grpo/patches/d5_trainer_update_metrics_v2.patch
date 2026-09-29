@@ -1,0 +1,34 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/trainer_update.py b/self_play_grpo/src/self_play_grpo/training/trainer_update.py
+--- a/self_play_grpo/src/self_play_grpo/training/trainer_update.py
++++ b/self_play_grpo/src/self_play_grpo/training/trainer_update.py
+@@ -37,9 +37,14 @@ class SynchronizedUpdateResult:
+     parameter_sha256: str
+     optimizer_sha256: str
+     loss: float
++    policy_loss: float
++    kl_loss: float
++    mean_ratio: float
++    clip_fraction: float
+     grad_norm: float
+     max_abs_log_prob_error: float
+     owned_tokens: int
++    turns: int
+     changed_parameter_tensors: int
+     gradient_sync_phases: int
+     optimizer_steps: int
+@@ -188,10 +193,15 @@ def synchronized_trainer_update(
+         initial_parameter_sha256=initial_digest,
+         parameter_sha256=parameter_digest,
+         optimizer_sha256=optimizer_digest,
+         loss=float(output.loss),
++        policy_loss=float(output.policy_loss),
++        kl_loss=float(output.kl_loss),
++        mean_ratio=output.mean_ratio,
++        clip_fraction=output.clip_fraction,
+         grad_norm=grad_norm,
+         max_abs_log_prob_error=output.max_abs_log_prob_error,
+         owned_tokens=output.owned_tokens,
++        turns=sum(len(match.turns) for match in admission.matches),
+         changed_parameter_tensors=changed,
+         gradient_sync_phases=sync["gradient_sync_phases"],
+         optimizer_steps=1,

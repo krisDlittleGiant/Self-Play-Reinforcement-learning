@@ -1,0 +1,20 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py b/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_trainer_worker.py
+@@ -121,3 +121,4 @@ def run_resumed_trainer_rank(args: Any) -> dict[str, Any]:
+         result = synchronized_trainer_update(
+             trainer, admission, descriptor, runtime=runtime, torch=torch, dist=dist,
+         )
++        result = replace(result, optimizer_steps=trainer.update_index)
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_cycle.py b/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_cycle.py
+@@ -116,1 +116,1 @@ def _trainer_evidence(
+-                or update.get("optimizer_steps") != 1
++                or update.get("optimizer_steps") != 2
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_refresh_worker.py b/self_play_grpo/src/self_play_grpo/training/d6_refresh_worker.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_refresh_worker.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_refresh_worker.py
+@@ -156,1 +156,1 @@ def aggregate_refresh(
+-                or update.get("optimizer_steps") != 1
++                or update.get("optimizer_steps") != 2

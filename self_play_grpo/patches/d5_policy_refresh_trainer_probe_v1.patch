@@ -1,0 +1,48 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/trainer_worker.py b/self_play_grpo/src/self_play_grpo/training/trainer_worker.py
+--- a/self_play_grpo/src/self_play_grpo/training/trainer_worker.py
++++ b/self_play_grpo/src/self_play_grpo/training/trainer_worker.py
+@@ -30 +30 @@
+-from self_play_grpo.training.distributed import write_rank_update_report
++from self_play_grpo.training.distributed import global_source_max_abs_difference, write_rank_update_report
+@@ -38,2 +38,3 @@
+ from self_play_grpo.training.loop import SynchronousTrainer, UpdateMetrics
++from self_play_grpo.training.policy_refresh import policy_probe
+ from self_play_grpo.training.production_checkpoint import build_production_checkpoint_template
+@@ -158 +159,9 @@
+         metrics = _global_metrics(result, trainer=trainer, torch=torch, dist=dist, device=device)
++        probe = _collective_phase(
++            torch, dist, device, "post-update policy probe",
++            lambda: policy_probe(trainer.policy.model, args.rollout_root),
++        )
++        probe_values = torch.tensor(probe["log_probs"], dtype=torch.float32, device=device)
++        probe_disagreement = global_source_max_abs_difference(torch, dist, probe_values)
++        if not math.isfinite(probe_disagreement) or probe_disagreement > 2e-4:
++            raise RuntimeError("D5 trainer ranks disagree on post-update policy probabilities")
+@@ -213,19 +222,21 @@
+                 "run_id": args.run_id, "checkpoint": str(checkpoint),
+                 "checkpoint_manifest_sha256": checkpoint_digest,
+                 "checkpoint_adapter_sha256": checkpoint_adapter_sha256,
++                "parameter_sha256": result.parameter_sha256,
+                 "source_manifest_sha256": admission.receipt.manifest_sha256,
++                "policy_probe": probe,
+                 "metrics": asdict(metrics),
+             }
+-            target = args.output / "trainer_summary.json"
+-            if target.exists():
+-                raise FileExistsError("D5 trainer summary already exists")
+-            temporary = args.output / ".trainer_summary.json.tmp"
+-            temporary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+-            temporary.replace(target)
+         else:
+             summary = report
+-        _collective_phase(torch, dist, device, "trainer summary", lambda: None)
++        def publish_summary() -> None:
++            if runtime.rank == 0:
++                target = args.output / "trainer_summary.json"
++                if target.exists():
++                    raise FileExistsError("D5 trainer summary already exists")
++                temporary = args.output / ".trainer_summary.json.tmp"
++                temporary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++                temporary.replace(target)
++        _collective_phase(torch, dist, device, "trainer summary", publish_summary)
+         return summary

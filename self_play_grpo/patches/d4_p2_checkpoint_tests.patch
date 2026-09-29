@@ -1,0 +1,246 @@
+diff --git a/self_play_grpo/tests/test_distributed_checkpoint_io.py b/self_play_grpo/tests/test_distributed_checkpoint_io.py
+new file mode 100644
+--- /dev/null
++++ b/self_play_grpo/tests/test_distributed_checkpoint_io.py
+@@ -0,0 +1,241 @@
++"""CPU-only contracts for distributed checkpoint save, load, and publication."""
++
++from __future__ import annotations
++
++import json
++from dataclasses import replace
++from pathlib import Path
++from types import SimpleNamespace
++
++import pytest
++import torch
++
++from self_play_grpo.training.distributed_checkpoint import (
++    DistributedCheckpointManifest,
++    TrainerRankState,
++    file_sha256,
++    read_distributed_manifest,
++    verify_checkpoint_files,
++    write_rank_rng_record,
++)
++from self_play_grpo.training.loop import SynchronousTrainer, UpdateMetrics
++
++
++class ToyModel(torch.nn.Module):
++    def __init__(self) -> None:
++        super().__init__()
++        self.weight = torch.nn.Parameter(torch.tensor([1.0, 2.0]))
++
++    def save_pretrained(self, path: Path, *, safe_serialization: bool) -> None:
++        assert safe_serialization
++        path.mkdir(parents=True)
++        (path / "adapter_config.json").write_text('{"toy":true}')
++        torch.save(self.weight.detach().cpu(), path / "adapter_model.safetensors")
++
++    def load_adapter(self, path: Path, **kwargs: object) -> SimpleNamespace:
++        assert kwargs["adapter_name"] == "default"
++        restored = torch.load(path / "adapter_model.safetensors", weights_only=True)
++        with torch.no_grad():
++            self.weight.copy_(restored)
++        return SimpleNamespace(missing_keys=[], unexpected_keys=[])
++
++
++class ToyConfig:
++    def to_dict(self) -> dict[str, object]:
++        return {"toy": True}
++
++
++def _trainer(root: Path) -> SynchronousTrainer:
++    trainer = SynchronousTrainer.__new__(SynchronousTrainer)
++    trainer.artifact_dir = root
++    trainer.config = ToyConfig()
++    trainer.policy = SimpleNamespace(model=ToyModel())
++    trainer.evaluator = None
++    trainer.optimizer = torch.optim.AdamW(trainer.policy.model.parameters(), lr=0.01)
++    trainer.policy.model.weight.square().sum().backward()
++    trainer.optimizer.step()
++    trainer.optimizer.zero_grad(set_to_none=True)
++    trainer.update_index = 1
++    trainer.policy_version = "policy-000001"
++    return trainer
++
++
++def _metrics() -> UpdateMetrics:
++    return UpdateMetrics(
++        update=0, policy_version="policy-000000", games=2, turns=2,
++        owned_tokens=2, loss=0.1, policy_loss=0.1, kl_loss=0.0,
++        mean_ratio_before_step=1.0, clip_fraction_before_step=0.0,
++        replay_max_abs_error=0.0, grad_norm=1.0, optimizer_steps=1,
++    )
++
++
++def _rank(rank: int) -> TrainerRankState:
++    return TrainerRankState(
++        rank=rank, local_rank=rank, module_id=str(rank), device=f"hpu:{rank}",
++        rng_path=f"distributed/rng/rank-{rank:03d}.pt",
++        match_indices=(rank,), match_ids=(f"game-{rank}",),
++        match_sha256=(f"{rank + 1:064x}",),
++    )
++
++
++def _template() -> DistributedCheckpointManifest:
++    return DistributedCheckpointManifest(
++        run_kind="validation", run_id="d4-cpu-test",
++        policy_version="policy-000001", update_index=1,
++        config_sha256="1" * 64, model_id="toy", model_revision="revision",
++        adapter_schema_sha256="2" * 64, optimizer_schema_sha256="3" * 64,
++        tokenizer_sha256="4" * 64, grammar_sha256="5" * 64,
++        code_identity="toy-code", runtime_identity=(
++            ("habana", "test"), ("peft", "test"), ("python", "test"),
++            ("torch", "test"), ("transformers", "test"),
++        ),
++        attention_backend="sdpa", dtype="float32", backend="hccl",
++        trainer_world_size=2, source_rollout_manifest_sha256="6" * 64,
++        ranks=(_rank(0), _rank(1)), files=(),
++    )
++
++
++def _stage(root: Path, *, ranks: int = 2) -> tuple[torch.Tensor, ...]:
++    states = []
++    for rank in range(ranks):
++        torch.manual_seed(100 + rank)
++        cpu = torch.get_rng_state().clone()
++        states.append(cpu)
++        path = root / _rank(rank).rng_path
++        path.parent.mkdir(parents=True, exist_ok=True)
++        torch.save(
++            {"schema_version": 1, "rank": rank, "module_id": str(rank),
++             "cpu": cpu, "hpu": [torch.tensor([rank], dtype=torch.uint8)],
++             "hpu_api": "torch.hpu.get_rng_state_all"},
++            path,
++        )
++    return tuple(states)
++
++
++def _expected(manifest: DistributedCheckpointManifest) -> dict[str, object]:
++    value = manifest.to_dict()
++    value["rank_bindings"] = [
++        {"rank": row.rank, "local_rank": row.local_rank,
++         "module_id": row.module_id, "device": row.device}
++        for row in manifest.ranks
++    ]
++    value["match_shards"] = [
++        {"match_indices": list(row.match_indices), "match_ids": list(row.match_ids),
++         "match_sha256": list(row.match_sha256)}
++        for row in manifest.ranks
++    ]
++    return {
++        key: value[key] for key in (
++            "run_id", "policy_version", "update_index", "config_sha256",
++            "model_id", "model_revision", "adapter_schema_sha256",
++            "optimizer_schema_sha256", "tokenizer_sha256", "grammar_sha256",
++            "code_identity", "runtime_identity", "attention_backend", "dtype",
++            "backend", "trainer_world_size", "source_rollout_manifest_sha256",
++            "sharding_rule", "rank_bindings", "match_shards",
++        )
++    }
++
++
++def _saved(tmp_path: Path) -> tuple[SynchronousTrainer, Path, tuple[torch.Tensor, ...]]:
++    staging = tmp_path / "staging"
++    states = _stage(staging)
++    trainer = _trainer(tmp_path / "artifacts")
++    checkpoint = trainer.save_checkpoint(
++        _metrics(), validation_only=True,
++        distributed_manifest=_template(), rank_rng_staging=staging,
++    )
++    return trainer, checkpoint, states
++
++
++def test_format_three_save_and_rank_one_restore(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
++    trainer, checkpoint, rng_states = _saved(tmp_path)
++    manifest = read_distributed_manifest(checkpoint)
++    verify_checkpoint_files(checkpoint, manifest)
++    assert json.loads((checkpoint / "trainer_state.json").read_text())["checkpoint_format"] == 3
++    original_weight = trainer.policy.model.weight.detach().clone()
++    original_moment = next(iter(trainer.optimizer.state.values()))["exp_avg"].detach().clone()
++    with torch.no_grad():
++        trainer.policy.model.weight.add_(10)
++        next(iter(trainer.optimizer.state.values()))["exp_avg"].add_(10)
++    restored_hpu: list[object] = []
++    monkeypatch.setattr(
++        torch, "hpu", SimpleNamespace(set_rng_state_all=restored_hpu.append),
++        raising=False,
++    )
++    trainer.load_checkpoint(
++        checkpoint, allow_validation=True,
++        distributed_expected=_expected(manifest), distributed_rank=1,
++    )
++    assert torch.equal(trainer.policy.model.weight, original_weight)
++    assert torch.equal(next(iter(trainer.optimizer.state.values()))["exp_avg"], original_moment)
++    assert torch.equal(torch.get_rng_state(), rng_states[1])
++    assert torch.equal(restored_hpu[0][0], torch.tensor([1], dtype=torch.uint8))
++
++
++def test_validation_and_hash_fail_before_adapter_mutation(tmp_path: Path) -> None:
++    trainer, checkpoint, _ = _saved(tmp_path)
++    manifest = read_distributed_manifest(checkpoint)
++    with torch.no_grad():
++        trainer.policy.model.weight.add_(10)
++    before = trainer.policy.model.weight.detach().clone()
++    with pytest.raises(ValueError, match="validation-only"):
++        trainer.load_checkpoint(
++            checkpoint, distributed_expected=_expected(manifest), distributed_rank=0,
++        )
++    assert torch.equal(trainer.policy.model.weight, before)
++    target = checkpoint / "optimizer_state.pt"
++    target.write_bytes(target.read_bytes() + b"tampered")
++    with pytest.raises(ValueError, match="size differs"):
++        trainer.load_checkpoint(
++            checkpoint, allow_validation=True,
++            distributed_expected=_expected(manifest), distributed_rank=0,
++        )
++    assert torch.equal(trainer.policy.model.weight, before)
++
++
++def test_missing_rank_stage_never_publishes_checkpoint(tmp_path: Path) -> None:
++    staging = tmp_path / "staging"
++    _stage(staging, ranks=1)
++    trainer = _trainer(tmp_path / "artifacts")
++    with pytest.raises(FileNotFoundError):
++        trainer.save_checkpoint(
++            _metrics(), validation_only=True,
++            distributed_manifest=_template(), rank_rng_staging=staging,
++        )
++    assert not (trainer.artifact_dir / "checkpoints" / trainer.policy_version).exists()
++
++
++def test_destination_collision_preserves_published_checkpoint(tmp_path: Path) -> None:
++    trainer, checkpoint, _ = _saved(tmp_path)
++    digest = file_sha256(checkpoint / "distributed" / "manifest.json")
++    with pytest.raises(FileExistsError, match="Refusing to overwrite"):
++        trainer.save_checkpoint(
++            _metrics(), validation_only=True,
++            distributed_manifest=_template(), rank_rng_staging=tmp_path / "staging",
++        )
++    assert file_sha256(checkpoint / "distributed" / "manifest.json") == digest
++
++
++def test_rank_stage_writer_is_atomic_and_refuses_overwrite(
++    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
++) -> None:
++    monkeypatch.setattr(
++        torch, "hpu",
++        SimpleNamespace(
++            is_initialized=lambda: True, synchronize=lambda: None,
++            get_rng_state_all=lambda: [torch.tensor([7], dtype=torch.uint8)],
++        ),
++        raising=False,
++    )
++    target = write_rank_rng_record(tmp_path, _rank(0))
++    assert target.is_file()
++    assert not target.with_name(target.name + ".tmp").exists()
++    with pytest.raises(FileExistsError, match="already exists"):
++        write_rank_rng_record(tmp_path, _rank(0))
++
++
++def test_internal_duplicate_match_id_is_rejected() -> None:
++    bad = replace(_rank(0), match_indices=(0, 1), match_ids=("same", "same"),
++                  match_sha256=("a" * 64, "b" * 64))
++    with pytest.raises(ValueError, match="unique"):
++        bad.validate()

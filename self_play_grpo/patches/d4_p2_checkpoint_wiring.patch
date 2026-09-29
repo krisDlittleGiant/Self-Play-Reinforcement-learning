@@ -1,0 +1,251 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py b/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py
+--- a/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py
++++ b/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py
+@@ -137,6 +137,8 @@ class TrainerRankState:
+             _integer(index, "match index")
+         for match_id in self.match_ids:
+             _text(match_id, "match ID")
++        if len(set(self.match_ids)) != len(self.match_ids):
++            raise ValueError("Rank match IDs must be unique")
+         for digest in self.match_sha256:
+             _digest(digest, "match sha256")
+@@ -382,7 +384,7 @@ def validate_rank_rng_record(
+         raise ValueError(f"Rank {rank.rank} RNG HPU API differs")
+     if not torch.is_tensor(record["cpu"]) or record["cpu"].dtype != torch.uint8:
+         raise ValueError(f"Rank {rank.rank} CPU RNG state is not a byte tensor")
+-    if not isinstance(record["hpu"], list) or not record["hpu"]:
++    if not isinstance(record["hpu"], (list, tuple)) or not record["hpu"]:
+         raise ValueError(f"Rank {rank.rank} HPU RNG state is missing")
+     if any(not torch.is_tensor(state) or state.dtype != torch.uint8 for state in record["hpu"]):
+         raise ValueError(f"Rank {rank.rank} HPU RNG state contains invalid tensors")
+diff --git a/self_play_grpo/src/self_play_grpo/training/loop.py b/self_play_grpo/src/self_play_grpo/training/loop.py
+--- a/self_play_grpo/src/self_play_grpo/training/loop.py
++++ b/self_play_grpo/src/self_play_grpo/training/loop.py
+@@ -7,8 +7,9 @@ from __future__ import annotations
+ 
+ import json
++import shutil
+ import tempfile
+-from dataclasses import dataclass
++from dataclasses import dataclass, replace
+ from pathlib import Path
+ from typing import Any, Callable
+ 
+@@ -217,6 +218,8 @@ class SynchronousTrainer:
+         metrics: UpdateMetrics,
+         *,
+         validation_only: bool = False,
++        distributed_manifest: Any | None = None,
++        rank_rng_staging: str | Path | None = None,
+     ) -> Path:
+         try:
+             import torch
+@@ -224,6 +227,24 @@ class SynchronousTrainer:
+             raise RuntimeError("Torch is required for checkpointing") from exc
+         destination = self.artifact_dir / "checkpoints" / self.policy_version
+         checkpoint_root = destination.parent
++        if distributed_manifest is not None:
++            from self_play_grpo.training.distributed_checkpoint import (
++                CHECKPOINT_FORMAT,
++                validate_rank_rng_record,
++            )
++
++            if rank_rng_staging is None:
++                raise ValueError("Distributed checkpoint requires rank RNG staging")
++            if validation_only != (distributed_manifest.run_kind == "validation"):
++                raise ValueError("Distributed run kind and validation_only disagree")
++            if (distributed_manifest.update_index, distributed_manifest.policy_version) != (
++                self.update_index, self.policy_version
++            ):
++                raise ValueError("Distributed checkpoint trainer version differs")
++            if distributed_manifest.checkpoint_format != CHECKPOINT_FORMAT:
++                raise ValueError("Distributed checkpoint format differs")
++            for rank_state in distributed_manifest.ranks:
++                validate_rank_rng_record(rank_rng_staging, rank_state)
++        elif rank_rng_staging is not None:
++            raise ValueError("Rank RNG staging requires distributed metadata")
+         checkpoint_root.mkdir(parents=True, exist_ok=True)
+         if destination.exists():
+             raise FileExistsError(f"Refusing to overwrite checkpoint: {destination}")
+@@ -239,15 +260,26 @@ class SynchronousTrainer:
+                 safe_serialization=True,
+             )
+             torch.save(self.optimizer.state_dict(), temporary / "optimizer_state.pt")
+-            rng_state: dict[str, Any] = {"cpu": torch.get_rng_state()}
+-            if (
+-                hasattr(torch, "hpu")
+-                and hasattr(torch.hpu, "is_initialized")
+-                and torch.hpu.is_initialized()
+-                and hasattr(torch.hpu, "get_rng_state_all")
+-            ):
+-                rng_state["hpu"] = torch.hpu.get_rng_state_all()
++            if distributed_manifest is None:
++                rng_state: dict[str, Any] = {"cpu": torch.get_rng_state()}
++                if (
++                    hasattr(torch, "hpu")
++                    and hasattr(torch.hpu, "is_initialized")
++                    and torch.hpu.is_initialized()
++                    and hasattr(torch.hpu, "get_rng_state_all")
++                ):
++                    rng_state["hpu"] = torch.hpu.get_rng_state_all()
++            else:
++                from self_play_grpo.training.distributed_checkpoint import (
++                    load_rank_rng_record,
++                )
++
++                rank_zero = load_rank_rng_record(rank_rng_staging, distributed_manifest.ranks[0])
++                rng_state = {"cpu": rank_zero["cpu"], "hpu": rank_zero["hpu"]}
+             torch.save(rng_state, temporary / "torch_rng_state.pt")
+             if self.evaluator is not None:
+                 torch.save(
+@@ -257,13 +289,15 @@ class SynchronousTrainer:
+                     temporary / "evaluator_state.pt",
+                 )
+             state = {
+-                "checkpoint_format": 2,
++                "checkpoint_format": 2 if distributed_manifest is None else 3,
+                 "model_storage": "peft_adapter_only",
+                 "validation_only": validation_only,
+                 "update_index": self.update_index,
+                 "policy_version": self.policy_version,
+                 "config": self.config.to_dict(),
+                 "last_update": metrics.__dict__,
+             }
++            if distributed_manifest is not None:
++                state["model_training"] = bool(self.policy.model.training)
+             (temporary / "trainer_state.json").write_text(
+                 json.dumps(state, indent=2, sort_keys=True) + "\n",
+                 encoding="utf-8",
+             )
++            if distributed_manifest is not None:
++                from self_play_grpo.training.distributed_checkpoint import (
++                    MANIFEST_PATH,
++                    build_checkpoint_inventory,
++                    verify_checkpoint_files,
++                )
++
++                for rank_state in distributed_manifest.ranks:
++                    source = Path(rank_rng_staging) / rank_state.rng_path
++                    target = temporary / rank_state.rng_path
++                    target.parent.mkdir(parents=True, exist_ok=True)
++                    shutil.copyfile(source, target, follow_symlinks=False)
++                complete_manifest = replace(
++                    distributed_manifest,
++                    files=build_checkpoint_inventory(temporary),
++                )
++                complete_manifest.validate()
++                manifest_path = temporary / MANIFEST_PATH
++                manifest_path.parent.mkdir(parents=True, exist_ok=True)
++                manifest_path.write_text(
++                    json.dumps(complete_manifest.to_dict(), indent=2, sort_keys=True) + "\n",
++                    encoding="utf-8",
++                )
++                verify_checkpoint_files(temporary, complete_manifest)
+             temporary.replace(destination)
+         return destination
+@@ -276,6 +326,8 @@ class SynchronousTrainer:
+         checkpoint: str | Path,
+         *,
+         allow_validation: bool = False,
++        distributed_expected: Any | None = None,
++        distributed_rank: int | None = None,
+     ) -> None:
+         """Restore a batch-boundary checkpoint into an already constructed trainer."""
+@@ -286,6 +338,30 @@ class SynchronousTrainer:
+             raise RuntimeError("Torch is required for checkpoint resume") from exc
+         source = Path(checkpoint)
+         state = json.loads((source / "trainer_state.json").read_text(encoding="utf-8"))
++        distributed = distributed_expected is not None or distributed_rank is not None
++        if distributed:
++            if distributed_expected is None or distributed_rank is None:
++                raise ValueError("Distributed load requires expected identity and rank")
++            from self_play_grpo.training.distributed_checkpoint import (
++                load_rank_rng_record,
++                read_distributed_manifest,
++                validate_resume_identity,
++                verify_checkpoint_files,
++            )
++
++            manifest = read_distributed_manifest(source)
++            verify_checkpoint_files(source, manifest)
++            validate_resume_identity(
++                manifest, expected=distributed_expected, allow_validation=allow_validation
++            )
++            if not 0 <= distributed_rank < manifest.trainer_world_size:
++                raise ValueError("Distributed rank is outside checkpoint world size")
++            for rank_state in manifest.ranks:
++                load_rank_rng_record(source, rank_state)
++            if state.get("checkpoint_format") != 3:
++                raise ValueError("Distributed trainer state format differs")
++            if state.get("validation_only") != (manifest.run_kind == "validation"):
++                raise ValueError("Distributed trainer state run kind differs")
++            if (state.get("update_index"), state.get("policy_version")) != (
++                manifest.update_index, manifest.policy_version
++            ):
++                raise ValueError("Distributed trainer state version differs")
++            if type(state.get("model_training")) is not bool:
++                raise ValueError("Distributed model training mode is missing")
+         expected_config = json.dumps(self.config.to_dict(), sort_keys=True)
+@@ -293,7 +369,7 @@ class SynchronousTrainer:
+         if recorded_config != expected_config:
+             raise ValueError("Checkpoint configuration differs from the active experiment")
+-        if state.get("checkpoint_format") != 2:
++        if state.get("checkpoint_format") != (3 if distributed else 2):
+             raise ValueError("Unsupported checkpoint format")
+@@ -303,6 +379,13 @@ class SynchronousTrainer:
+         adapter_path = source / "adapter"
+         if not adapter_path.is_dir():
+             raise FileNotFoundError(f"Checkpoint adapter is missing: {adapter_path}")
++        evaluator_path = source / "evaluator_state.pt"
++        if distributed and evaluator_path.exists() != (self.evaluator is not None):
++            raise ValueError("Distributed evaluator state presence differs")
++        if distributed:
++            rank_rng = load_rank_rng_record(source, manifest.ranks[distributed_rank])
++            optimizer_state = torch.load(
++                source / "optimizer_state.pt", map_location="cpu", weights_only=True
++            )
+         if not hasattr(self.policy.model, "load_adapter"):
+             raise TypeError("Checkpoint resume requires a PEFT model with load_adapter")
+@@ -322,9 +405,11 @@ class SynchronousTrainer:
+                 f"unexpected={load_result.unexpected_keys}"
+             )
+-        optimizer_state = torch.load(
+-            source / "optimizer_state.pt", map_location="cpu", weights_only=True
+-        )
++        if not distributed:
++            optimizer_state = torch.load(
++                source / "optimizer_state.pt", map_location="cpu", weights_only=True
++            )
+         self.optimizer.load_state_dict(optimizer_state)
+@@ -332,14 +417,15 @@ class SynchronousTrainer:
+         # particular, non-capturable Adam step counters may intentionally stay
+         # on CPU while moment tensors follow their HPU parameters.
+ 
+-        rng_state = torch.load(
+-            source / "torch_rng_state.pt", map_location="cpu", weights_only=True
+-        )
+-        torch.set_rng_state(rng_state["cpu"])
+-        if "hpu" in rng_state and hasattr(torch, "hpu") and hasattr(torch.hpu, "set_rng_state_all"):
+-            torch.hpu.set_rng_state_all(rng_state["hpu"])
+-        evaluator_path = source / "evaluator_state.pt"
++        if not distributed:
++            rng_state = torch.load(
++                source / "torch_rng_state.pt", map_location="cpu", weights_only=True
++            )
+         if evaluator_path.exists():
+             if self.evaluator is None:
+                 raise ValueError("Checkpoint contains an evaluator but the trainer does not")
+@@ -349,5 +435,15 @@ class SynchronousTrainer:
+             self.evaluator.model.load_state_dict(evaluator_state, strict=True)
+         self.update_index = int(state["update_index"])
+         self.policy_version = str(state["policy_version"])
++        if distributed:
++            self.policy.model.train(state["model_training"])
++            torch.set_rng_state(rank_rng["cpu"])
++            if not hasattr(torch, "hpu") or not hasattr(torch.hpu, "set_rng_state_all"):
++                raise RuntimeError("This runtime cannot restore rank HPU RNG state")
++            torch.hpu.set_rng_state_all(rank_rng["hpu"])
++        else:
++            torch.set_rng_state(rng_state["cpu"])
++            if "hpu" in rng_state and hasattr(torch, "hpu") and hasattr(torch.hpu, "set_rng_state_all"):
++                torch.hpu.set_rng_state_all(rng_state["hpu"])

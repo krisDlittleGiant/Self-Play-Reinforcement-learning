@@ -1,0 +1,9 @@
+diff --git a/self_play_grpo/docs/D6_UPDATE2_RESUME_RUNBOOK_2026-09-28.md b/self_play_grpo/docs/D6_UPDATE2_RESUME_RUNBOOK_2026-09-28.md
+--- a/self_play_grpo/docs/D6_UPDATE2_RESUME_RUNBOOK_2026-09-28.md
++++ b/self_play_grpo/docs/D6_UPDATE2_RESUME_RUNBOOK_2026-09-28.md
+@@ -30,2 +30,3 @@
+-`rollout-000001` may be used. A partially collected rollout is preserved and
+-rejected, not silently replayed. Recovery from interruption inside update 2
++`rollout-000001` may be used. A complete published batch is verified and
++reused after an interruption. A partially collected rollout is preserved and
++rejected, not silently replayed. Recovery from interruption inside update 2

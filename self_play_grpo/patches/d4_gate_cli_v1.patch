@@ -1,0 +1,43 @@
+diff --git a/self_play_grpo/src/self_play_grpo/cli.py b/self_play_grpo/src/self_play_grpo/cli.py
+--- a/self_play_grpo/src/self_play_grpo/cli.py
++++ b/self_play_grpo/src/self_play_grpo/cli.py
+@@ -62,5 +62,15 @@
+ 
+ 
+-def command_validate_distributed_policy_update(args: argparse.Namespace) -> int:
++def command_validate_distributed_checkpoint_resume(args: argparse.Namespace) -> int:
++    """Run the bounded validation-only D4 save/reload continuation gate."""
++
++    from self_play_grpo.training.distributed_resume_gate import (
++        run_distributed_checkpoint_resume_gate,
++    )
++
++    return run_distributed_checkpoint_resume_gate(args)
++
++
++def command_validate_distributed_policy_update(args: argparse.Namespace) -> int:
+     """Run one real, validation-only replicated LoRA update on saved matches."""
+ 
+@@ -2295,5 +2305,21 @@
+     distributed_update.add_argument("--replay-tolerance", type=float, default=2e-4)
+     distributed_update.add_argument("--timeout-seconds", type=int, default=1800)
+-    distributed_update.set_defaults(handler=command_validate_distributed_policy_update)
++    distributed_update.set_defaults(handler=command_validate_distributed_policy_update)
++
++    distributed_resume = subparsers.add_parser(
++        "validate-distributed-checkpoint-resume",
++        help="compare exact uninterrupted and reloaded trainer continuation on saved D2/D3 inputs",
++    )
++    distributed_resume.add_argument("--config", required=True, type=Path)
++    distributed_resume.add_argument("--source-rollout", required=True, type=Path)
++    distributed_resume.add_argument("--source-checkpoint", required=True, type=Path)
++    distributed_resume.add_argument("--output", required=True, type=Path)
++    distributed_resume.add_argument("--expected-world-size", required=True, type=int)
++    distributed_resume.add_argument("--joint-step", type=int, default=0)
++    distributed_resume.add_argument("--match-offset", type=int, default=0)
++    distributed_resume.add_argument("--seed", type=int, default=741)
++    distributed_resume.add_argument("--timeout-seconds", type=int, default=1800)
++    distributed_resume.add_argument("--allow-validation-source", action="store_true")
++    distributed_resume.set_defaults(handler=command_validate_distributed_checkpoint_resume)
+ 
+     distributed_pilot = subparsers.add_parser(

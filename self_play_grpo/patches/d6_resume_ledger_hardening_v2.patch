@@ -1,0 +1,30 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_trainer_resume.py b/self_play_grpo/src/self_play_grpo/training/d6_trainer_resume.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_trainer_resume.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_trainer_resume.py
+@@ -23,6 +23,7 @@ from self_play_grpo.training.distributed_resume_gate import (
+ from self_play_grpo.training.identity import (
+     optimizer_state_sha256, trainable_parameter_sha256,
+ )
++from self_play_grpo.training.ledger import read_commits
+ from self_play_grpo.training.production_checkpoint import production_code_identity
+ 
+ 
+@@ -88,7 +89,18 @@ def restore_first_production_update(
+     post-restore tensor/optimizer fingerprint comparison. It performs no step.
+     """
+ 
+     root = Path(root)
++    records = read_commits(root)
++    if not records:
++        raise ValueError("D6 restore requires a committed production ledger")
++    head = records[-1]
++    if (head.run_id != plan.run_id
++            or head.update_index != plan.committed_update
++            or head.policy_version != plan.policy_version
++            or head.checkpoint_path != plan.checkpoint
++            or head.checkpoint_manifest_sha256 != plan.checkpoint_manifest_sha256
++            or head.source_manifest_sha256 != plan.source_manifest_sha256):
++        raise ValueError("D6 restore plan differs from the authoritative ledger")
+     checkpoint = root / plan.checkpoint
+     if checkpoint.is_symlink() or not checkpoint.is_dir():
+         raise ValueError("D6 committed checkpoint is missing or symlinked")

@@ -1,0 +1,10 @@
+diff --git a/self_play_grpo/tests/test_policy_refresh.py b/self_play_grpo/tests/test_policy_refresh.py
+--- a/self_play_grpo/tests/test_policy_refresh.py
++++ b/self_play_grpo/tests/test_policy_refresh.py
+@@ -44 +44,5 @@
+-    assert module.policy_probe(model, Path("unused")) == _probe([-0.5, pytest.approx(-0.1)]) if False else None
++    result = module.policy_probe(model, Path("unused"))
++    assert result["log_probs"] == pytest.approx([-0.5, -0.1])
++    assert result["match_sha256"] == "a" * 64
++    assert observed == [(False, sample)]
++    assert model.training

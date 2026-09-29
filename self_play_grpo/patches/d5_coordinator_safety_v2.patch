@@ -1,0 +1,27 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/coordinator.py b/self_play_grpo/src/self_play_grpo/training/coordinator.py
+--- a/self_play_grpo/src/self_play_grpo/training/coordinator.py
++++ b/self_play_grpo/src/self_play_grpo/training/coordinator.py
+@@ -56,6 +56,11 @@ class RoleLayout:
+     trainer_modules: tuple[int, int, int, int]
+
+     def __post_init__(self) -> None:
+         modules = self.rollout_modules + self.trainer_modules
+-        if any(module < 0 for module in modules) or len(set(modules)) != 8:
++        if (
++            len(self.rollout_modules) != 4
++            or len(self.trainer_modules) != 4
++            or any(module < 0 for module in modules)
++            or len(set(modules)) != 8
++        ):
+             raise ValueError("D5 requires eight distinct non-negative HPU modules")
+@@ -218,9 +223,9 @@ class CycleCoordinator:
+             raise ValueError("Coordinator game count differs from the rollout config")
+
+     def _require(self, phase: Phase) -> None:
+         if self.phase != phase:
+-            raise CycleError(f"Expected phase {phase.value}, got {self.phase.value}")
++            self._fail(f"Expected phase {phase.value}, got {self.phase.value}")
+
+     def _fail(self, message: str) -> None:
+         self.failure = message
+         self.phase = Phase.FAILED

@@ -1,0 +1,19 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+--- a/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
++++ b/self_play_grpo/src/self_play_grpo/training/production_checkpoint.py
+@@ -29,11 +29,15 @@ _CODE_FILES = (
+     "training/coordinator.py",
++    "training/d5_preflight.py",
+     "training/distributed.py",
+     "training/distributed_checkpoint.py",
+     "training/distributed_resume_gate.py",
+     "training/identity.py",
+     "training/loop.py",
+     "training/loss.py",
++    "training/process_supervisor.py",
+     "training/production_checkpoint.py",
++    "training/rollout_worker.py",
+     "training/trainer_handoff.py",
+     "training/trainer_update.py",
++    "training/trainer_worker.py",
+ )

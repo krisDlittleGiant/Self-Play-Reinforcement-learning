@@ -1,0 +1,35 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/trainer_update.py b/self_play_grpo/src/self_play_grpo/training/trainer_update.py
+--- a/self_play_grpo/src/self_play_grpo/training/trainer_update.py
++++ b/self_play_grpo/src/self_play_grpo/training/trainer_update.py
+@@ -11,4 +11,3 @@
+ import math
+-from contextlib import AbstractContextManager
+ from dataclasses import dataclass
+ from typing import Any, Callable
+@@ -81,7 +80,8 @@ def synchronized_trainer_update(
+     *,
+     runtime: Any,
+     torch: Any,
+     dist: Any,
++    replay_tolerance: float = 2e-4,
+ ) -> SynchronizedUpdateResult:
+     """Backpropagate 16 games/rank, all-reduce once, and take one AdamW step.
+ 
+@@ -107,6 +107,8 @@ def synchronized_trainer_update(
+     if trainer.config.training.kl_beta != 0.0:
+         raise ValueError("D5 outcome baseline requires zero KL beta")
+     if trainer.config.training.optimizer_epochs_per_batch != 1:
+         raise ValueError("D5 outcome baseline requires one optimizer epoch")
++    if not math.isfinite(replay_tolerance) or replay_tolerance <= 0.0:
++        raise ValueError("D5 replay tolerance must be finite and positive")
+     if not dist.is_initialized() or dist.get_world_size() != 4 or dist.get_rank() != runtime.rank:
+         raise RuntimeError("D5 four-rank process group is not initialized")
+@@ -135,7 +137,5 @@ def synchronized_trainer_update(
+                 clip_epsilon=trainer.config.training.clip_epsilon,
+                 loss_normalizer_per_game=trainer.config.training.loss_normalizer_per_game,
+                 kl_beta=0.0, log_prob_function=constrained_log_probs_batched_shape,
+-                replay_tolerance=admission.receipt.max_replay_error
+-                if admission.receipt.max_replay_error > 0
+-                else 2e-4,
++                replay_tolerance=replay_tolerance,
+             )

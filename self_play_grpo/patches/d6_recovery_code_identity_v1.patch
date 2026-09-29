@@ -1,0 +1,23 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/d6_recovery.py b/self_play_grpo/src/self_play_grpo/training/d6_recovery.py
+--- a/self_play_grpo/src/self_play_grpo/training/d6_recovery.py
++++ b/self_play_grpo/src/self_play_grpo/training/d6_recovery.py
+@@ -15,5 +15,6 @@
+ from self_play_grpo.config import load_config
+ from self_play_grpo.rollouts.pilot import canonical_sha256, directory_sha256, file_sha256
++from self_play_grpo.training.d6_code_identity import d6_code_identity
+ from self_play_grpo.training.distributed_checkpoint import read_distributed_manifest
+ from self_play_grpo.training.ledger import read_commits
+ from self_play_grpo.training.production_checkpoint import production_code_identity
+@@ -81,7 +82,11 @@
+     checkpoint = root / head.checkpoint_path
+     manifest = read_distributed_manifest(checkpoint)
++    expected_code = (production_code_identity() if head.update_index == 1 else
++                     d6_code_identity() if head.update_index == 2 else None)
++    if expected_code is None:
++        raise ValueError("D6 recovery does not yet support this checkpoint generation")
+     if (manifest.config_sha256 != config_digest
+             or manifest.model_id != config.model.id
+             or manifest.model_revision != config.model.revision
+-            or manifest.code_identity != production_code_identity()
++            or manifest.code_identity != expected_code
+             or manifest.trainer_world_size != 4):

@@ -1,0 +1,76 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py b/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py
+--- a/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py
++++ b/self_play_grpo/src/self_play_grpo/training/distributed_checkpoint.py
+@@ -423,2 +423,72 @@
+     if any(not torch.is_tensor(state) or state.dtype != torch.uint8 for state in record["hpu"]):
+         raise ValueError(f"Rank {rank.rank} HPU RNG state contains invalid tensors")
++
++
++def load_rank_rng_record(root: str | Path, rank: TrainerRankState) -> dict[str, Any]:
++    """Load a validated rank-local RNG record without restoring it yet."""
++
++    import torch
++
++    validate_rank_rng_record(root, rank)
++    return torch.load(Path(root) / rank.rng_path, map_location="cpu", weights_only=True)
++
++
++def write_rank_rng_record(root: str | Path, rank: TrainerRankState) -> Path:
++    """Stage one rank's CPU and HPU RNG at a synchronized update boundary."""
++
++    import torch
++
++    rank.validate()
++    if not hasattr(torch, "hpu") or not hasattr(torch.hpu, "get_rng_state_all"):
++        raise RuntimeError("This runtime cannot capture rank HPU RNG state")
++    if hasattr(torch.hpu, "is_initialized") and not torch.hpu.is_initialized():
++        raise RuntimeError("HPU must be initialized before capturing rank RNG")
++    if hasattr(torch.hpu, "synchronize"):
++        torch.hpu.synchronize()
++    states = torch.hpu.get_rng_state_all()
++    if not isinstance(states, (list, tuple)) or not states:
++        raise RuntimeError("HPU RNG capture returned no rank state")
++    root_path = Path(root)
++    target = root_path / rank.rng_path
++    target.parent.mkdir(parents=True, exist_ok=True)
++    if target.exists() or target.is_symlink():
++        raise FileExistsError(f"Rank RNG record already exists: {target}")
++    temporary = target.with_name(target.name + ".tmp")
++    if temporary.exists() or temporary.is_symlink():
++        raise FileExistsError(f"Temporary rank RNG record already exists: {temporary}")
++    record = {
++        "schema_version": 1,
++        "rank": rank.rank,
++        "module_id": rank.module_id,
++        "cpu": torch.get_rng_state(),
++        "hpu": list(states),
++        "hpu_api": "torch.hpu.get_rng_state_all",
++    }
++    try:
++        torch.save(record, temporary)
++        temporary.replace(target)
++        validate_rank_rng_record(root_path, rank)
++    finally:
++        temporary.unlink(missing_ok=True)
++    return target
++
++
++def build_checkpoint_inventory(root: str | Path) -> tuple[CheckpointFile, ...]:
++    """Hash every checkpoint file except the manifest to be written last."""
++
++    root_path = Path(root).resolve(strict=True)
++    files: list[CheckpointFile] = []
++    for candidate in root_path.rglob("*"):
++        if candidate.is_symlink():
++            raise ValueError(f"Checkpoint contains a symlink: {candidate}")
++        if candidate.is_file():
++            relative = candidate.relative_to(root_path).as_posix()
++            if relative == MANIFEST_PATH:
++                raise ValueError("Checkpoint manifest already exists before inventory")
++            files.append(CheckpointFile(relative, candidate.stat().st_size, file_sha256(candidate)))
++        elif not candidate.is_dir():
++            raise ValueError(f"Checkpoint contains a non-file entry: {candidate}")
++    result = tuple(sorted(files, key=lambda file: file.path))
++    for file in result:
++        file.validate()
++    return result

@@ -1,0 +1,100 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/process_supervisor.py b/self_play_grpo/src/self_play_grpo/training/process_supervisor.py
+--- a/self_play_grpo/src/self_play_grpo/training/process_supervisor.py
++++ b/self_play_grpo/src/self_play_grpo/training/process_supervisor.py
+@@ -134,13 +134,20 @@ class WorkerFailure(RuntimeError):
+         self.report = report
+ 
+ 
++def _group_exists(process: subprocess.Popen[bytes]) -> bool:
++    try:
++        os.killpg(process.pid, 0)
++        return True
++    except ProcessLookupError:
++        return False
++
++
+ def _stop_groups(processes: Sequence[subprocess.Popen[bytes]], grace_seconds: float) -> None:
+     for process in processes:
+-        if process.poll() is None:
+-            try:
+-                os.killpg(process.pid, signal.SIGTERM)
+-            except ProcessLookupError:
+-                pass
++        try:
++            os.killpg(process.pid, signal.SIGTERM)
++        except ProcessLookupError:
++            pass
+     deadline = time.monotonic() + grace_seconds
+     for process in processes:
+         if process.poll() is None:
+@@ -149,11 +156,10 @@ def _stop_groups(processes: Sequence[subprocess.Popen[bytes]], grace_seconds: float) -> None:
+             except subprocess.TimeoutExpired:
+                 pass
+     for process in processes:
+-        if process.poll() is None:
+-            try:
+-                os.killpg(process.pid, signal.SIGKILL)
+-            except ProcessLookupError:
+-                pass
++        try:
++            os.killpg(process.pid, signal.SIGKILL)
++        except ProcessLookupError:
++            pass
+     for process in processes:
+         try:
+             process.wait(timeout=max(0.1, grace_seconds))
+@@ -220,6 +226,8 @@ def supervise_workers(
+                 failure = "One or more D5 workers exited unsuccessfully"
+                 break
+             if all(code == 0 for code in exited):
++                if any(_group_exists(child) for child in processes):
++                    failure = "D5 worker descendants remain after worker exit"
+                 break
+             if time.monotonic() >= deadline:
+                 failure = "D5 worker deadline expired"
+@@ -228,8 +236,8 @@ def supervise_workers(
+             time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
+-    except Exception as exc:
+-        failure = f"D5 worker launch failed: {exc}"
++    except BaseException as exc:
++        failure = f"D5 worker supervision interrupted: {type(exc).__name__}: {exc}"
+     finally:
+         if failure is not None:
+             _stop_groups(processes, terminate_grace_seconds)
+         for handle in handles:
+diff --git a/self_play_grpo/tests/test_process_supervisor.py b/self_play_grpo/tests/test_process_supervisor.py
+--- a/self_play_grpo/tests/test_process_supervisor.py
++++ b/self_play_grpo/tests/test_process_supervisor.py
+@@ -77,6 +77,6 @@ def test_failed_worker_terminates_peers_and_preserves_report(tmp_path):
+ 
+ 
+ def test_incomplete_workers_rejected_before_process_creation(tmp_path):
+-    with pytest.raises(ValueError, match="every 4\+4 slot"):
++    with pytest.raises(ValueError, match=r"every 4\+4 slot"):
+         supervise_workers(
+             commands("print('ok')")[:-1], LAYOUT, tmp_path / "not-created",
+diff --git a/self_play_grpo/docs/D5_LAUNCH_SUPERVISION_STATUS.md b/self_play_grpo/docs/D5_LAUNCH_SUPERVISION_STATUS.md
+--- a/self_play_grpo/docs/D5_LAUNCH_SUPERVISION_STATUS.md
++++ b/self_play_grpo/docs/D5_LAUNCH_SUPERVISION_STATUS.md
+@@ -28,14 +28,15 @@ alone is reported as `workers_exited`, not as a successful GRPO update.
+ On 28 September 2026, 14 focused no-HPU tests passed. The complete non-model
+ suite passed 175 tests with three existing Habana import/deprecation warnings.
+ The supervisor teardown hardening in
+-`patches/d5_supervisor_teardown_v2.patch` passes `git apply --check` but needs
+-to be applied in the remote workspace. It detects descendants left by an
+-exited worker and sends termination to the whole process group. Do **not**
+-apply the malformed superseded `d5_supervisor_teardown_v1.patch`.
++`patches/d5_supervisor_teardown_v3.patch` passes `git apply --check` but needs
++to be applied in the remote workspace. It detects descendants left by an
++exited worker, terminates the whole process group, and cleans up on keyboard
++interruption. Do **not** apply superseded v1 or v2.
+ 
+-After applying v2, rerun:
++After applying v3, rerun:
+ 
+ ```bash
+-git apply --check self_play_grpo/patches/d5_supervisor_teardown_v2.patch
+-git apply self_play_grpo/patches/d5_supervisor_teardown_v2.patch
++git apply --check self_play_grpo/patches/d5_supervisor_teardown_v3.patch
++git apply self_play_grpo/patches/d5_supervisor_teardown_v3.patch
+ bash env/shell.sh python -m pytest self_play_grpo/tests/test_process_supervisor.py self_play_grpo/tests/test_d4_acceptance.py self_play_grpo/tests/test_d5_preflight.py -q

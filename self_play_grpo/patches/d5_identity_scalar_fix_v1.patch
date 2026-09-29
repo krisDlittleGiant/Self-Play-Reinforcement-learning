@@ -1,0 +1,12 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/identity.py b/self_play_grpo/src/self_play_grpo/training/identity.py
+--- a/self_play_grpo/src/self_play_grpo/training/identity.py
++++ b/self_play_grpo/src/self_play_grpo/training/identity.py
+@@ -30,7 +30,7 @@ def _encode(value: Any, hasher: Any, torch: Any) -> None:
+         _encode(tuple(detached.shape), hasher, torch)
+         # Viewing raw bytes also supports bfloat16, which NumPy cannot encode
+         # directly.  The dtype and shape are hashed separately above.
+-        raw = detached.view(torch.uint8).numpy().tobytes()
++        raw = detached.reshape(-1).view(torch.uint8).numpy().tobytes()
+         _field(hasher, b"tensor_data", raw)
+     elif value is None:
+         _field(hasher, b"none", b"")

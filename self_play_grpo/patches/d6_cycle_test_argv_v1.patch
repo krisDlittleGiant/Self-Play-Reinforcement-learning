@@ -1,0 +1,6 @@
+diff --git a/self_play_grpo/tests/test_d6_cycle_flow.py b/self_play_grpo/tests/test_d6_cycle_flow.py
+--- a/self_play_grpo/tests/test_d6_cycle_flow.py
++++ b/self_play_grpo/tests/test_d6_cycle_flow.py
+@@ -89,1 +89,1 @@
+-            assert any("d6_trainer_worker" in part for worker in workers for part in worker.command)
++            assert any("d6_trainer_worker" in part for worker in workers for part in worker.argv)

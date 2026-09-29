@@ -1,0 +1,23 @@
+diff --git a/self_play_grpo/src/self_play_grpo/training/loop.py b/self_play_grpo/src/self_play_grpo/training/loop.py
+--- a/self_play_grpo/src/self_play_grpo/training/loop.py
++++ b/self_play_grpo/src/self_play_grpo/training/loop.py
+@@ -233,10 +233,19 @@
+             if (distributed_manifest.update_index, distributed_manifest.policy_version) != (
+                 self.update_index, self.policy_version
+             ):
+                 raise ValueError("Distributed checkpoint trainer version differs")
+             if distributed_manifest.checkpoint_format != CHECKPOINT_FORMAT:
+                 raise ValueError("Distributed checkpoint format differs")
++            from self_play_grpo.rollouts.pilot import canonical_sha256
++
++            if distributed_manifest.config_sha256 != canonical_sha256(self.config.to_dict()):
++                raise ValueError("Distributed checkpoint config_sha256 differs from active config")
++            if (distributed_manifest.model_id, distributed_manifest.model_revision,
++                distributed_manifest.dtype) != (
++                    self.config.model.id, self.config.model.revision, self.config.model.dtype
++                ):
++                raise ValueError("Distributed checkpoint model identity differs from active model")
+             for rank_state in distributed_manifest.ranks:
+                 validate_rank_rng_record(rank_rng_staging, rank_state)
+         elif rank_rng_staging is not None:
+             raise ValueError("Rank RNG staging requires distributed metadata")

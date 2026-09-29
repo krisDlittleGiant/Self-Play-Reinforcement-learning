@@ -1,0 +1,59 @@
+# Prompt variant C: variant B plus each pawn move described by its direction
+# relative to the goal (forward / sideways / backward). Four minibatches.
+project: quoridor_self_play_grpo
+seed: 11
+environment:
+  game: quoridor
+  engine_revision: d0606878b957274cc67a918ed173b36e9fe0fed6
+  players: 4
+  board_size: 9
+  wall_count: 5
+  max_joint_actions: 120
+  horizon_result: uniform_draw
+  action_perspective: player_relative
+  action_menu_order: shuffled
+  wall_menu: compact
+  move_descriptions: directional
+model:
+  id: Qwen/Qwen3-4B
+  revision: 1cfa9a7208912126459214e8b04321603b3df60c
+  local_path: /scratch/svijay46/models/Qwen3-4B
+  local_files_only: true
+  enable_thinking: false
+  device: hpu
+  dtype: bfloat16
+  lora_rank: 16
+  lora_alpha: 32
+  dropout: 0.0
+rollout:
+  games_per_update: 64
+  parallel_games_per_rank: 2
+  shared_weights_across_seats: true
+  max_new_tokens: 16
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  constrain_to_legal_actions: true
+training:
+  reward_mode: outcome
+  group_key: game_id
+  group_size: 4
+  learning_rate: 0.00001
+  weight_decay: 0.0
+  clip_epsilon: 0.2
+  optimizer_epochs_per_batch: 1
+  max_grad_norm: 1.0
+  kl_beta: 0.0
+  loss_normalizer_per_game: 120
+  minibatches_per_update: 4
+process_extension:
+  enabled: false
+  proxy_temperature: 2.0
+  shaping_alpha: 1.0
+  gamma: 1.0
+  gae_lambda: 0.95
+  process_blend_eta: 0.25
+evaluation:
+  fixed_opponent_manifest: null
+  rotate_candidate_through_all_seats: true
+  training_seeds: [11, 22, 33]
