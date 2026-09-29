@@ -1,0 +1,235 @@
+[
+  {
+    "backward_move_rate": 0.08338226658837346,
+    "chosen_menu_position": {
+      "0": 2299,
+      "1": 577,
+      "2": 504,
+      "3": 66,
+      "4": 3,
+      "5+": 137
+    },
+    "draw_rate": 0.015625,
+    "entropy_estimate_nats": 0.43380422746410463,
+    "first_listed_move_rate": 0.674985320023488,
+    "first_listed_rate": 0.6411042944785276,
+    "forward_move_rate": 0.44333529066353494,
+    "input": "self_play_grpo/artifacts/d5-one-update-64games-qwen3-4b-seed-11/rollout-000000",
+    "lateral_move_rate": 0.4732824427480916,
+    "matches": 64,
+    "mean_game_length": 56.03125,
+    "mean_path_distance_gain_per_move": 0.36523781561949503,
+    "model_turns": 3586,
+    "near_deterministic_rate": 0.2127718906860011,
+    "policy_versions": [
+      "policy-000000"
+    ],
+    "termination_counts": {
+      "horizon_draw": 1,
+      "natural_win": 63
+    },
+    "top_openings": [
+      {
+        "count": 205,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 19,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 12,
+        "label": "WALL_A1H"
+      },
+      {
+        "count": 5,
+        "label": "WALL_F1H"
+      },
+      {
+        "count": 4,
+        "label": "WALL_E2H"
+      }
+    ],
+    "wall_rate": 0.0501952035694367,
+    "wins_by_seat": [
+      19,
+      20,
+      13,
+      11
+    ]
+  },
+  {
+    "backward_move_rate": 0.27706792199058505,
+    "chosen_menu_position": {
+      "0": 1068,
+      "1": 221,
+      "2": 152,
+      "3": 104,
+      "4": 11,
+      "5+": 158
+    },
+    "draw_rate": 0.5,
+    "entropy_estimate_nats": 0.43332898241218915,
+    "first_listed_move_rate": 0.7182246133154001,
+    "first_listed_rate": 0.6231038506417736,
+    "forward_move_rate": 0.4189643577673167,
+    "input": "self_play_grpo/artifacts/pilot-shuffled-qwen3-4b-seed-11",
+    "lateral_move_rate": 0.30396772024209817,
+    "matches": 16,
+    "mean_game_length": 107.125,
+    "mean_path_distance_gain_per_move": 0.17283120376597175,
+    "model_turns": 1714,
+    "near_deterministic_rate": 0.2911318553092182,
+    "policy_versions": [
+      "pilot:1cfa9a720891:c423773a98bb"
+    ],
+    "termination_counts": {
+      "horizon_draw": 8,
+      "natural_win": 8
+    },
+    "top_openings": [
+      {
+        "count": 20,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 14,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 11,
+        "label": "MOVE_F9"
+      },
+      {
+        "count": 4,
+        "label": "WALL_E8V"
+      },
+      {
+        "count": 3,
+        "label": "WALL_E8H"
+      }
+    ],
+    "wall_rate": 0.13243873978996498,
+    "wins_by_seat": [
+      1,
+      1,
+      1,
+      5
+    ]
+  },
+  {
+    "backward_move_rate": 0.2034927866362946,
+    "chosen_menu_position": {
+      "0": 946,
+      "1": 199,
+      "2": 126,
+      "3": 46,
+      "5+": 155
+    },
+    "draw_rate": 0.375,
+    "entropy_estimate_nats": 0.3169449464134548,
+    "first_listed_move_rate": 0.718299164768413,
+    "first_listed_rate": 0.6426630434782609,
+    "forward_move_rate": 0.3712984054669704,
+    "input": "self_play_grpo/artifacts/pilot-shuffled_compact-qwen3-4b-seed-11",
+    "lateral_move_rate": 0.425208807896735,
+    "matches": 16,
+    "mean_game_length": 92.0,
+    "mean_path_distance_gain_per_move": 0.20273348519362186,
+    "model_turns": 1472,
+    "near_deterministic_rate": 0.39741847826086957,
+    "policy_versions": [
+      "pilot:1cfa9a720891:3c174416707e"
+    ],
+    "termination_counts": {
+      "horizon_draw": 6,
+      "natural_win": 10
+    },
+    "top_openings": [
+      {
+        "count": 26,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 12,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 9,
+        "label": "MOVE_F9"
+      },
+      {
+        "count": 5,
+        "label": "WALL_E2H"
+      },
+      {
+        "count": 5,
+        "label": "WALL_E5H"
+      }
+    ],
+    "wall_rate": 0.10529891304347826,
+    "wins_by_seat": [
+      3,
+      3,
+      1,
+      3
+    ]
+  },
+  {
+    "backward_move_rate": 0.1272365805168986,
+    "chosen_menu_position": {
+      "0": 178,
+      "1": 135,
+      "2": 128,
+      "3": 62,
+      "5+": 42
+    },
+    "draw_rate": 0.0,
+    "entropy_estimate_nats": 0.21931660503422448,
+    "first_listed_move_rate": 0.3538767395626243,
+    "first_listed_rate": 0.326605504587156,
+    "forward_move_rate": 0.7813121272365805,
+    "input": "self_play_grpo/artifacts/pilot-shuffled_compact_directional-qwen3-4b-seed-11",
+    "lateral_move_rate": 0.09145129224652088,
+    "matches": 16,
+    "mean_game_length": 34.0625,
+    "mean_path_distance_gain_per_move": 0.7455268389662028,
+    "model_turns": 545,
+    "near_deterministic_rate": 0.5009174311926605,
+    "policy_versions": [
+      "pilot:1cfa9a720891:89cf07fb224a"
+    ],
+    "termination_counts": {
+      "natural_win": 16
+    },
+    "top_openings": [
+      {
+        "count": 59,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 2,
+        "label": "WALL_E2V"
+      },
+      {
+        "count": 1,
+        "label": "WALL_E2H"
+      },
+      {
+        "count": 1,
+        "label": "WALL_E5H"
+      },
+      {
+        "count": 1,
+        "label": "WALL_E8H"
+      }
+    ],
+    "wall_rate": 0.07706422018348624,
+    "wins_by_seat": [
+      3,
+      1,
+      8,
+      4
+    ]
+  }
+]

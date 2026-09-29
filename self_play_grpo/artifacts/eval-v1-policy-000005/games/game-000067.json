@@ -1,0 +1,43 @@
+{
+  "candidate": {
+    "adapter_sha256": "55a13032ce0913028371df4a4c958382d2e2313e44a00073fa9d31eef9babc2e",
+    "checkpoint_manifest_sha256": "d5da6f22dcacb079d75dcb29ada00065cf4861f18ba5ebff69104f986935b175",
+    "optimizer_steps": 0,
+    "policy_version": "policy-000005",
+    "runtime_identity": {
+      "habana": "1.22.2.32",
+      "peft": "0.20.0",
+      "python": "3.12.3",
+      "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4",
+      "transformers": "5.12.1"
+    },
+    "suite_sha256": "e2147c56df23633979c035dab5bb0f5c2f2bd36ed06eab2a69d4cfad3e094a22"
+  },
+  "result": {
+    "candidate_name": "policy-000005",
+    "candidate_result": 0.0,
+    "candidate_seat": 0,
+    "final_results": [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    "game_id": "eval:e2147c56df23633979c035dab5bb0f5c2f2bd36ed06eab2a69d4cfad3e094a22:67:policy-000005",
+    "joint_actions": 27,
+    "opponent_names": [
+      "wall_aware",
+      "wall_aware",
+      "wall_aware"
+    ],
+    "seed": 1086517879523492092,
+    "termination_reason": "natural_win"
+  },
+  "schedule": {
+    "index": 67,
+    "opponent": "wall-aware",
+    "repeat": 3,
+    "seat": 0,
+    "seed": 1086517879523492092
+  }
+}

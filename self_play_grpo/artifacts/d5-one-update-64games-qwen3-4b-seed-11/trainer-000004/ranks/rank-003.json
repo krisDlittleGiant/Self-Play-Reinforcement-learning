@@ -1,0 +1,77 @@
+{
+  "checkpoint_adapter_sha256": "77f21b54ab85a7d18554d6bf16fccd0a46d7d50d1ffdf26f2687b7c22b12abb2",
+  "checkpoint_manifest_sha256": "a4a8eac0c0986deb7d20a479ecd09477b0f7508d4739e34ad7add1a060ac46b3",
+  "module_id": "7",
+  "rank": 3,
+  "restored": {
+    "checkpoint_manifest_sha256": "d8ee6c1605b9c4ae255b6104e80aac032f13685afcfc77533b35d3202816d138",
+    "module_id": "7",
+    "optimizer_sha256": "a41aa5fc1419cfeecf514da4b8a12cb0681070bf92077e7b60535197c69e8e13",
+    "parameter_sha256": "fe73f95db197f24beff035c9dacb5d1bc07184f92255e231f846f05edb64eb59",
+    "policy_version": "policy-000003",
+    "rank": 3,
+    "run_id": "d5-one-update-64games-qwen3-4b-seed-11",
+    "status": "restored_no_optimizer_step",
+    "update_index": 3
+  },
+  "runtime_contract": {
+    "backend": "nccl",
+    "device_binding": "initialize_distributed_hpu -> HLS_MODULE_ID",
+    "device_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "devices": [
+      "hpu:0",
+      "hpu:1",
+      "hpu:2",
+      "hpu:3"
+    ],
+    "expected_reduction_sum": 10.0,
+    "module_ids": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "rank_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "reduction_values": [
+      10.0,
+      10.0
+    ],
+    "status": "ok",
+    "tensor_device": "hpu",
+    "world_size": 4
+  },
+  "source_manifest_sha256": "5e8506c5f7d885213e3599a76bbffd9138355132422bf0a2110d2ce231ed6017",
+  "source_policy_version": "policy-000003",
+  "status": "updated_checkpoint_committed_refresh_pending",
+  "update": {
+    "changed_parameter_tensors": 504,
+    "clip_fraction": 0.0,
+    "consumed_manifest_sha256": "5e8506c5f7d885213e3599a76bbffd9138355132422bf0a2110d2ce231ed6017",
+    "grad_norm": 1.6573028564453125,
+    "gradient_sync_phases": 1,
+    "initial_parameter_sha256": "fe73f95db197f24beff035c9dacb5d1bc07184f92255e231f846f05edb64eb59",
+    "kl_loss": 0.0,
+    "loss": -0.02826615981757641,
+    "max_abs_log_prob_error": 0.0,
+    "mean_ratio": 1.0,
+    "next_policy_version": "policy-000004",
+    "optimizer_sha256": "8f21012836580020e910ed7a2ed1f39da43cb89c03e7c2125e49700fb6c09499",
+    "optimizer_steps": 4,
+    "owned_tokens": 3282,
+    "parameter_sha256": "ee4f08524f7f9ea9d61f70f7008725073e5d2d1666db7dc690501a50ca46bdca",
+    "policy_loss": -0.02826615981757641,
+    "rank": 3,
+    "source_policy_version": "policy-000003",
+    "turns": 808
+  }
+}

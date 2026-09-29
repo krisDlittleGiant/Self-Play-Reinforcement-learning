@@ -1,0 +1,107 @@
+Calling add_step_closure function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling iter_mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/core/__init__.py:106: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  ret = original_fn(*args, **kwargs)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/gpu_migration/__init__.py:46: UserWarning: apex not installed, gpu_migration will not swap api for this package.
+  warnings.warn(
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 10993.95it/s]
+============================= HPU PT BRIDGE CONFIGURATION ON RANK = 0 ============= 
+ PT_HPU_LAZY_MODE = 0
+ PT_HPU_RECIPE_CACHE_CONFIG = /scratch/svijay46/verl-cache/habana_recipe,false,20480
+ PT_HPU_MAX_COMPOUND_OP_SIZE = 9223372036854775807
+ PT_HPU_LAZY_ACC_PAR_MODE = 1
+ PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES = 0
+ PT_HPU_EAGER_PIPELINE_ENABLE = 1
+ PT_HPU_EAGER_COLLECTIVE_PIPELINE_ENABLE = 1
+ PT_HPU_ENABLE_LAZY_COLLECTIVES = 1
+---------------------------: System Configuration :---------------------------
+Num CPU Cores : 152
+CPU RAM       : 502 GB
+------------------------------------------------------------------------------
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 0.0, 1.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000000-seed-11", "illegal_action_substitutions": 0, "index": 0, "max_abs_log_prob_error": 0.0, "owned_tokens": 112, "path": "matches/game-000000.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 11, "sha256": "d97dda651c4faec36ef99c29a270f057ecedf37296b3d86d60c2ebee2644c4c7", "termination_reason": "natural_win", "turns": 28}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 0.0, 1.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000001-seed-12", "illegal_action_substitutions": 0, "index": 1, "max_abs_log_prob_error": 0.0, "owned_tokens": 328, "path": "matches/game-000001.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 12, "sha256": "e5d4172540581e5550d8e23ec8411c476914adeea55ed94965596dc6a29a573e", "termination_reason": "natural_win", "turns": 72}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [1.0, 0.0, 0.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000002-seed-13", "illegal_action_substitutions": 0, "index": 2, "max_abs_log_prob_error": 0.0, "owned_tokens": 116, "path": "matches/game-000002.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 13, "sha256": "afd7b0502cbf8c7e4e024eb49a3bd5e9eebb2b615e720f844023336fbfa89129", "termination_reason": "natural_win", "turns": 29}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000003-seed-14", "illegal_action_substitutions": 0, "index": 3, "max_abs_log_prob_error": 0.0, "owned_tokens": 108, "path": "matches/game-000003.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 14, "sha256": "cf441a016ac839c661aae21af12608328bdb8f184c8f1a21e723c3485e7a5f1f", "termination_reason": "natural_win", "turns": 27}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 1.0, 0.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000004-seed-15", "illegal_action_substitutions": 0, "index": 4, "max_abs_log_prob_error": 0.0, "owned_tokens": 280, "path": "matches/game-000004.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 15, "sha256": "96a0bc51a668605b28b2c7423a9adb12009f583b56a5f09210c907a1fbaf4e4c", "termination_reason": "natural_win", "turns": 66}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [1.0, 0.0, 0.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000005-seed-16", "illegal_action_substitutions": 0, "index": 5, "max_abs_log_prob_error": 0.0, "owned_tokens": 106, "path": "matches/game-000005.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 16, "sha256": "216139b0e7cd2a0fb4292d21efaa7e9cd1582708043b2ab2af5830925a7a9ffe", "termination_reason": "natural_win", "turns": 25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000006-seed-17", "illegal_action_substitutions": 0, "index": 6, "max_abs_log_prob_error": 0.0, "owned_tokens": 226, "path": "matches/game-000006.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 17, "sha256": "1cb876db9d811e0c4fd2a297511bb385e29f6db9c3321b3c07495b1256ba9fa3", "termination_reason": "natural_win", "turns": 51}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 0.0, 1.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000007-seed-18", "illegal_action_substitutions": 0, "index": 7, "max_abs_log_prob_error": 0.0, "owned_tokens": 112, "path": "matches/game-000007.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 18, "sha256": "c997ef019b4a443fbdc0aa0d093f5482a6441b02be9a994bd3c8420b0311f2b0", "termination_reason": "natural_win", "turns": 28}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000008-seed-19", "illegal_action_substitutions": 0, "index": 8, "max_abs_log_prob_error": 0.0, "owned_tokens": 108, "path": "matches/game-000008.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 19, "sha256": "8d333a973cbd5fdec2e84cfbb98b28847973b88ce0ff4311205586dd94347c99", "termination_reason": "natural_win", "turns": 27}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000009-seed-20", "illegal_action_substitutions": 0, "index": 9, "max_abs_log_prob_error": 0.0, "owned_tokens": 108, "path": "matches/game-000009.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 20, "sha256": "9289d2b9d372d4b0617dfa5fd3432a982214063930a4de8a5fa257a110480db7", "termination_reason": "natural_win", "turns": 27}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 0.0, 1.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000010-seed-21", "illegal_action_substitutions": 0, "index": 10, "max_abs_log_prob_error": 0.0, "owned_tokens": 112, "path": "matches/game-000010.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 21, "sha256": "5e9621ea1e1725edf1a58cb6212ba126eb58f7a0f57892b4ef456e2db2c2daf3", "termination_reason": "natural_win", "turns": 28}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000011-seed-22", "illegal_action_substitutions": 0, "index": 11, "max_abs_log_prob_error": 0.0, "owned_tokens": 108, "path": "matches/game-000011.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 22, "sha256": "27df33de97a44d257b4368021bb7102ebbec028fe372a016904d26eb163537dc", "termination_reason": "natural_win", "turns": 27}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000012-seed-23", "illegal_action_substitutions": 0, "index": 12, "max_abs_log_prob_error": 0.0, "owned_tokens": 108, "path": "matches/game-000012.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 23, "sha256": "0843c0a56b21758f2f9514a710f72908e230e85dfa2f33ff5927fea28c0072a0", "termination_reason": "natural_win", "turns": 27}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [1.0, 0.0, 0.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000013-seed-24", "illegal_action_substitutions": 0, "index": 13, "max_abs_log_prob_error": 0.0, "owned_tokens": 116, "path": "matches/game-000013.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 24, "sha256": "73ec0971d6376df189e581e028922c2a8089f68de44e8293a8118d5177e2d549", "termination_reason": "natural_win", "turns": 29}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000014-seed-25", "illegal_action_substitutions": 0, "index": 14, "max_abs_log_prob_error": 0.0, "owned_tokens": 108, "path": "matches/game-000014.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 25, "sha256": "f007b7fa762477ca701894beceeef3e41097e30ac155c358860fc0235a3ed297", "termination_reason": "natural_win", "turns": 27}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "completed_match", "final_results": [0.0, 0.0, 1.0, 0.0], "game_id": "pilot:1cfa9a720891:89cf07fb224a-game-000015-seed-26", "illegal_action_substitutions": 0, "index": 15, "max_abs_log_prob_error": 0.0, "owned_tokens": 108, "path": "matches/game-000015.jsonl", "policy_version": "pilot:1cfa9a720891:89cf07fb224a", "seed": 26, "sha256": "d9cf6f8fc9a89b0335aa32244075a66db0b251460a4021080a9e72c1fe1378c7", "termination_reason": "natural_win", "turns": 27}
+{
+  "adapter_sha256": "89cf07fb224a82434fe0b78ae48413d2c5383cb1141fb490c2a6d3453cb1b085",
+  "base_seed": 11,
+  "completed_games": 16,
+  "draw_games": 0,
+  "fractional_results_by_seat": [
+    3.0,
+    1.0,
+    8.0,
+    4.0
+  ],
+  "illegal_action_substitutions": 0,
+  "manifest": "self_play_grpo/artifacts/pilot-shuffled_compact_directional-qwen3-4b-seed-11/manifest.json",
+  "max_abs_log_prob_error": 0.0,
+  "mean_turns": 34.0625,
+  "new_games_processed": 16,
+  "output": "self_play_grpo/artifacts/pilot-shuffled_compact_directional-qwen3-4b-seed-11",
+  "owned_tokens": 2264,
+  "parallel_games_per_rank": 2,
+  "policy_version": "pilot:1cfa9a720891:89cf07fb224a",
+  "policy_versions": [
+    "pilot:1cfa9a720891:89cf07fb224a"
+  ],
+  "probability_path": "kv_cache",
+  "replay_tolerance": 0.0002,
+  "status": "complete",
+  "target_games": 16,
+  "termination_counts": {
+    "natural_win": 16
+  },
+  "turns": 545,
+  "wins_by_seat": [
+    3,
+    1,
+    8,
+    4
+  ]
+}

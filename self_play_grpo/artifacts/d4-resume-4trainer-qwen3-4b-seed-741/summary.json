@@ -1,0 +1,192 @@
+{
+  "checkpoint": "self_play_grpo/artifacts/d4-resume-4trainer-qwen3-4b-seed-741/checkpoints/policy-000002",
+  "checkpoint_manifest_sha256": "8e95e34cdd17665a210b3ac0fef421bd24ae59c8fabfab303e24419d31965f67",
+  "rank_reports": [
+    {
+      "checkpoint_manifest_sha256": "8e95e34cdd17665a210b3ac0fef421bd24ae59c8fabfab303e24419d31965f67",
+      "chosen_label": "MOVE_D9",
+      "continuation": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.005572906695306301,
+        "loss": -0.033348578959703445,
+        "mean_ratio": 1.0004574060440063,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.00215911865234375
+      },
+      "cpu_rng_equal": true,
+      "first_step": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.019107550382614136,
+        "loss": -0.0333365723490715,
+        "mean_ratio": 1.0000972747802734,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.000461578369140625
+      },
+      "hpu_rng_equal": true,
+      "joint_step": 0,
+      "metrics_equal": true,
+      "module_id": "4",
+      "optimizer_equal": true,
+      "parameters_equal": true,
+      "rank": 0,
+      "schema_version": 1,
+      "source_game_id": "pilot:1cfa9a720891:0aca4d445740-game-000000-seed-11",
+      "source_match_index": 0,
+      "status": "ok"
+    },
+    {
+      "checkpoint_manifest_sha256": "8e95e34cdd17665a210b3ac0fef421bd24ae59c8fabfab303e24419d31965f67",
+      "chosen_label": "MOVE_D9",
+      "continuation": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.005572906695306301,
+        "loss": -0.033348578959703445,
+        "mean_ratio": 1.0004574060440063,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.00215911865234375
+      },
+      "cpu_rng_equal": true,
+      "first_step": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.019107550382614136,
+        "loss": -0.0333365723490715,
+        "mean_ratio": 1.0000972747802734,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.000461578369140625
+      },
+      "hpu_rng_equal": true,
+      "joint_step": 0,
+      "metrics_equal": true,
+      "module_id": "5",
+      "optimizer_equal": true,
+      "parameters_equal": true,
+      "rank": 1,
+      "schema_version": 1,
+      "source_game_id": "pilot:1cfa9a720891:0aca4d445740-game-000004-seed-15",
+      "source_match_index": 4,
+      "status": "ok"
+    },
+    {
+      "checkpoint_manifest_sha256": "8e95e34cdd17665a210b3ac0fef421bd24ae59c8fabfab303e24419d31965f67",
+      "chosen_label": "MOVE_D9",
+      "continuation": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.005572906695306301,
+        "loss": -0.033348578959703445,
+        "mean_ratio": 1.0004574060440063,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.00215911865234375
+      },
+      "cpu_rng_equal": true,
+      "first_step": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.019107550382614136,
+        "loss": -0.0333365723490715,
+        "mean_ratio": 1.0000972747802734,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.000461578369140625
+      },
+      "hpu_rng_equal": true,
+      "joint_step": 0,
+      "metrics_equal": true,
+      "module_id": "6",
+      "optimizer_equal": true,
+      "parameters_equal": true,
+      "rank": 2,
+      "schema_version": 1,
+      "source_game_id": "pilot:1cfa9a720891:0aca4d445740-game-000008-seed-19",
+      "source_match_index": 8,
+      "status": "ok"
+    },
+    {
+      "checkpoint_manifest_sha256": "8e95e34cdd17665a210b3ac0fef421bd24ae59c8fabfab303e24419d31965f67",
+      "chosen_label": "MOVE_D9",
+      "continuation": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.005572906695306301,
+        "loss": -0.033348578959703445,
+        "mean_ratio": 1.0004574060440063,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.00215911865234375
+      },
+      "cpu_rng_equal": true,
+      "first_step": {
+        "changed_parameter_tensors": 504,
+        "clip_fraction": 0.0,
+        "grad_norm": 0.019107550382614136,
+        "loss": -0.0333365723490715,
+        "mean_ratio": 1.0000972747802734,
+        "optimizer_steps": 1,
+        "owned_tokens": 4,
+        "replay_error": 0.000461578369140625
+      },
+      "hpu_rng_equal": true,
+      "joint_step": 0,
+      "metrics_equal": true,
+      "module_id": "7",
+      "optimizer_equal": true,
+      "parameters_equal": true,
+      "rank": 3,
+      "schema_version": 1,
+      "source_game_id": "pilot:1cfa9a720891:0aca4d445740-game-000012-seed-23",
+      "source_match_index": 12,
+      "status": "ok"
+    }
+  ],
+  "run_id": "d4-resume-4trainer-qwen3-4b-seed-741",
+  "runtime_contract": {
+    "backend": "nccl",
+    "device_binding": "initialize_distributed_hpu -> HLS_MODULE_ID",
+    "device_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "devices": [
+      "hpu:0",
+      "hpu:1",
+      "hpu:2",
+      "hpu:3"
+    ],
+    "expected_reduction_sum": 10.0,
+    "module_ids": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "rank_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "reduction_values": [
+      10.0,
+      10.0
+    ],
+    "status": "ok",
+    "tensor_device": "hpu",
+    "world_size": 4
+  },
+  "source_checkpoint": "self_play_grpo/artifacts/distributed-update-4trainer-hpu-qwen3-4b-seed-11-attention-checkpoint-v1/checkpoints/policy-000001",
+  "source_rollout": "self_play_grpo/artifacts/distributed-gameplay-4rollout-hpu-qwen3-4b-seed-11",
+  "status": "ok",
+  "validation_only": true,
+  "world_size": 4
+}

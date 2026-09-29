@@ -1,0 +1,189 @@
+{
+  "absent_state": [
+    "numpy_rng",
+    "python_rng",
+    "sampler",
+    "scaler",
+    "scheduler"
+  ],
+  "adapter_schema_sha256": "bdfcc634700e26341b54a84f4b43ba4a8224ba12c2c7c9160ddd53992dbbd351",
+  "attention_backend": "sdpa",
+  "backend": "nccl",
+  "checkpoint_format": 3,
+  "code_identity": "source-sha256:5de7ccc95ee68473f6cfd0dbc61a2363b88d77cfad7d9a8b44b2695b07bf73c9",
+  "config_sha256": "3f0fcd88cb78579bc8753b5b46e456354fdfed5c8a069fb1d5de61411069c0b8",
+  "dtype": "bfloat16",
+  "files": [
+    {
+      "byte_count": 5220,
+      "path": "adapter/README.md",
+      "sha256": "4784ebf2dda782bebb2f7d938c2ed2804ecd7b978c215f115b25bf4938213fca"
+    },
+    {
+      "byte_count": 1165,
+      "path": "adapter/adapter_config.json",
+      "sha256": "5fdde2e4b1849e96bd05f2a75cc432b1af6b84e9cd3fd6ca5954cc6ccef313c8"
+    },
+    {
+      "byte_count": 132187888,
+      "path": "adapter/adapter_model.safetensors",
+      "sha256": "e9fdc8d9894c3eec3aeeeabd6e739bbf06bc7be224b7c031c4d4b9ef7e4508b6"
+    },
+    {
+      "byte_count": 12101,
+      "path": "distributed/rng/rank-000.pt",
+      "sha256": "d9efe82fa1993d07045f026c7f2c18d82e20538dadbbb19d8e37ce4928c9d2da"
+    },
+    {
+      "byte_count": 12101,
+      "path": "distributed/rng/rank-001.pt",
+      "sha256": "22a3118c57ce05f2516cb49d115d85d9c722d378ef814330a7fa65577a86ef33"
+    },
+    {
+      "byte_count": 12101,
+      "path": "distributed/rng/rank-002.pt",
+      "sha256": "7c3a1552f9fdd744181a1ca414bdc13546a12bf08fea599f0a3722c017739048"
+    },
+    {
+      "byte_count": 12101,
+      "path": "distributed/rng/rank-003.pt",
+      "sha256": "8e2c4705bc605a1a14912a1626effcc9e44028305c39c04bd3060a5528663ad0"
+    },
+    {
+      "byte_count": 264674143,
+      "path": "optimizer_state.pt",
+      "sha256": "e8f78326b0cec14903e1d3fcbccc905723e187d0e10bf37e4847a511e53c743d"
+    },
+    {
+      "byte_count": 12005,
+      "path": "torch_rng_state.pt",
+      "sha256": "12f6c2230cfdb4077369df5a9fc0f6c6aba269360c4018fc8784965de974de66"
+    },
+    {
+      "byte_count": 2314,
+      "path": "trainer_state.json",
+      "sha256": "ba9a089025c6c13f179dac1d442515b8b41e863d31526050c44a357bf6c28344"
+    }
+  ],
+  "grammar_sha256": "cfb6409f26a7189318be57838b51130f06237081de8e39e0d30bb05b9a313b59",
+  "model_id": "Qwen/Qwen3-4B",
+  "model_revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+  "optimizer_schema_sha256": "449fc92b1c2478b8d77038855a120b52153c24b0604899936ada9ef6e1722770",
+  "policy_version": "policy-000002",
+  "ranks": [
+    {
+      "device": "hpu:0",
+      "local_rank": 0,
+      "match_ids": [
+        "pilot:1cfa9a720891:0aca4d445740-game-000000-seed-11",
+        "pilot:1cfa9a720891:0aca4d445740-game-000001-seed-12",
+        "pilot:1cfa9a720891:0aca4d445740-game-000002-seed-13",
+        "pilot:1cfa9a720891:0aca4d445740-game-000003-seed-14"
+      ],
+      "match_indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "match_sha256": [
+        "676ad0565082a2e10361d003f0700153630f5989c651a22fe7b5229c03ca5310",
+        "cdceb622b373c1b696c6fafee372336dac946705ecba962804703cc9edfbefb8",
+        "381ce391135ec002b357df26a16ef67ff808b03fc5da480c7ab64d4cf8f935e2",
+        "b41709108e023833424da35cdbf4fdd4c181bebdf629920efd297df6d1ce3594"
+      ],
+      "module_id": "4",
+      "rank": 0,
+      "rng_path": "distributed/rng/rank-000.pt"
+    },
+    {
+      "device": "hpu:1",
+      "local_rank": 1,
+      "match_ids": [
+        "pilot:1cfa9a720891:0aca4d445740-game-000004-seed-15",
+        "pilot:1cfa9a720891:0aca4d445740-game-000005-seed-16",
+        "pilot:1cfa9a720891:0aca4d445740-game-000006-seed-17",
+        "pilot:1cfa9a720891:0aca4d445740-game-000007-seed-18"
+      ],
+      "match_indices": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "match_sha256": [
+        "d13e9eb19783dc025328e476c0b34472d8ee2b6cf01ae33732f0ddb51bf7fa91",
+        "f44655bc3599fe10d501527a2dba7218da315b3b4a536c017b979e8e364fcddd",
+        "f351870443923870e008c52efc36b18aba992eb7a2d2955796066eada5c6ec0b",
+        "4671e5e8b484eb2a4107eae62b809d2893432980a101afa3e6675e68af0d6629"
+      ],
+      "module_id": "5",
+      "rank": 1,
+      "rng_path": "distributed/rng/rank-001.pt"
+    },
+    {
+      "device": "hpu:2",
+      "local_rank": 2,
+      "match_ids": [
+        "pilot:1cfa9a720891:0aca4d445740-game-000008-seed-19",
+        "pilot:1cfa9a720891:0aca4d445740-game-000009-seed-20",
+        "pilot:1cfa9a720891:0aca4d445740-game-000010-seed-21",
+        "pilot:1cfa9a720891:0aca4d445740-game-000011-seed-22"
+      ],
+      "match_indices": [
+        8,
+        9,
+        10,
+        11
+      ],
+      "match_sha256": [
+        "e618889e1d750211fda6f300038b37b3e04ec3784a401f550c6e7ea2e98c3eb4",
+        "9a57daaaef4f75a2e2200df1059a3fb13c629a769afbb50c83c3ee38842d6785",
+        "ccea0ad3cdcbd8a6c85420d3ba3eac753fd938e9bb84b598a91a6f878240984f",
+        "082aad1b336f44fc9abb58b90150eec87198feb23014d4f49bb952227e59578b"
+      ],
+      "module_id": "6",
+      "rank": 2,
+      "rng_path": "distributed/rng/rank-002.pt"
+    },
+    {
+      "device": "hpu:3",
+      "local_rank": 3,
+      "match_ids": [
+        "pilot:1cfa9a720891:0aca4d445740-game-000012-seed-23",
+        "pilot:1cfa9a720891:0aca4d445740-game-000013-seed-24",
+        "pilot:1cfa9a720891:0aca4d445740-game-000014-seed-25",
+        "pilot:1cfa9a720891:0aca4d445740-game-000015-seed-26"
+      ],
+      "match_indices": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "match_sha256": [
+        "6ab05f9846228c4fbefc9f4ca0c70ecb5cdeb0c1d4c65aadccf606479ee3d693",
+        "eb990ca6ba991ad7ceb0b5090015a3171239eea82c785443f391c07af9e4f334",
+        "c5f6ed43ef5305ee262edb67b24220db0b9b8289da2c5512398bf3b8d6944067",
+        "ab606e40c9e910eb766b549c873e7ac9e06e0947f2770dd2eff2c0d60fbae931"
+      ],
+      "module_id": "7",
+      "rank": 3,
+      "rng_path": "distributed/rng/rank-003.pt"
+    }
+  ],
+  "run_id": "d4-resume-4trainer-qwen3-4b-seed-741",
+  "run_kind": "validation",
+  "runtime_identity": {
+    "habana": "1.22.2.32",
+    "peft": "0.20.0",
+    "python": "3.12.3",
+    "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4",
+    "transformers": "5.12.1"
+  },
+  "sharding_rule": "equal_contiguous_complete_matches_v1",
+  "source_rollout_manifest_sha256": "ff6a789d03856f58067c42a966572e2b8fbfcd6e7c09e0562ba4b358c1e57e0e",
+  "tokenizer_sha256": "90a2903e36317f2a873560235218be86367fa0ed4209f53096b6d59325fed333",
+  "trainer_world_size": 4,
+  "update_index": 2
+}

@@ -1,0 +1,168 @@
+{
+  "behavior_adapter_sha256": "0aca4d44574017ac4ed54abda9bb0480bea2192c83427ba41ce4146c1ddea48e",
+  "behavior_policy_version": "pilot:1cfa9a720891:0aca4d445740",
+  "changed_parameter_count_difference": 0.0,
+  "changed_parameter_tensors": 252,
+  "checkpoint": "self_play_grpo/artifacts/distributed-update-4trainer-hpu-qwen3-4b-seed-11-attention-checkpoint-v1/checkpoints/policy-000001",
+  "checkpoint_bytes": 396882702,
+  "clip_fraction_before_step": 0.0,
+  "games": 16,
+  "games_per_rank": 4,
+  "global_max_abs_first_moment_difference": 0.0,
+  "global_max_abs_grad_norm_difference": 0.0,
+  "global_max_abs_log_prob_error": 0.0,
+  "global_max_abs_parameter_difference": 0.0,
+  "global_max_abs_second_moment_difference": 0.0,
+  "global_max_abs_step_difference": 0.0,
+  "grad_norm": 1.4982874393463135,
+  "gradient_sync_phases": 1,
+  "gradient_tensors_reduced": 504,
+  "gradients_cleared": true,
+  "loss": -0.018643595278263092,
+  "max_baseline_hpu_memory_bytes": 8315289216,
+  "max_peak_hpu_memory_bytes": 70382665216,
+  "max_post_backward_hpu_memory_bytes": 8637341056,
+  "mean_ratio_before_step": 1.0,
+  "new_policy_version": "policy-000001",
+  "optimizer_state_entries": 504,
+  "optimizer_state_tensors": 1512,
+  "optimizer_steps": 1,
+  "owned_tokens": 3658,
+  "parameter_change": 9.999997928389348e-06,
+  "rank_reports": [
+    {
+      "adapter_sha256": "0aca4d44574017ac4ed54abda9bb0480bea2192c83427ba41ce4146c1ddea48e",
+      "baseline_hpu_memory_bytes": 8315289216,
+      "behavior_policy_version": "pilot:1cfa9a720891:0aca4d445740",
+      "changed_parameter_tensors": 252,
+      "games": 4,
+      "grad_norm": 1.4982874393463135,
+      "indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "local_max_abs_log_prob_error": 0.0,
+      "local_rank": 0,
+      "owned_tokens": 844,
+      "peak_hpu_memory_bytes": 69153558528,
+      "post_backward_hpu_memory_bytes": 8634152832,
+      "rank": 0,
+      "schema_version": 1,
+      "status": "ok",
+      "turns": 206
+    },
+    {
+      "adapter_sha256": "0aca4d44574017ac4ed54abda9bb0480bea2192c83427ba41ce4146c1ddea48e",
+      "baseline_hpu_memory_bytes": 8315027072,
+      "behavior_policy_version": "pilot:1cfa9a720891:0aca4d445740",
+      "changed_parameter_tensors": 252,
+      "games": 4,
+      "grad_norm": 1.4982874393463135,
+      "indices": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "local_max_abs_log_prob_error": 0.0,
+      "local_rank": 1,
+      "owned_tokens": 996,
+      "peak_hpu_memory_bytes": 70371143680,
+      "post_backward_hpu_memory_bytes": 8636888576,
+      "rank": 1,
+      "schema_version": 1,
+      "status": "ok",
+      "turns": 242
+    },
+    {
+      "adapter_sha256": "0aca4d44574017ac4ed54abda9bb0480bea2192c83427ba41ce4146c1ddea48e",
+      "baseline_hpu_memory_bytes": 8314977920,
+      "behavior_policy_version": "pilot:1cfa9a720891:0aca4d445740",
+      "changed_parameter_tensors": 252,
+      "games": 4,
+      "grad_norm": 1.4982874393463135,
+      "indices": [
+        8,
+        9,
+        10,
+        11
+      ],
+      "local_max_abs_log_prob_error": 0.0,
+      "local_rank": 2,
+      "owned_tokens": 852,
+      "peak_hpu_memory_bytes": 70317759616,
+      "post_backward_hpu_memory_bytes": 8636817408,
+      "rank": 2,
+      "schema_version": 1,
+      "status": "ok",
+      "turns": 210
+    },
+    {
+      "adapter_sha256": "0aca4d44574017ac4ed54abda9bb0480bea2192c83427ba41ce4146c1ddea48e",
+      "baseline_hpu_memory_bytes": 8315027072,
+      "behavior_policy_version": "pilot:1cfa9a720891:0aca4d445740",
+      "changed_parameter_tensors": 252,
+      "games": 4,
+      "grad_norm": 1.4982874393463135,
+      "indices": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "local_max_abs_log_prob_error": 0.0,
+      "local_rank": 3,
+      "owned_tokens": 966,
+      "peak_hpu_memory_bytes": 70382665216,
+      "post_backward_hpu_memory_bytes": 8637341056,
+      "rank": 3,
+      "schema_version": 1,
+      "status": "ok",
+      "turns": 234
+    }
+  ],
+  "runtime_contract": {
+    "backend": "nccl",
+    "device_binding": "initialize_distributed_hpu -> HLS_MODULE_ID",
+    "device_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "devices": [
+      "hpu:0",
+      "hpu:1",
+      "hpu:2",
+      "hpu:3"
+    ],
+    "expected_reduction_sum": 10.0,
+    "module_ids": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "rank_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "reduction_values": [
+      10.0,
+      10.0
+    ],
+    "status": "ok",
+    "tensor_device": "hpu",
+    "world_size": 4
+  },
+  "status": "ok",
+  "trainable_parameter_tensors": 504,
+  "trainable_parameters": 33030144,
+  "turns": 892,
+  "validation_only": true,
+  "world_size": 4
+}

@@ -1,0 +1,92 @@
+{
+  "by_opponent": {
+    "random": {
+      "bootstrap_95_interval": [
+        0.375,
+        0.625
+      ],
+      "candidate_name": "policy-000005",
+      "draw_rate": 0.625,
+      "games": 32,
+      "mean_fractional_result": 0.5,
+      "mean_game_length": 95.625,
+      "result_by_seat": {
+        "0": 0.625,
+        "1": 0.53125,
+        "2": 0.5,
+        "3": 0.34375
+      },
+      "win_rate": 0.34375
+    },
+    "shortest": {
+      "bootstrap_95_interval": [
+        0.0,
+        0.0
+      ],
+      "candidate_name": "policy-000005",
+      "draw_rate": 0.0,
+      "games": 32,
+      "mean_fractional_result": 0.0,
+      "mean_game_length": 26.9375,
+      "result_by_seat": {
+        "0": 0.0,
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "win_rate": 0.0
+    },
+    "wall-aware": {
+      "bootstrap_95_interval": [
+        0.0,
+        0.0
+      ],
+      "candidate_name": "policy-000005",
+      "draw_rate": 0.0,
+      "games": 32,
+      "mean_fractional_result": 0.0,
+      "mean_game_length": 27.53125,
+      "result_by_seat": {
+        "0": 0.0,
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "win_rate": 0.0
+    }
+  },
+  "candidate": {
+    "adapter_sha256": "55a13032ce0913028371df4a4c958382d2e2313e44a00073fa9d31eef9babc2e",
+    "checkpoint_manifest_sha256": "d5da6f22dcacb079d75dcb29ada00065cf4861f18ba5ebff69104f986935b175",
+    "optimizer_steps": 0,
+    "policy_version": "policy-000005",
+    "runtime_identity": {
+      "habana": "1.22.2.32",
+      "peft": "0.20.0",
+      "python": "3.12.3",
+      "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4",
+      "transformers": "5.12.1"
+    },
+    "suite_sha256": "e2147c56df23633979c035dab5bb0f5c2f2bd36ed06eab2a69d4cfad3e094a22"
+  },
+  "overall": {
+    "bootstrap_95_interval": [
+      0.10677083333333333,
+      0.234375
+    ],
+    "candidate_name": "policy-000005",
+    "draw_rate": 0.20833333333333334,
+    "games": 96,
+    "mean_fractional_result": 0.16666666666666666,
+    "mean_game_length": 50.03125,
+    "result_by_seat": {
+      "0": 0.20833333333333334,
+      "1": 0.17708333333333334,
+      "2": 0.16666666666666666,
+      "3": 0.11458333333333333
+    },
+    "win_rate": 0.11458333333333333
+  },
+  "parameters_unchanged": true,
+  "status": "evaluation_complete"
+}

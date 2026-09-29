@@ -1,0 +1,43 @@
+{
+  "candidate": {
+    "adapter_sha256": "55a13032ce0913028371df4a4c958382d2e2313e44a00073fa9d31eef9babc2e",
+    "checkpoint_manifest_sha256": "d5da6f22dcacb079d75dcb29ada00065cf4861f18ba5ebff69104f986935b175",
+    "optimizer_steps": 0,
+    "policy_version": "policy-000005",
+    "runtime_identity": {
+      "habana": "1.22.2.32",
+      "peft": "0.20.0",
+      "python": "3.12.3",
+      "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4",
+      "transformers": "5.12.1"
+    },
+    "suite_sha256": "e2147c56df23633979c035dab5bb0f5c2f2bd36ed06eab2a69d4cfad3e094a22"
+  },
+  "result": {
+    "candidate_name": "policy-000005",
+    "candidate_result": 1.0,
+    "candidate_seat": 0,
+    "final_results": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "game_id": "eval:e2147c56df23633979c035dab5bb0f5c2f2bd36ed06eab2a69d4cfad3e094a22:3:policy-000005",
+    "joint_actions": 49,
+    "opponent_names": [
+      "random_legal",
+      "random_legal",
+      "random_legal"
+    ],
+    "seed": 481476993579529200,
+    "termination_reason": "natural_win"
+  },
+  "schedule": {
+    "index": 3,
+    "opponent": "random",
+    "repeat": 3,
+    "seat": 0,
+    "seed": 481476993579529200
+  }
+}

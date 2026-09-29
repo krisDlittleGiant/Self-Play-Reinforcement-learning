@@ -1,0 +1,72 @@
+{
+  "module_id": "7",
+  "rank": 3,
+  "restored": {
+    "checkpoint_manifest_sha256": "a4a8eac0c0986deb7d20a479ecd09477b0f7508d4739e34ad7add1a060ac46b3",
+    "module_id": "7",
+    "optimizer_sha256": "8f21012836580020e910ed7a2ed1f39da43cb89c03e7c2125e49700fb6c09499",
+    "parameter_sha256": "ee4f08524f7f9ea9d61f70f7008725073e5d2d1666db7dc690501a50ca46bdca",
+    "policy_version": "policy-000004",
+    "rank": 3,
+    "run_id": "d5-one-update-64games-qwen3-4b-seed-11",
+    "status": "restored_no_optimizer_step",
+    "update_index": 4
+  },
+  "runtime_contract": {
+    "backend": "nccl",
+    "device_binding": "initialize_distributed_hpu -> HLS_MODULE_ID",
+    "device_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "devices": [
+      "hpu:0",
+      "hpu:1",
+      "hpu:2",
+      "hpu:3"
+    ],
+    "expected_reduction_sum": 10.0,
+    "module_ids": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "rank_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "reduction_values": [
+      10.0,
+      10.0
+    ],
+    "status": "ok",
+    "tensor_device": "hpu",
+    "world_size": 4
+  },
+  "update": {
+    "changed_parameter_tensors": 504,
+    "clip_fraction": 0.0,
+    "consumed_manifest_sha256": "65b3cd3f855da9f35fec00ae044ff3ee0deb4783d54027058d0e8147a13d05dd",
+    "grad_norm": 1.670652985572815,
+    "gradient_sync_phases": 1,
+    "initial_parameter_sha256": "ee4f08524f7f9ea9d61f70f7008725073e5d2d1666db7dc690501a50ca46bdca",
+    "kl_loss": 0.0,
+    "loss": -0.037287186831235886,
+    "max_abs_log_prob_error": 0.0,
+    "mean_ratio": 1.0,
+    "next_policy_version": "policy-000005",
+    "optimizer_sha256": "ff1136550f374d7a13baa27074571e1297fbe0d334ec0f29c9c9454ffa98cb2e",
+    "optimizer_steps": 5,
+    "owned_tokens": 2996,
+    "parameter_sha256": "fcf49fb131c424c408a5cda9f2a617fb073fa38924752cc31dd12cb0edd46cc3",
+    "policy_loss": -0.037287186831235886,
+    "rank": 3,
+    "source_policy_version": "policy-000004",
+    "turns": 742
+  }
+}

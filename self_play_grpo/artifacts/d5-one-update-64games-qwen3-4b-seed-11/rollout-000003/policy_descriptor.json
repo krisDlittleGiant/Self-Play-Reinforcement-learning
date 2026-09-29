@@ -1,0 +1,10 @@
+{
+  "adapter_sha256": "4029454e396c44abc9c96e7bfe30f6b758ea1be0424ff7e0b582f9316c189e85",
+  "config_sha256": "9b16e5eafca3f6e4d9b2bc4fba1fdb3ad51b9dbbc1d074791b2ce293755a5bd5",
+  "grammar_sha256": "cc741fb4772e666aae01d1ff45fda8b44c6c3d96c578c54f5d4ad04ca1ea9269",
+  "model_revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+  "run_kind": "production",
+  "tokenizer_sha256": "90a2903e36317f2a873560235218be86367fa0ed4209f53096b6d59325fed333",
+  "update_index": 3,
+  "version": "policy-000003"
+}

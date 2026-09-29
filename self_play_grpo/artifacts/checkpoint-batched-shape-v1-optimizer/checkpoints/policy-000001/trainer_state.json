@@ -1,0 +1,87 @@
+{
+  "checkpoint_format": 2,
+  "config": {
+    "environment": {
+      "action_perspective": "player_relative",
+      "board_size": 5,
+      "engine_revision": "d0606878b957274cc67a918ed173b36e9fe0fed6",
+      "game": "quoridor",
+      "horizon_result": "uniform_draw",
+      "max_joint_actions": 100,
+      "players": 4,
+      "wall_count": 2
+    },
+    "evaluation": {
+      "fixed_opponent_manifest": null,
+      "rotate_candidate_through_all_seats": true,
+      "training_seeds": [
+        11,
+        22,
+        33
+      ]
+    },
+    "model": {
+      "device": "hpu",
+      "dropout": 0.0,
+      "dtype": "bfloat16",
+      "enable_thinking": false,
+      "id": "Qwen/Qwen3-4B",
+      "local_files_only": true,
+      "local_path": "/scratch/svijay46/models/Qwen3-4B",
+      "lora_alpha": 32,
+      "lora_rank": 16,
+      "revision": "1cfa9a7208912126459214e8b04321603b3df60c"
+    },
+    "process_extension": {
+      "enabled": false,
+      "gae_lambda": 0.95,
+      "gamma": 1.0,
+      "process_blend_eta": 0.25,
+      "proxy_temperature": 2.0,
+      "shaping_alpha": 1.0
+    },
+    "project": "quoridor_self_play_grpo_fixture",
+    "rollout": {
+      "constrain_to_legal_actions": true,
+      "games_per_update": 1,
+      "max_new_tokens": 16,
+      "parallel_games_per_rank": 2,
+      "shared_weights_across_seats": true,
+      "temperature": 1.0,
+      "top_k": 0,
+      "top_p": 1.0
+    },
+    "seed": 11,
+    "training": {
+      "clip_epsilon": 0.2,
+      "group_key": "game_id",
+      "group_size": 4,
+      "kl_beta": 0.0,
+      "learning_rate": 1e-05,
+      "loss_normalizer_per_game": 100,
+      "max_grad_norm": 1.0,
+      "optimizer_epochs_per_batch": 1,
+      "reward_mode": "outcome",
+      "weight_decay": 0.0
+    }
+  },
+  "last_update": {
+    "clip_fraction_before_step": 0.0,
+    "games": 1,
+    "grad_norm": 3.635178327560425,
+    "kl_loss": 0.0,
+    "loss": -0.03999999910593033,
+    "mean_ratio_before_step": 1.0,
+    "optimizer_steps": 1,
+    "owned_tokens": 4,
+    "policy_loss": -0.03999999910593033,
+    "policy_version": "policy-000000",
+    "replay_max_abs_error": 0.0,
+    "turns": 1,
+    "update": 0
+  },
+  "model_storage": "peft_adapter_only",
+  "policy_version": "policy-000001",
+  "update_index": 1,
+  "validation_only": true
+}

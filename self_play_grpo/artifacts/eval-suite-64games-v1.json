@@ -1,0 +1,693 @@
+{
+  "config_sha256": "9b16e5eafca3f6e4d9b2bc4fba1fdb3ad51b9dbbc1d074791b2ce293755a5bd5",
+  "games": [
+    {
+      "index": 0,
+      "opponent": "random",
+      "repeat": 0,
+      "seat": 0,
+      "seed": 122194561737814223
+    },
+    {
+      "index": 1,
+      "opponent": "random",
+      "repeat": 1,
+      "seat": 0,
+      "seed": 1101504184237206057
+    },
+    {
+      "index": 2,
+      "opponent": "random",
+      "repeat": 2,
+      "seat": 0,
+      "seed": 695127646062416169
+    },
+    {
+      "index": 3,
+      "opponent": "random",
+      "repeat": 3,
+      "seat": 0,
+      "seed": 481476993579529200
+    },
+    {
+      "index": 4,
+      "opponent": "random",
+      "repeat": 4,
+      "seat": 0,
+      "seed": 373107426750213056
+    },
+    {
+      "index": 5,
+      "opponent": "random",
+      "repeat": 5,
+      "seat": 0,
+      "seed": 405292423884637795
+    },
+    {
+      "index": 6,
+      "opponent": "random",
+      "repeat": 6,
+      "seat": 0,
+      "seed": 507844958638328324
+    },
+    {
+      "index": 7,
+      "opponent": "random",
+      "repeat": 7,
+      "seat": 0,
+      "seed": 836448595551211764
+    },
+    {
+      "index": 8,
+      "opponent": "random",
+      "repeat": 0,
+      "seat": 1,
+      "seed": 945454034724084201
+    },
+    {
+      "index": 9,
+      "opponent": "random",
+      "repeat": 1,
+      "seat": 1,
+      "seed": 985525156390238139
+    },
+    {
+      "index": 10,
+      "opponent": "random",
+      "repeat": 2,
+      "seat": 1,
+      "seed": 886360760381884159
+    },
+    {
+      "index": 11,
+      "opponent": "random",
+      "repeat": 3,
+      "seat": 1,
+      "seed": 1071144000072694173
+    },
+    {
+      "index": 12,
+      "opponent": "random",
+      "repeat": 4,
+      "seat": 1,
+      "seed": 1024137319126600637
+    },
+    {
+      "index": 13,
+      "opponent": "random",
+      "repeat": 5,
+      "seat": 1,
+      "seed": 361280442012430753
+    },
+    {
+      "index": 14,
+      "opponent": "random",
+      "repeat": 6,
+      "seat": 1,
+      "seed": 429789171438937670
+    },
+    {
+      "index": 15,
+      "opponent": "random",
+      "repeat": 7,
+      "seat": 1,
+      "seed": 500677670530195827
+    },
+    {
+      "index": 16,
+      "opponent": "random",
+      "repeat": 0,
+      "seat": 2,
+      "seed": 933082757668230252
+    },
+    {
+      "index": 17,
+      "opponent": "random",
+      "repeat": 1,
+      "seat": 2,
+      "seed": 298517862103280192
+    },
+    {
+      "index": 18,
+      "opponent": "random",
+      "repeat": 2,
+      "seat": 2,
+      "seed": 343575183378882786
+    },
+    {
+      "index": 19,
+      "opponent": "random",
+      "repeat": 3,
+      "seat": 2,
+      "seed": 1012275759432140275
+    },
+    {
+      "index": 20,
+      "opponent": "random",
+      "repeat": 4,
+      "seat": 2,
+      "seed": 1044048443942829401
+    },
+    {
+      "index": 21,
+      "opponent": "random",
+      "repeat": 5,
+      "seat": 2,
+      "seed": 633497364888375975
+    },
+    {
+      "index": 22,
+      "opponent": "random",
+      "repeat": 6,
+      "seat": 2,
+      "seed": 541618075812650498
+    },
+    {
+      "index": 23,
+      "opponent": "random",
+      "repeat": 7,
+      "seat": 2,
+      "seed": 302055795750120487
+    },
+    {
+      "index": 24,
+      "opponent": "random",
+      "repeat": 0,
+      "seat": 3,
+      "seed": 403430070419096353
+    },
+    {
+      "index": 25,
+      "opponent": "random",
+      "repeat": 1,
+      "seat": 3,
+      "seed": 1135126149334456949
+    },
+    {
+      "index": 26,
+      "opponent": "random",
+      "repeat": 2,
+      "seat": 3,
+      "seed": 59431936805391964
+    },
+    {
+      "index": 27,
+      "opponent": "random",
+      "repeat": 3,
+      "seat": 3,
+      "seed": 73990810876535019
+    },
+    {
+      "index": 28,
+      "opponent": "random",
+      "repeat": 4,
+      "seat": 3,
+      "seed": 696319976559454521
+    },
+    {
+      "index": 29,
+      "opponent": "random",
+      "repeat": 5,
+      "seat": 3,
+      "seed": 523076673549633917
+    },
+    {
+      "index": 30,
+      "opponent": "random",
+      "repeat": 6,
+      "seat": 3,
+      "seed": 939329163587659875
+    },
+    {
+      "index": 31,
+      "opponent": "random",
+      "repeat": 7,
+      "seat": 3,
+      "seed": 603714879462779854
+    },
+    {
+      "index": 32,
+      "opponent": "shortest",
+      "repeat": 0,
+      "seat": 0,
+      "seed": 422995773307108651
+    },
+    {
+      "index": 33,
+      "opponent": "shortest",
+      "repeat": 1,
+      "seat": 0,
+      "seed": 537038761417424491
+    },
+    {
+      "index": 34,
+      "opponent": "shortest",
+      "repeat": 2,
+      "seat": 0,
+      "seed": 71582488244484168
+    },
+    {
+      "index": 35,
+      "opponent": "shortest",
+      "repeat": 3,
+      "seat": 0,
+      "seed": 695174806357443711
+    },
+    {
+      "index": 36,
+      "opponent": "shortest",
+      "repeat": 4,
+      "seat": 0,
+      "seed": 731602497634602065
+    },
+    {
+      "index": 37,
+      "opponent": "shortest",
+      "repeat": 5,
+      "seat": 0,
+      "seed": 1033643982487911829
+    },
+    {
+      "index": 38,
+      "opponent": "shortest",
+      "repeat": 6,
+      "seat": 0,
+      "seed": 352653894195305865
+    },
+    {
+      "index": 39,
+      "opponent": "shortest",
+      "repeat": 7,
+      "seat": 0,
+      "seed": 354491871155795263
+    },
+    {
+      "index": 40,
+      "opponent": "shortest",
+      "repeat": 0,
+      "seat": 1,
+      "seed": 546323368547078766
+    },
+    {
+      "index": 41,
+      "opponent": "shortest",
+      "repeat": 1,
+      "seat": 1,
+      "seed": 931381224225948854
+    },
+    {
+      "index": 42,
+      "opponent": "shortest",
+      "repeat": 2,
+      "seat": 1,
+      "seed": 1000984486299276163
+    },
+    {
+      "index": 43,
+      "opponent": "shortest",
+      "repeat": 3,
+      "seat": 1,
+      "seed": 732154100301172754
+    },
+    {
+      "index": 44,
+      "opponent": "shortest",
+      "repeat": 4,
+      "seat": 1,
+      "seed": 627780168267662323
+    },
+    {
+      "index": 45,
+      "opponent": "shortest",
+      "repeat": 5,
+      "seat": 1,
+      "seed": 513998040203611768
+    },
+    {
+      "index": 46,
+      "opponent": "shortest",
+      "repeat": 6,
+      "seat": 1,
+      "seed": 552335968937678103
+    },
+    {
+      "index": 47,
+      "opponent": "shortest",
+      "repeat": 7,
+      "seat": 1,
+      "seed": 544479783592871949
+    },
+    {
+      "index": 48,
+      "opponent": "shortest",
+      "repeat": 0,
+      "seat": 2,
+      "seed": 1118539621223612572
+    },
+    {
+      "index": 49,
+      "opponent": "shortest",
+      "repeat": 1,
+      "seat": 2,
+      "seed": 830011828689390139
+    },
+    {
+      "index": 50,
+      "opponent": "shortest",
+      "repeat": 2,
+      "seat": 2,
+      "seed": 798118408272797874
+    },
+    {
+      "index": 51,
+      "opponent": "shortest",
+      "repeat": 3,
+      "seat": 2,
+      "seed": 1134271690109965455
+    },
+    {
+      "index": 52,
+      "opponent": "shortest",
+      "repeat": 4,
+      "seat": 2,
+      "seed": 913005089296652380
+    },
+    {
+      "index": 53,
+      "opponent": "shortest",
+      "repeat": 5,
+      "seat": 2,
+      "seed": 1037185163826233955
+    },
+    {
+      "index": 54,
+      "opponent": "shortest",
+      "repeat": 6,
+      "seat": 2,
+      "seed": 114329051218453994
+    },
+    {
+      "index": 55,
+      "opponent": "shortest",
+      "repeat": 7,
+      "seat": 2,
+      "seed": 31574079088783105
+    },
+    {
+      "index": 56,
+      "opponent": "shortest",
+      "repeat": 0,
+      "seat": 3,
+      "seed": 796014679703517231
+    },
+    {
+      "index": 57,
+      "opponent": "shortest",
+      "repeat": 1,
+      "seat": 3,
+      "seed": 1069632949677493853
+    },
+    {
+      "index": 58,
+      "opponent": "shortest",
+      "repeat": 2,
+      "seat": 3,
+      "seed": 779480458472778397
+    },
+    {
+      "index": 59,
+      "opponent": "shortest",
+      "repeat": 3,
+      "seat": 3,
+      "seed": 119007661264841742
+    },
+    {
+      "index": 60,
+      "opponent": "shortest",
+      "repeat": 4,
+      "seat": 3,
+      "seed": 292857776192166764
+    },
+    {
+      "index": 61,
+      "opponent": "shortest",
+      "repeat": 5,
+      "seat": 3,
+      "seed": 842192617009470119
+    },
+    {
+      "index": 62,
+      "opponent": "shortest",
+      "repeat": 6,
+      "seat": 3,
+      "seed": 1016037681761530866
+    },
+    {
+      "index": 63,
+      "opponent": "shortest",
+      "repeat": 7,
+      "seat": 3,
+      "seed": 18121381097558463
+    },
+    {
+      "index": 64,
+      "opponent": "wall-aware",
+      "repeat": 0,
+      "seat": 0,
+      "seed": 666043497030357983
+    },
+    {
+      "index": 65,
+      "opponent": "wall-aware",
+      "repeat": 1,
+      "seat": 0,
+      "seed": 158824997802190745
+    },
+    {
+      "index": 66,
+      "opponent": "wall-aware",
+      "repeat": 2,
+      "seat": 0,
+      "seed": 595507219857702382
+    },
+    {
+      "index": 67,
+      "opponent": "wall-aware",
+      "repeat": 3,
+      "seat": 0,
+      "seed": 1086517879523492092
+    },
+    {
+      "index": 68,
+      "opponent": "wall-aware",
+      "repeat": 4,
+      "seat": 0,
+      "seed": 354108099261542589
+    },
+    {
+      "index": 69,
+      "opponent": "wall-aware",
+      "repeat": 5,
+      "seat": 0,
+      "seed": 160676684070855574
+    },
+    {
+      "index": 70,
+      "opponent": "wall-aware",
+      "repeat": 6,
+      "seat": 0,
+      "seed": 525615198488816927
+    },
+    {
+      "index": 71,
+      "opponent": "wall-aware",
+      "repeat": 7,
+      "seat": 0,
+      "seed": 77277379923035489
+    },
+    {
+      "index": 72,
+      "opponent": "wall-aware",
+      "repeat": 0,
+      "seat": 1,
+      "seed": 1019094534162733987
+    },
+    {
+      "index": 73,
+      "opponent": "wall-aware",
+      "repeat": 1,
+      "seat": 1,
+      "seed": 630049078703016603
+    },
+    {
+      "index": 74,
+      "opponent": "wall-aware",
+      "repeat": 2,
+      "seat": 1,
+      "seed": 699540528881652785
+    },
+    {
+      "index": 75,
+      "opponent": "wall-aware",
+      "repeat": 3,
+      "seat": 1,
+      "seed": 1010692754750955516
+    },
+    {
+      "index": 76,
+      "opponent": "wall-aware",
+      "repeat": 4,
+      "seat": 1,
+      "seed": 63882362309101392
+    },
+    {
+      "index": 77,
+      "opponent": "wall-aware",
+      "repeat": 5,
+      "seat": 1,
+      "seed": 785001772259508364
+    },
+    {
+      "index": 78,
+      "opponent": "wall-aware",
+      "repeat": 6,
+      "seat": 1,
+      "seed": 138728346151516411
+    },
+    {
+      "index": 79,
+      "opponent": "wall-aware",
+      "repeat": 7,
+      "seat": 1,
+      "seed": 438923257247843174
+    },
+    {
+      "index": 80,
+      "opponent": "wall-aware",
+      "repeat": 0,
+      "seat": 2,
+      "seed": 637761636335094964
+    },
+    {
+      "index": 81,
+      "opponent": "wall-aware",
+      "repeat": 1,
+      "seat": 2,
+      "seed": 147992853518562276
+    },
+    {
+      "index": 82,
+      "opponent": "wall-aware",
+      "repeat": 2,
+      "seat": 2,
+      "seed": 334761415312686853
+    },
+    {
+      "index": 83,
+      "opponent": "wall-aware",
+      "repeat": 3,
+      "seat": 2,
+      "seed": 461196679775200220
+    },
+    {
+      "index": 84,
+      "opponent": "wall-aware",
+      "repeat": 4,
+      "seat": 2,
+      "seed": 294462096260408493
+    },
+    {
+      "index": 85,
+      "opponent": "wall-aware",
+      "repeat": 5,
+      "seat": 2,
+      "seed": 950666701019161050
+    },
+    {
+      "index": 86,
+      "opponent": "wall-aware",
+      "repeat": 6,
+      "seat": 2,
+      "seed": 794539252139505917
+    },
+    {
+      "index": 87,
+      "opponent": "wall-aware",
+      "repeat": 7,
+      "seat": 2,
+      "seed": 861149838013134574
+    },
+    {
+      "index": 88,
+      "opponent": "wall-aware",
+      "repeat": 0,
+      "seat": 3,
+      "seed": 215875912441862689
+    },
+    {
+      "index": 89,
+      "opponent": "wall-aware",
+      "repeat": 1,
+      "seat": 3,
+      "seed": 931770887616355647
+    },
+    {
+      "index": 90,
+      "opponent": "wall-aware",
+      "repeat": 2,
+      "seat": 3,
+      "seed": 736362755047919177
+    },
+    {
+      "index": 91,
+      "opponent": "wall-aware",
+      "repeat": 3,
+      "seat": 3,
+      "seed": 1022481378957920790
+    },
+    {
+      "index": 92,
+      "opponent": "wall-aware",
+      "repeat": 4,
+      "seat": 3,
+      "seed": 960013927381281262
+    },
+    {
+      "index": 93,
+      "opponent": "wall-aware",
+      "repeat": 5,
+      "seat": 3,
+      "seed": 613288623144611126
+    },
+    {
+      "index": 94,
+      "opponent": "wall-aware",
+      "repeat": 6,
+      "seat": 3,
+      "seed": 765723998722619180
+    },
+    {
+      "index": 95,
+      "opponent": "wall-aware",
+      "repeat": 7,
+      "seat": 3,
+      "seed": 612098177626530787
+    }
+  ],
+  "games_per_seat_per_opponent": 8,
+  "initial_board": "standard",
+  "schema_version": 1,
+  "seed": 20260929,
+  "source_sha256": {
+    "envs/quoridor.py": "8d326834d46ca5b6ae7efa563fe3b81c1e121af98c5e92957bc9eb817d2a360e",
+    "evaluation/fixed_checkpoint.py": "545ec0aa7f0ae63d659e8e4ac89fe2c8a449738c232df38be21b413cdf73ad21",
+    "evaluation/tournament.py": "be5fba85a0b7d7d394b377257eb2f651eafdaa6c341e00c3a0b7d75a186961ee",
+    "policies/bots.py": "ad3186381eb3f9f40732671344dcde149b801c662c15343024c158086358cfec",
+    "policies/llm.py": "d440b6dee7b27d0b8bc1102470b7479761a90ef7c81eaaf72b0bd4d485f02fbc",
+    "rollouts/collector.py": "3024a39ab52fd860f6c89ddf7e3ff046d0ba391a6e4109ded71bdb6505d7acbd"
+  },
+  "wall_aware_parameters": {
+    "opponent_weight": 0.25,
+    "wall_cost": 0.05
+  }
+}

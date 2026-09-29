@@ -1,0 +1,36 @@
+{
+  "checkpoint_manifest_sha256": "537b1e382413daf018b33a24c0c75fbcac801dee88ffe5bac9978657c8396428",
+  "chosen_label": "MOVE_D9",
+  "continuation": {
+    "changed_parameter_tensors": 504,
+    "clip_fraction": 0.0,
+    "grad_norm": 0.005572906695306301,
+    "loss": -0.033348578959703445,
+    "mean_ratio": 1.0004574060440063,
+    "optimizer_steps": 1,
+    "owned_tokens": 4,
+    "replay_error": 0.00215911865234375
+  },
+  "cpu_rng_equal": true,
+  "first_step": {
+    "changed_parameter_tensors": 504,
+    "clip_fraction": 0.0,
+    "grad_norm": 0.019107550382614136,
+    "loss": -0.0333365723490715,
+    "mean_ratio": 1.0000972747802734,
+    "optimizer_steps": 1,
+    "owned_tokens": 4,
+    "replay_error": 0.000461578369140625
+  },
+  "hpu_rng_equal": true,
+  "joint_step": 0,
+  "metrics_equal": true,
+  "module_id": "5",
+  "optimizer_equal": true,
+  "parameters_equal": true,
+  "rank": 1,
+  "schema_version": 1,
+  "source_game_id": "pilot:1cfa9a720891:0aca4d445740-game-000008-seed-19",
+  "source_match_index": 8,
+  "status": "ok"
+}

@@ -1,0 +1,1322 @@
+{
+  "adapter_sha256": "47ff3ae32a4301aefb2ce85ddabb81a0d5c0118b277b9ae38a2a57f4d094695a",
+  "base_seed": 11,
+  "config": {
+    "environment": {
+      "action_perspective": "player_relative",
+      "board_size": 9,
+      "engine_revision": "d0606878b957274cc67a918ed173b36e9fe0fed6",
+      "game": "quoridor",
+      "horizon_result": "uniform_draw",
+      "max_joint_actions": 120,
+      "players": 4,
+      "wall_count": 5
+    },
+    "evaluation": {
+      "fixed_opponent_manifest": null,
+      "rotate_candidate_through_all_seats": true,
+      "training_seeds": [
+        11,
+        22,
+        33
+      ]
+    },
+    "model": {
+      "device": "hpu",
+      "dropout": 0.0,
+      "dtype": "bfloat16",
+      "enable_thinking": false,
+      "id": "Qwen/Qwen3-4B",
+      "local_files_only": true,
+      "local_path": "/scratch/svijay46/models/Qwen3-4B",
+      "lora_alpha": 32,
+      "lora_rank": 16,
+      "revision": "1cfa9a7208912126459214e8b04321603b3df60c"
+    },
+    "process_extension": {
+      "enabled": false,
+      "gae_lambda": 0.95,
+      "gamma": 1.0,
+      "process_blend_eta": 0.25,
+      "proxy_temperature": 2.0,
+      "shaping_alpha": 1.0
+    },
+    "project": "quoridor_self_play_grpo",
+    "rollout": {
+      "constrain_to_legal_actions": true,
+      "games_per_update": 64,
+      "max_new_tokens": 16,
+      "parallel_games_per_rank": 2,
+      "shared_weights_across_seats": true,
+      "temperature": 1.0,
+      "top_k": 0,
+      "top_p": 1.0
+    },
+    "seed": 11,
+    "training": {
+      "clip_epsilon": 0.2,
+      "group_key": "game_id",
+      "group_size": 4,
+      "kl_beta": 0.0,
+      "learning_rate": 1e-05,
+      "loss_normalizer_per_game": 120,
+      "max_grad_norm": 1.0,
+      "optimizer_epochs_per_batch": 1,
+      "reward_mode": "outcome",
+      "weight_decay": 0.0
+    }
+  },
+  "config_sha256": "9b16e5eafca3f6e4d9b2bc4fba1fdb3ad51b9dbbc1d074791b2ce293755a5bd5",
+  "matches": [
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000000-seed-11",
+      "illegal_action_substitutions": 0,
+      "index": 0,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 188,
+      "path": "matches/game-000000.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 11,
+      "sha256": "446ee73754e4dcd430a7d32e07a3483093d17d726e5285c8155e37c3c0c6d12e",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000001-seed-12",
+      "illegal_action_substitutions": 0,
+      "index": 1,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 252,
+      "path": "matches/game-000001.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 12,
+      "sha256": "8505f543cabb838befa194961d04e59ce3d1fe3d57c2b4d13e9cfda2876f9454",
+      "termination_reason": "natural_win",
+      "turns": 62
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000002-seed-13",
+      "illegal_action_substitutions": 0,
+      "index": 2,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 238,
+      "path": "matches/game-000002.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 13,
+      "sha256": "4aac4c1f3e3b8249b7c9d6689442025a40b04a7938276c6296363efb88ec6f88",
+      "termination_reason": "natural_win",
+      "turns": 57
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000003-seed-14",
+      "illegal_action_substitutions": 0,
+      "index": 3,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 166,
+      "path": "matches/game-000003.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 14,
+      "sha256": "c97e05a949c8bc8220b9569cec70d47387fbd11532c76920a341efc2244592e8",
+      "termination_reason": "natural_win",
+      "turns": 41
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000004-seed-15",
+      "illegal_action_substitutions": 0,
+      "index": 4,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 344,
+      "path": "matches/game-000004.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 15,
+      "sha256": "ceec59db44140458e0a6894009dcc84c919927ae536a2a6e3e74cb79259b5ec5",
+      "termination_reason": "natural_win",
+      "turns": 84
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000005-seed-16",
+      "illegal_action_substitutions": 0,
+      "index": 5,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 194,
+      "path": "matches/game-000005.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 16,
+      "sha256": "923ad3ec074628984db00743e8548c7b11fec29b431cd0332684f34f05a5d9b5",
+      "termination_reason": "natural_win",
+      "turns": 47
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000006-seed-17",
+      "illegal_action_substitutions": 0,
+      "index": 6,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 234,
+      "path": "matches/game-000006.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 17,
+      "sha256": "8c6b72619ef2f5d4e68772191a4e50458cb145bf14a2a83bef20737e6e1bcf9d",
+      "termination_reason": "natural_win",
+      "turns": 56
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000007-seed-18",
+      "illegal_action_substitutions": 0,
+      "index": 7,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 224,
+      "path": "matches/game-000007.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 18,
+      "sha256": "c9b710a9e811f3a9719fcbf1a438ceaf94feeafcd48add464e6c5d2e841dc937",
+      "termination_reason": "natural_win",
+      "turns": 55
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000008-seed-19",
+      "illegal_action_substitutions": 0,
+      "index": 8,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 218,
+      "path": "matches/game-000008.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 19,
+      "sha256": "9b190c972d9d0fee09c051cd105a70a7264fcd0614450eb83963a40deb960423",
+      "termination_reason": "natural_win",
+      "turns": 53
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000009-seed-20",
+      "illegal_action_substitutions": 0,
+      "index": 9,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 210,
+      "path": "matches/game-000009.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 20,
+      "sha256": "da46ececacd4ee69f36ac3fc07701de56fc9e40e6b752d983d5055bf13d6f4de",
+      "termination_reason": "natural_win",
+      "turns": 52
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000010-seed-21",
+      "illegal_action_substitutions": 0,
+      "index": 10,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 210,
+      "path": "matches/game-000010.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 21,
+      "sha256": "708586b755a8410133d33153b5b720028a46fd7aaed324578c736c1228c9d501",
+      "termination_reason": "natural_win",
+      "turns": 52
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000011-seed-22",
+      "illegal_action_substitutions": 0,
+      "index": 11,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 214,
+      "path": "matches/game-000011.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 22,
+      "sha256": "7466b555ed9cb59ab3f22fd00c4000ffc424eabf70564e4da0653f753958fc7d",
+      "termination_reason": "natural_win",
+      "turns": 53
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000012-seed-23",
+      "illegal_action_substitutions": 0,
+      "index": 12,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 188,
+      "path": "matches/game-000012.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 23,
+      "sha256": "c95ecd138fd2ac0cdef731a7e7342d93af03a1c0f0600701f9e3243ab0c14d31",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000013-seed-24",
+      "illegal_action_substitutions": 0,
+      "index": 13,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 248,
+      "path": "matches/game-000013.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 24,
+      "sha256": "61a9a4d941ee4d5da4f3a1d9b686d52716ce3ac413b375a3071e529d3d021afe",
+      "termination_reason": "natural_win",
+      "turns": 62
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000014-seed-25",
+      "illegal_action_substitutions": 0,
+      "index": 14,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 268,
+      "path": "matches/game-000014.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 25,
+      "sha256": "b35b66f019614148b6a20bfe17c5c259889fee867eb72f9ca8058d7bfcf1301a",
+      "termination_reason": "natural_win",
+      "turns": 63
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000015-seed-26",
+      "illegal_action_substitutions": 0,
+      "index": 15,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 262,
+      "path": "matches/game-000015.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 26,
+      "sha256": "f8c8dbd38ab5c1b513658678ec8250ee255c71c69e2ed644d7b3dc928ee07bc9",
+      "termination_reason": "natural_win",
+      "turns": 63
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000016-seed-27",
+      "illegal_action_substitutions": 0,
+      "index": 16,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 186,
+      "path": "matches/game-000016.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 27,
+      "sha256": "44dcac09b4113bed7ab42e91ca2b01d5076c40272eeee126a518c1c6c1630d3a",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000017-seed-28",
+      "illegal_action_substitutions": 0,
+      "index": 17,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 186,
+      "path": "matches/game-000017.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 28,
+      "sha256": "7b4f533d9a155956cf3798109b88e199aafa353b4bf8a6887f546cad916187ea",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000018-seed-29",
+      "illegal_action_substitutions": 0,
+      "index": 18,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 224,
+      "path": "matches/game-000018.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 29,
+      "sha256": "ddc3be848380dbc2dd7053699f3917feac0ce299bf550b72e6f6480bc44861e6",
+      "termination_reason": "natural_win",
+      "turns": 54
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000019-seed-30",
+      "illegal_action_substitutions": 0,
+      "index": 19,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 182,
+      "path": "matches/game-000019.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 30,
+      "sha256": "b4e8d3ea065a86db8a9a2252b824e9702bd2863807c3f63b740688b3ae6c4b22",
+      "termination_reason": "natural_win",
+      "turns": 45
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000020-seed-31",
+      "illegal_action_substitutions": 0,
+      "index": 20,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 186,
+      "path": "matches/game-000020.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 31,
+      "sha256": "a33f049286f7d64f2c0fc7e9f2e1e025a6127d15f5fe29a1764c9e0cae761474",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000021-seed-32",
+      "illegal_action_substitutions": 0,
+      "index": 21,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 282,
+      "path": "matches/game-000021.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 32,
+      "sha256": "1131ea99ecfaaec141a7212adcd70345632d1465beaaf0cc9d6c140ad94279a9",
+      "termination_reason": "natural_win",
+      "turns": 70
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000022-seed-33",
+      "illegal_action_substitutions": 0,
+      "index": 22,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 212,
+      "path": "matches/game-000022.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 33,
+      "sha256": "f73ac2b5ac7866987af5d74d9366287e817f8a635a736e19654d8da0ad4fe83f",
+      "termination_reason": "natural_win",
+      "turns": 53
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000023-seed-34",
+      "illegal_action_substitutions": 0,
+      "index": 23,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 186,
+      "path": "matches/game-000023.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 34,
+      "sha256": "f537f45949bd6ea3301221d4ca75e8808b482b906a3211ba519d5acd63376ed6",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000024-seed-35",
+      "illegal_action_substitutions": 0,
+      "index": 24,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 472,
+      "path": "matches/game-000024.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 35,
+      "sha256": "7d6c892e32ac8bc8403566ac018e4237534f866d9196f5092da4166e7baee875",
+      "termination_reason": "natural_win",
+      "turns": 112
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000025-seed-36",
+      "illegal_action_substitutions": 0,
+      "index": 25,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 212,
+      "path": "matches/game-000025.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 36,
+      "sha256": "0417cedd9b3e586ebaeca12285dde3d2aa8e5682596aacdb95b7f0b559e625c7",
+      "termination_reason": "natural_win",
+      "turns": 53
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000026-seed-37",
+      "illegal_action_substitutions": 0,
+      "index": 26,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 220,
+      "path": "matches/game-000026.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 37,
+      "sha256": "b9dc8816175fde9cb5b25359ec4850b42cd60095308ea3335b8ab845e09fa635",
+      "termination_reason": "natural_win",
+      "turns": 54
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000027-seed-38",
+      "illegal_action_substitutions": 0,
+      "index": 27,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 244,
+      "path": "matches/game-000027.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 38,
+      "sha256": "769a4bec05116fea14b65f950e4af15968ee0fea905d27be2304a0cf4861b60f",
+      "termination_reason": "natural_win",
+      "turns": 61
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000028-seed-39",
+      "illegal_action_substitutions": 0,
+      "index": 28,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 208,
+      "path": "matches/game-000028.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 39,
+      "sha256": "42865697ae306b8ec4b34c5274b94fc0922df58866ae8dfe99dfc9e8d92fc24f",
+      "termination_reason": "natural_win",
+      "turns": 50
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000029-seed-40",
+      "illegal_action_substitutions": 0,
+      "index": 29,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 188,
+      "path": "matches/game-000029.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 40,
+      "sha256": "c08fba4ec68a2de9c9c056bfde624e382ed87cdc8b55646b467c545afd1de3eb",
+      "termination_reason": "natural_win",
+      "turns": 45
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000030-seed-41",
+      "illegal_action_substitutions": 0,
+      "index": 30,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 200,
+      "path": "matches/game-000030.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 41,
+      "sha256": "b298807f900ba9e39ef8a56020dc87b27ea4ff307ce1c1182de8ab6025926aec",
+      "termination_reason": "natural_win",
+      "turns": 49
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000031-seed-42",
+      "illegal_action_substitutions": 0,
+      "index": 31,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 184,
+      "path": "matches/game-000031.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 42,
+      "sha256": "7386c135432cfe9363439ef240dbceffaef167cd1eed04e7711a3516de0e7f9a",
+      "termination_reason": "natural_win",
+      "turns": 45
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000032-seed-43",
+      "illegal_action_substitutions": 0,
+      "index": 32,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 248,
+      "path": "matches/game-000032.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 43,
+      "sha256": "ea55d1339eb21b0e75530dd4c24ec979273b49575dff074726c4778e998d89f0",
+      "termination_reason": "natural_win",
+      "turns": 60
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000033-seed-44",
+      "illegal_action_substitutions": 0,
+      "index": 33,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 284,
+      "path": "matches/game-000033.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 44,
+      "sha256": "827d00f929420d2a0f0c421f0b4446845bd2a41d24b1f6d6d56a2f153e21f2a8",
+      "termination_reason": "natural_win",
+      "turns": 68
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000034-seed-45",
+      "illegal_action_substitutions": 0,
+      "index": 34,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 188,
+      "path": "matches/game-000034.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 45,
+      "sha256": "25fee096ad79d850c18e046becf20492046cdaef68d65febe69168878c9bcd5d",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000035-seed-46",
+      "illegal_action_substitutions": 0,
+      "index": 35,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 228,
+      "path": "matches/game-000035.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 46,
+      "sha256": "ba66d946a56a50ae29f1f2097880963bcd9bd139b0685d547a00178e44127d4d",
+      "termination_reason": "natural_win",
+      "turns": 56
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000036-seed-47",
+      "illegal_action_substitutions": 0,
+      "index": 36,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 222,
+      "path": "matches/game-000036.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 47,
+      "sha256": "44f142ddbf7e87a56c7f05ce4e2517381c9d8e9e46fe3cb04dadf2e2766a457a",
+      "termination_reason": "natural_win",
+      "turns": 54
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000037-seed-48",
+      "illegal_action_substitutions": 0,
+      "index": 37,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 234,
+      "path": "matches/game-000037.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 48,
+      "sha256": "b3f0d3effc8e39fc12a3cc835da5ae1409f537331d42ad291986a098926349eb",
+      "termination_reason": "natural_win",
+      "turns": 55
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000038-seed-49",
+      "illegal_action_substitutions": 0,
+      "index": 38,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 200,
+      "path": "matches/game-000038.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 49,
+      "sha256": "1354c91168cedb8735f0d47d5692e4bdf6603c09559a57c5dfd948b03ea9f774",
+      "termination_reason": "natural_win",
+      "turns": 49
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000039-seed-50",
+      "illegal_action_substitutions": 0,
+      "index": 39,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 198,
+      "path": "matches/game-000039.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 50,
+      "sha256": "16e56c67425ec9ddcaa58fc675f0fb1fd0879f7fcc8d3fb4043fff0a760e4e0a",
+      "termination_reason": "natural_win",
+      "turns": 48
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000040-seed-51",
+      "illegal_action_substitutions": 0,
+      "index": 40,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 224,
+      "path": "matches/game-000040.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 51,
+      "sha256": "303474a17f1b609e16d90f46a854fd2627b775cb674118a546bbd146fba0ef50",
+      "termination_reason": "natural_win",
+      "turns": 55
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000041-seed-52",
+      "illegal_action_substitutions": 0,
+      "index": 41,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 226,
+      "path": "matches/game-000041.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 52,
+      "sha256": "efd779ab785b2a507961acb12684f07fc5d4bb4705afabe5da9d9672b88ca9be",
+      "termination_reason": "natural_win",
+      "turns": 55
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000042-seed-53",
+      "illegal_action_substitutions": 0,
+      "index": 42,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 212,
+      "path": "matches/game-000042.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 53,
+      "sha256": "8352b47febb7ad08a82939803dd4da994a3897d072da0a8a233618cb63e99462",
+      "termination_reason": "natural_win",
+      "turns": 53
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000043-seed-54",
+      "illegal_action_substitutions": 0,
+      "index": 43,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 292,
+      "path": "matches/game-000043.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 54,
+      "sha256": "53367e2993d995ba0ca0b3cf4bf5f96b765c8d4a3af6beceb0c910f0fc9d856b",
+      "termination_reason": "natural_win",
+      "turns": 70
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000044-seed-55",
+      "illegal_action_substitutions": 0,
+      "index": 44,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 210,
+      "path": "matches/game-000044.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 55,
+      "sha256": "d59b7d085defba4efbfdf0cacf55b0eedc69cf701d8c6d0b978d5e672b10841c",
+      "termination_reason": "natural_win",
+      "turns": 52
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000045-seed-56",
+      "illegal_action_substitutions": 0,
+      "index": 45,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 192,
+      "path": "matches/game-000045.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 56,
+      "sha256": "af7164b5aaa01765e00e53403a49f0582e62127e63b59cb3593cc43d59c4361f",
+      "termination_reason": "natural_win",
+      "turns": 46
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "game_id": "policy-000000-game-000046-seed-57",
+      "illegal_action_substitutions": 0,
+      "index": 46,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 200,
+      "path": "matches/game-000046.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 57,
+      "sha256": "fe3841a4c1c1c7ade06a6f19b29b1e2b877a97d5ccb7fd438330661334a0a3af",
+      "termination_reason": "natural_win",
+      "turns": 48
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000047-seed-58",
+      "illegal_action_substitutions": 0,
+      "index": 47,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 258,
+      "path": "matches/game-000047.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 58,
+      "sha256": "5436b4ee75e7ac37001a525a0546499195f1b0043d4e37f668ffea758e4b20da",
+      "termination_reason": "natural_win",
+      "turns": 62
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000048-seed-59",
+      "illegal_action_substitutions": 0,
+      "index": 48,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 284,
+      "path": "matches/game-000048.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 59,
+      "sha256": "8249448d44e14b052b4e96277b2a7b4b4bd44dfe61ad18f06db214ad081f6eba",
+      "termination_reason": "natural_win",
+      "turns": 71
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000049-seed-60",
+      "illegal_action_substitutions": 0,
+      "index": 49,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 194,
+      "path": "matches/game-000049.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 60,
+      "sha256": "4468c7a05ffcedf6094455cb870c6cf7ca18ccb408df750d5c0005e0a740b977",
+      "termination_reason": "natural_win",
+      "turns": 47
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000050-seed-61",
+      "illegal_action_substitutions": 0,
+      "index": 50,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 190,
+      "path": "matches/game-000050.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 61,
+      "sha256": "ab55dd0bbb1e099ce0e5b0ccdd111ae3a7d29ab53992e0afeebc59280c513d63",
+      "termination_reason": "natural_win",
+      "turns": 47
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000051-seed-62",
+      "illegal_action_substitutions": 0,
+      "index": 51,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 246,
+      "path": "matches/game-000051.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 62,
+      "sha256": "9bd90264ec8b46d0f7f2c15dc766ecbd5b63195221b6b37a1ee721d6d0a5f9a3",
+      "termination_reason": "natural_win",
+      "turns": 61
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000052-seed-63",
+      "illegal_action_substitutions": 0,
+      "index": 52,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 184,
+      "path": "matches/game-000052.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 63,
+      "sha256": "46520c2c3348dea47b15db3fe1282076338c6af91189f60985260b13eb6b16e3",
+      "termination_reason": "natural_win",
+      "turns": 45
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000053-seed-64",
+      "illegal_action_substitutions": 0,
+      "index": 53,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 222,
+      "path": "matches/game-000053.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 64,
+      "sha256": "f91c03b2b1e8c478a256c1764dff3940505732182215cb82eaed11c1b79c01c8",
+      "termination_reason": "natural_win",
+      "turns": 54
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000054-seed-65",
+      "illegal_action_substitutions": 0,
+      "index": 54,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 222,
+      "path": "matches/game-000054.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 65,
+      "sha256": "3c206b1ad90d3cc17be86cc7c60e676e9778ff86341d0cc1db792e28e24536a3",
+      "termination_reason": "natural_win",
+      "turns": 53
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000055-seed-66",
+      "illegal_action_substitutions": 0,
+      "index": 55,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 220,
+      "path": "matches/game-000055.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 66,
+      "sha256": "2ff4320a33bccbe28ac26738862d6755a6368250064e2366adba74985b1adca7",
+      "termination_reason": "natural_win",
+      "turns": 55
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000056-seed-67",
+      "illegal_action_substitutions": 0,
+      "index": 56,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 222,
+      "path": "matches/game-000056.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 67,
+      "sha256": "3d31b3d0c1a8cfdc10a62052e2b919e57d6312358f90ea2dd0130a8a89f07a21",
+      "termination_reason": "natural_win",
+      "turns": 54
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000057-seed-68",
+      "illegal_action_substitutions": 0,
+      "index": 57,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 244,
+      "path": "matches/game-000057.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 68,
+      "sha256": "2b2a1d56cf219f6b29d357b5706d85cb88bc05ad59e23f3b09bdaef70d785d12",
+      "termination_reason": "natural_win",
+      "turns": 61
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000058-seed-69",
+      "illegal_action_substitutions": 0,
+      "index": 58,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 216,
+      "path": "matches/game-000058.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 69,
+      "sha256": "e091830a5353e771c1f4fad606dda419e36fd91545e6711be98edf47b4c224d1",
+      "termination_reason": "natural_win",
+      "turns": 53
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000059-seed-70",
+      "illegal_action_substitutions": 0,
+      "index": 59,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 228,
+      "path": "matches/game-000059.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 70,
+      "sha256": "66364c47d98b5b79a4d184183378e353dbe4530761edc8906799ccd609feb1ab",
+      "termination_reason": "natural_win",
+      "turns": 55
+    },
+    {
+      "final_results": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000060-seed-71",
+      "illegal_action_substitutions": 0,
+      "index": 60,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 200,
+      "path": "matches/game-000060.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 71,
+      "sha256": "280fddfa4edc5f29432b00ea7096c1910535a0e19f0657a147337f47dad4bdbf",
+      "termination_reason": "natural_win",
+      "turns": 49
+    },
+    {
+      "final_results": [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000061-seed-72",
+      "illegal_action_substitutions": 0,
+      "index": 61,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 224,
+      "path": "matches/game-000061.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 72,
+      "sha256": "68db41fea65a135f3a7c5c8d5ff7985f9efaa7b1064603058b51eaf9a3ea8e4b",
+      "termination_reason": "natural_win",
+      "turns": 55
+    },
+    {
+      "final_results": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "game_id": "policy-000000-game-000062-seed-73",
+      "illegal_action_substitutions": 0,
+      "index": 62,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 510,
+      "path": "matches/game-000062.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 73,
+      "sha256": "5084d9851af5ff6d526bed302ac6a66723ab9813d5cd6926c3cce364d31f47f3",
+      "termination_reason": "horizon_draw",
+      "turns": 120
+    },
+    {
+      "final_results": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "game_id": "policy-000000-game-000063-seed-74",
+      "illegal_action_substitutions": 0,
+      "index": 63,
+      "max_abs_log_prob_error": 0.0,
+      "owned_tokens": 252,
+      "path": "matches/game-000063.jsonl",
+      "policy_version": "policy-000000",
+      "seed": 74,
+      "sha256": "7e1aab49b1e823a2cda33586d48ace4e311906b4c8a1be779ce1dad2cd1595bb",
+      "termination_reason": "natural_win",
+      "turns": 62
+    }
+  ],
+  "policy_version": "policy-000000",
+  "replay_tolerance": 0.0002,
+  "schema_version": 1,
+  "summary": {
+    "completed_games": 64,
+    "draw_games": 1,
+    "fractional_results_by_seat": [
+      19.25,
+      20.25,
+      13.25,
+      11.25
+    ],
+    "illegal_action_substitutions": 0,
+    "max_abs_log_prob_error": 0.0,
+    "mean_turns": 56.03125,
+    "owned_tokens": 14704,
+    "policy_versions": [
+      "policy-000000"
+    ],
+    "status": "complete",
+    "target_games": 64,
+    "termination_counts": {
+      "horizon_draw": 1,
+      "natural_win": 63
+    },
+    "turns": 3586,
+    "wins_by_seat": [
+      19,
+      20,
+      13,
+      11
+    ]
+  },
+  "target_games": 64
+}

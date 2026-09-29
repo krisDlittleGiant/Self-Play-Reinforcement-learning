@@ -1,0 +1,10 @@
+{
+  "checkpoint_manifest_sha256": "d8ee6c1605b9c4ae255b6104e80aac032f13685afcfc77533b35d3202816d138",
+  "checkpoint_path": "trainer-000003/trainer/checkpoints/policy-000003",
+  "policy_version": "policy-000003",
+  "previous_record_sha256": "b0add6f1d4bc84bcd661dab3ec0988fd55929ad635f5f8ff1323e8b744a30ed8",
+  "run_id": "d5-one-update-64games-qwen3-4b-seed-11",
+  "schema_version": 1,
+  "source_manifest_sha256": "6d6b8cdff90af105a5bd567c1a73b4cff61bd0710d62ef8b00314875ef509d9e",
+  "update_index": 3
+}

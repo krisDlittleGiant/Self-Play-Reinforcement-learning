@@ -1,0 +1,42 @@
+{
+  "checkpoint": "/scratch/svijay46/verl-gaudi-support/self_play_grpo/artifacts/d5-one-update-64games-qwen3-4b-seed-11/trainer-000005/trainer/checkpoints/policy-000005",
+  "checkpoint_adapter_sha256": "55a13032ce0913028371df4a4c958382d2e2313e44a00073fa9d31eef9babc2e",
+  "checkpoint_manifest_sha256": "d5da6f22dcacb079d75dcb29ada00065cf4861f18ba5ebff69104f986935b175",
+  "metrics": {
+    "clip_fraction_before_step": 0.0,
+    "games": 64,
+    "grad_norm": 1.670652985572815,
+    "kl_loss": 0.0,
+    "loss": -0.03773823380470276,
+    "mean_ratio_before_step": 1.0,
+    "optimizer_steps": 5,
+    "owned_tokens": 12194,
+    "policy_loss": -0.03773823380470276,
+    "policy_version": "policy-000005",
+    "replay_max_abs_error": 0.0,
+    "turns": 3027,
+    "update": 5
+  },
+  "parameter_sha256": "fcf49fb131c424c408a5cda9f2a617fb073fa38924752cc31dd12cb0edd46cc3",
+  "policy_probe": {
+    "completion_token_ids": [
+      29116,
+      1557,
+      24,
+      198
+    ],
+    "game_index": 0,
+    "joint_step": 0,
+    "log_probs": [
+      -0.000141143798828125,
+      -0.00327301025390625,
+      0.0,
+      0.0
+    ],
+    "match_sha256": "aabe6acc73fd0b201bac31ef95ea130e1d31143ff0f116e9047999e5c569826d"
+  },
+  "run_id": "d5-one-update-64games-qwen3-4b-seed-11",
+  "source_manifest_sha256": "65b3cd3f855da9f35fec00ae044ff3ee0deb4783d54027058d0e8147a13d05dd",
+  "source_policy_version": "policy-000004",
+  "status": "updated_checkpoint_committed_refresh_pending"
+}

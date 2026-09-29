@@ -1,0 +1,19 @@
+{
+  "code_identity": "source-sha256:e0a2b8e6bd6a2992ac838af4002e1b76d121e1234d8e0e5c429df623c30495f1",
+  "config_sha256": "9b16e5eafca3f6e4d9b2bc4fba1fdb3ad51b9dbbc1d074791b2ce293755a5bd5",
+  "replay_tolerance": 0.0002,
+  "rollout_modules": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "run_id": "d5-one-update-64games-qwen3-4b-seed-11",
+  "seed": 11,
+  "trainer_modules": [
+    4,
+    5,
+    6,
+    7
+  ]
+}

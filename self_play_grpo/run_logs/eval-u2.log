@@ -1,0 +1,214 @@
+Calling add_step_closure function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling iter_mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/core/__init__.py:106: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  ret = original_fn(*args, **kwargs)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/gpu_migration/__init__.py:46: UserWarning: apex not installed, gpu_migration will not swap api for this package.
+  warnings.warn(
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 11189.08it/s]
+============================= HPU PT BRIDGE CONFIGURATION ON RANK = 0 ============= 
+ PT_HPU_LAZY_MODE = 0
+ PT_HPU_RECIPE_CACHE_CONFIG = /scratch/svijay46/verl-cache/habana_recipe,false,20480
+ PT_HPU_MAX_COMPOUND_OP_SIZE = 9223372036854775807
+ PT_HPU_LAZY_ACC_PAR_MODE = 1
+ PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES = 0
+ PT_HPU_EAGER_PIPELINE_ENABLE = 1
+ PT_HPU_EAGER_COLLECTIVE_PIPELINE_ENABLE = 1
+ PT_HPU_ENABLE_LAZY_COLLECTIVES = 1
+---------------------------: System Configuration :---------------------------
+Num CPU Cores : 152
+CPU RAM       : 502 GB
+------------------------------------------------------------------------------
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 0, "seat": 0, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 1, "seat": 0, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 2, "seat": 0, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 3, "seat": 0, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 4, "seat": 0, "opponent": "random", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 5, "seat": 0, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 6, "seat": 0, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 7, "seat": 0, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 8, "seat": 1, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 9, "seat": 1, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 10, "seat": 1, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 11, "seat": 1, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 12, "seat": 1, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 13, "seat": 1, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 14, "seat": 1, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 15, "seat": 1, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 16, "seat": 2, "opponent": "random", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 17, "seat": 2, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 18, "seat": 2, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 19, "seat": 2, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 20, "seat": 2, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 21, "seat": 2, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 22, "seat": 2, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 23, "seat": 2, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 24, "seat": 3, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 25, "seat": 3, "opponent": "random", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 26, "seat": 3, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 27, "seat": 3, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 28, "seat": 3, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 29, "seat": 3, "opponent": "random", "result": 0.25}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 30, "seat": 3, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 31, "seat": 3, "opponent": "random", "result": 1.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 32, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 33, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 34, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 35, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 36, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 37, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 38, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 39, "seat": 0, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 40, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 41, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 42, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 43, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 44, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 45, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 46, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 47, "seat": 1, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 48, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 49, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 50, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 51, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 52, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 53, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 54, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 55, "seat": 2, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 56, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 57, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 58, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 59, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 60, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 61, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 62, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 63, "seat": 3, "opponent": "shortest", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 64, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 65, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 66, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 67, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 68, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 69, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 70, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 71, "seat": 0, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 72, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 73, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 74, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 75, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 76, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 77, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 78, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 79, "seat": 1, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 80, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 81, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 82, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 83, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 84, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 85, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 86, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 87, "seat": 2, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 88, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 89, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 90, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 91, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 92, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 93, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 94, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 95, "seat": 3, "opponent": "wall-aware", "result": 0.0}
+{"by_opponent": {"random": {"bootstrap_95_interval": [0.4375, 0.71875], "candidate_name": "policy-000002", "draw_rate": 0.4375, "games": 32, "mean_fractional_result": 0.578125, "mean_game_length": 95.125, "result_by_seat": {"0": 0.59375, "1": 0.625, "2": 0.5, "3": 0.59375}, "win_rate": 0.46875}, "shortest": {"bootstrap_95_interval": [0.0, 0.0], "candidate_name": "policy-000002", "draw_rate": 0.0, "games": 32, "mean_fractional_result": 0.0, "mean_game_length": 26.96875, "result_by_seat": {"0": 0.0, "1": 0.0, "2": 0.0, "3": 0.0}, "win_rate": 0.0}, "wall-aware": {"bootstrap_95_interval": [0.0, 0.0], "candidate_name": "policy-000002", "draw_rate": 0.0, "games": 32, "mean_fractional_result": 0.0, "mean_game_length": 27.65625, "result_by_seat": {"0": 0.0, "1": 0.0, "2": 0.0, "3": 0.0}, "win_rate": 0.0}}, "candidate": {"adapter_sha256": "fd56793506dc000625fbe7cd341fa8a8e1c078c2a5e64eba787e210bb1be277a", "checkpoint_manifest_sha256": "5d5c9bea89cf148fe47e4f12cd0b2218e9b1156cfa8b8d57db0c3d50e9754fc8", "optimizer_steps": 0, "policy_version": "policy-000002", "runtime_identity": {"habana": "1.22.2.32", "peft": "0.20.0", "python": "3.12.3", "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4", "transformers": "5.12.1"}, "suite_sha256": "e2147c56df23633979c035dab5bb0f5c2f2bd36ed06eab2a69d4cfad3e094a22"}, "overall": {"bootstrap_95_interval": [0.125, 0.2682291666666667], "candidate_name": "policy-000002", "draw_rate": 0.14583333333333334, "games": 96, "mean_fractional_result": 0.19270833333333334, "mean_game_length": 49.916666666666664, "result_by_seat": {"0": 0.19791666666666666, "1": 0.20833333333333334, "2": 0.16666666666666666, "3": 0.19791666666666666}, "win_rate": 0.15625}, "parameters_unchanged": true, "status": "evaluation_complete"}

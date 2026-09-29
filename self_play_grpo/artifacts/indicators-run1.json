@@ -1,0 +1,292 @@
+[
+  {
+    "backward_move_rate": 0.08338226658837346,
+    "chosen_menu_position": {
+      "0": 2299,
+      "1": 577,
+      "2": 504,
+      "3": 66,
+      "4": 3,
+      "5+": 137
+    },
+    "draw_rate": 0.015625,
+    "entropy_estimate_nats": 0.43380422746410463,
+    "first_listed_move_rate": 0.674985320023488,
+    "first_listed_rate": 0.6411042944785276,
+    "forward_move_rate": 0.44333529066353494,
+    "input": "self_play_grpo/artifacts/d5-one-update-64games-qwen3-4b-seed-11/rollout-000000",
+    "lateral_move_rate": 0.4732824427480916,
+    "matches": 64,
+    "mean_game_length": 56.03125,
+    "mean_path_distance_gain_per_move": 0.36523781561949503,
+    "model_turns": 3586,
+    "near_deterministic_rate": 0.2127718906860011,
+    "policy_versions": [
+      "policy-000000"
+    ],
+    "termination_counts": {
+      "horizon_draw": 1,
+      "natural_win": 63
+    },
+    "top_openings": [
+      {
+        "count": 205,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 19,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 12,
+        "label": "WALL_A1H"
+      },
+      {
+        "count": 5,
+        "label": "WALL_F1H"
+      },
+      {
+        "count": 4,
+        "label": "WALL_E2H"
+      }
+    ],
+    "wall_rate": 0.0501952035694367,
+    "wins_by_seat": [
+      19,
+      20,
+      13,
+      11
+    ]
+  },
+  {
+    "backward_move_rate": 0.07262905162064826,
+    "chosen_menu_position": {
+      "0": 2269,
+      "1": 564,
+      "2": 458,
+      "3": 54,
+      "4": 3,
+      "5+": 91
+    },
+    "draw_rate": 0.0,
+    "entropy_estimate_nats": 0.40667710521949796,
+    "first_listed_move_rate": 0.6809723889555822,
+    "first_listed_rate": 0.6597848211689444,
+    "forward_move_rate": 0.4525810324129652,
+    "input": "self_play_grpo/artifacts/d5-one-update-64games-qwen3-4b-seed-11/rollout-000001",
+    "lateral_move_rate": 0.47478991596638653,
+    "matches": 64,
+    "mean_game_length": 53.734375,
+    "mean_path_distance_gain_per_move": 0.38385354141656663,
+    "model_turns": 3439,
+    "near_deterministic_rate": 0.20761849374818261,
+    "policy_versions": [
+      "policy-000001"
+    ],
+    "termination_counts": {
+      "natural_win": 64
+    },
+    "top_openings": [
+      {
+        "count": 219,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 17,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 5,
+        "label": "WALL_A4H"
+      },
+      {
+        "count": 4,
+        "label": "WALL_A1H"
+      },
+      {
+        "count": 3,
+        "label": "WALL_D1H"
+      }
+    ],
+    "wall_rate": 0.03111369584181448,
+    "wins_by_seat": [
+      20,
+      23,
+      7,
+      14
+    ]
+  },
+  {
+    "backward_move_rate": 0.05955020589166931,
+    "chosen_menu_position": {
+      "0": 2278,
+      "1": 457,
+      "2": 386,
+      "3": 43,
+      "4": 3,
+      "5+": 91
+    },
+    "draw_rate": 0.0,
+    "entropy_estimate_nats": 0.37334491081073873,
+    "first_listed_move_rate": 0.7215711118150142,
+    "first_listed_rate": 0.6992019643953346,
+    "forward_move_rate": 0.45802977510294585,
+    "input": "self_play_grpo/artifacts/d5-one-update-64games-qwen3-4b-seed-11/rollout-000002",
+    "lateral_move_rate": 0.48242001900538484,
+    "matches": 64,
+    "mean_game_length": 50.90625,
+    "mean_path_distance_gain_per_move": 0.41114982578397213,
+    "model_turns": 3258,
+    "near_deterministic_rate": 0.22068753836709637,
+    "policy_versions": [
+      "policy-000002"
+    ],
+    "termination_counts": {
+      "natural_win": 64
+    },
+    "top_openings": [
+      {
+        "count": 232,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 12,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 3,
+        "label": "WALL_E2H"
+      },
+      {
+        "count": 2,
+        "label": "WALL_A1H"
+      },
+      {
+        "count": 2,
+        "label": "WALL_A4H"
+      }
+    ],
+    "wall_rate": 0.03100061387354205,
+    "wins_by_seat": [
+      27,
+      15,
+      11,
+      11
+    ]
+  },
+  {
+    "backward_move_rate": 0.045085955238404155,
+    "chosen_menu_position": {
+      "0": 2333,
+      "1": 411,
+      "2": 315,
+      "3": 36,
+      "4": 5,
+      "5+": 68
+    },
+    "draw_rate": 0.0,
+    "entropy_estimate_nats": 0.35347927700389514,
+    "first_listed_move_rate": 0.7567304573467402,
+    "first_listed_rate": 0.7364267676767676,
+    "forward_move_rate": 0.4933506325008109,
+    "input": "self_play_grpo/artifacts/d5-one-update-64games-qwen3-4b-seed-11/rollout-000003",
+    "lateral_move_rate": 0.46156341226078496,
+    "matches": 64,
+    "mean_game_length": 49.5,
+    "mean_path_distance_gain_per_move": 0.4557249432371067,
+    "model_turns": 3168,
+    "near_deterministic_rate": 0.2970328282828283,
+    "policy_versions": [
+      "policy-000003"
+    ],
+    "termination_counts": {
+      "natural_win": 64
+    },
+    "top_openings": [
+      {
+        "count": 229,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 15,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 5,
+        "label": "WALL_A1H"
+      },
+      {
+        "count": 3,
+        "label": "WALL_D1H"
+      },
+      {
+        "count": 1,
+        "label": "WALL_A4H"
+      }
+    ],
+    "wall_rate": 0.02683080808080808,
+    "wins_by_seat": [
+      30,
+      11,
+      8,
+      15
+    ]
+  },
+  {
+    "backward_move_rate": 0.03284182305630027,
+    "chosen_menu_position": {
+      "0": 2469,
+      "1": 290,
+      "2": 216,
+      "3": 17,
+      "5+": 35
+    },
+    "draw_rate": 0.0,
+    "entropy_estimate_nats": 0.3084258176250981,
+    "first_listed_move_rate": 0.8274128686327078,
+    "first_listed_rate": 0.8156590683845392,
+    "forward_move_rate": 0.5315013404825737,
+    "input": "self_play_grpo/artifacts/d5-one-update-64games-qwen3-4b-seed-11/rollout-000004",
+    "lateral_move_rate": 0.435656836461126,
+    "matches": 64,
+    "mean_game_length": 47.296875,
+    "mean_path_distance_gain_per_move": 0.5,
+    "model_turns": 3027,
+    "near_deterministic_rate": 0.3901552692434754,
+    "policy_versions": [
+      "policy-000004"
+    ],
+    "termination_counts": {
+      "natural_win": 64
+    },
+    "top_openings": [
+      {
+        "count": 240,
+        "label": "MOVE_D9"
+      },
+      {
+        "count": 12,
+        "label": "MOVE_E8"
+      },
+      {
+        "count": 1,
+        "label": "MOVE_F9"
+      },
+      {
+        "count": 1,
+        "label": "WALL_A1H"
+      },
+      {
+        "count": 1,
+        "label": "WALL_A2H"
+      }
+    ],
+    "wall_rate": 0.014205483977535514,
+    "wins_by_seat": [
+      29,
+      21,
+      8,
+      6
+    ]
+  }
+]

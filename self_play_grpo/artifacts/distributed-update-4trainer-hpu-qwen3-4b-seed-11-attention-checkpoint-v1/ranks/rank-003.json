@@ -1,0 +1,23 @@
+{
+  "adapter_sha256": "0aca4d44574017ac4ed54abda9bb0480bea2192c83427ba41ce4146c1ddea48e",
+  "baseline_hpu_memory_bytes": 8315027072,
+  "behavior_policy_version": "pilot:1cfa9a720891:0aca4d445740",
+  "changed_parameter_tensors": 252,
+  "games": 4,
+  "grad_norm": 1.4982874393463135,
+  "indices": [
+    12,
+    13,
+    14,
+    15
+  ],
+  "local_max_abs_log_prob_error": 0.0,
+  "local_rank": 3,
+  "owned_tokens": 966,
+  "peak_hpu_memory_bytes": 70382665216,
+  "post_backward_hpu_memory_bytes": 8637341056,
+  "rank": 3,
+  "schema_version": 1,
+  "status": "ok",
+  "turns": 234
+}
