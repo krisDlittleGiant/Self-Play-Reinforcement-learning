@@ -26,6 +26,7 @@ from self_play_grpo.training.distributed_resume_gate import (
 _CODE_FILES = (
     "distributed.py",
     "policies/llm.py",
+    "rewards/outcome.py",
     "training/coordinator.py",
     "training/d5_preflight.py",
     "training/distributed.py",

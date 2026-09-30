@@ -59,6 +59,39 @@ class ShortestPathPolicy:
 
 
 @dataclass(frozen=True)
+class NoisyShortestPathPolicy:
+    """Shortest-path racer that plays a uniformly random pawn move with probability epsilon.
+
+    It sits between the random and shortest-path bots, so an evaluation
+    ladder is not stuck at zero or full wins.
+    """
+
+    epsilon: float = 0.5
+    name: str = "noisy_shortest_path"
+
+    def select_action(
+        self, env: QuoridorEnv, *, game_id: str, rng: random.Random
+    ) -> PolicySample:
+        if not 0.0 <= self.epsilon <= 1.0:
+            raise ValueError("epsilon must be in [0, 1]")
+        moves = [action for action in env.legal_actions() if action.kind == "move"]
+        if moves and rng.random() < self.epsilon:
+            return _bot_sample(env, rng.choice(sorted(action.label for action in moves)), self.name)
+        return replace_name(
+            ShortestPathPolicy().select_action(env, game_id=game_id, rng=rng), self.name
+        )
+
+
+def replace_name(sample: PolicySample, name: str) -> PolicySample:
+    return PolicySample(
+        chosen_label=sample.chosen_label,
+        prompt_text=sample.prompt_text,
+        completion_text=sample.completion_text,
+        sampling_config={"policy_type": "bot", "policy_name": name},
+    )
+
+
+@dataclass(frozen=True)
 class WallAwarePolicy:
     """Frozen heuristic balancing own progress and opponents' obstruction."""
 

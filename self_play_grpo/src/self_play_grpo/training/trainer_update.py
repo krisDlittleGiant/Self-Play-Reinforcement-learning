@@ -60,6 +60,8 @@ class SynchronizedUpdateResult:
     gradient_sync_phases: int
     optimizer_steps: int
     minibatches: tuple[dict[str, float], ...] = ()
+    # Batch mean result per seat under the seat baseline; empty otherwise.
+    seat_result_means: tuple[float, ...] = ()
 
 
 def minibatch_slices(games: int, minibatches: int) -> tuple[slice, ...]:
@@ -278,4 +280,5 @@ def synchronized_trainer_update(
         gradient_sync_phases=sync_phases,
         optimizer_steps=1,
         minibatches=minibatches,
+        seat_result_means=tuple(admission.seat_result_means),
     )

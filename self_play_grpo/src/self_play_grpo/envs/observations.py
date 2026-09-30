@@ -264,6 +264,8 @@ class MenuStyle:
     order: str = "sorted"
     walls: str = "full"
     moves: str = "plain"
+    # "explicit" adds a "Walls placed" line; it is outside the menu itself.
+    walls_placed: str = "none"
     # Hash input for "shuffled": the match seed and joint step, so an order is
     # reproducible from a serialized environment and differs across matches.
     shuffle_key: str = ""
@@ -304,6 +306,22 @@ def _move_direction(origin: Coordinate, notation: str) -> str:
     steps = max(abs(dx), abs(dy))
     suffix = " (jump)" if steps > 1 or (dx and dy) else ""
     return f"{direction}{suffix}"
+
+
+def _render_placed_walls(actions: Sequence[dict[str, Any]], seat: int | None, board_size: int) -> str:
+    """Name every placed wall; relative to ``seat`` when one is given."""
+
+    rows = []
+    for action in actions:
+        absolute = str(action.get("absolute_notation", action["notation"])).strip().lower()
+        if not absolute.endswith(("h", "v")):
+            continue
+        if seat is None:
+            rows.append(f"{action_label(absolute)} (seat {int(action['seat'])})")
+        else:
+            notation = rotate_action_notation(absolute, board_size, seat)
+            rows.append(f"{action_label(notation)} (player {(int(action['seat']) - seat) % 4})")
+    return ", ".join(rows) if rows else "(none)"
 
 
 def render_action_menu(
@@ -395,7 +413,11 @@ def render_player_relative_observation(
         f"Board size: {board.board_size}x{board.board_size}\n"
         f"Players:\n{players}\n\n"
         f"Player-relative board (# marks wall material):\n{_render_relative_grid(board)}\n\n"
-        "Recent public moves in this perspective:\n"
+        + (
+            f"Walls placed:\n{_render_placed_walls(recent_actions, seat, board.board_size)}\n\n"
+            if style.walls_placed == "explicit" else ""
+        )
+        + "Recent public moves in this perspective:\n"
         f"{_render_relative_recent(recent_actions, seat, board.board_size)}\n\n"
         f"{menu}\n\n"
         "Action: "
@@ -448,7 +470,11 @@ def render_observation(
         f"Board size: {board.board_size}x{board.board_size}\n"
         f"Players:\n{players}\n\n"
         f"Authoritative OpenSpiel board:\n{board_text.rstrip()}\n\n"
-        f"Recent public moves:\n{_render_recent(recent_actions)}\n\n"
+        + (
+            f"Walls placed:\n{_render_placed_walls(recent_actions, None, board.board_size)}\n\n"
+            if style.walls_placed == "explicit" else ""
+        )
+        + f"Recent public moves:\n{_render_recent(recent_actions)}\n\n"
         f"{menu}\n\n"
         "Action: "
     )

@@ -137,6 +137,7 @@ class QuoridorEnv:
             order=self.config.action_menu_order,
             walls=self.config.wall_menu,
             moves=self.config.move_descriptions,
+            walls_placed=self.config.wall_listing,
             shuffle_key=menu_shuffle_key(self._seed, self._joint_actions),
         )
 

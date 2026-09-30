@@ -8,6 +8,8 @@ the grouping unit.
 
 Operational documentation:
 
+- [`docs/PROGRESS_REPORT_2026-09-30.md`](docs/PROGRESS_REPORT_2026-09-30.md):
+  current status, results of runs 1–3, what was built, and next steps. Start here.
 - [`docs/RUNBOOK.md`](docs/RUNBOOK.md): configurations, every runtime parameter,
   validation order, CLI commands, artifacts, and troubleshooting.
 - [`docs/IMPLEMENTATION_AND_TEST_LOG.md`](docs/IMPLEMENTATION_AND_TEST_LOG.md):

@@ -45,6 +45,32 @@ def fixed_outcome_advantages(results: Sequence[float]) -> tuple[float, ...]:
     return tuple((float(value) - 0.25) / FOUR_PLAYER_OUTCOME_SCALE for value in results)
 
 
+def seat_baseline_advantages(
+    batch_results: Sequence[Sequence[float]],
+) -> tuple[tuple[float, float, float, float], ...]:
+    """Per-seat leave-one-out baseline over the complete matches of one batch.
+
+    Each seat's advantage is its result minus the mean result the same seat
+    obtained in the batch's other matches, on the fixed four-player scale.
+    Turn order gives some seats a structural edge; this baseline removes it.
+    It depends only on other, independently sampled matches, so the policy
+    gradient stays unbiased. Advantages no longer sum to zero within a match.
+    """
+
+    rows = [validate_result_vector(row) for row in batch_results]
+    if len(rows) < 2:
+        raise ValueError("A leave-one-out seat baseline needs at least two matches")
+    totals = [math.fsum(row[seat] for row in rows) for seat in range(4)]
+    others = len(rows) - 1
+    return tuple(
+        tuple(
+            (row[seat] - (totals[seat] - row[seat]) / others) / FOUR_PLAYER_OUTCOME_SCALE
+            for seat in range(4)
+        )  # type: ignore[misc]
+        for row in rows
+    )
+
+
 def validate_result_vector(results: Iterable[float]) -> tuple[float, float, float, float]:
     values = tuple(float(value) for value in results)
     if len(values) != 4:

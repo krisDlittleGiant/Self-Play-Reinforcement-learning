@@ -19,8 +19,9 @@ _LATER_FIELD_DEFAULTS: dict[str, dict[str, Any]] = {
         "action_menu_order": "sorted",
         "wall_menu": "full",
         "move_descriptions": "plain",
+        "wall_listing": "none",
     },
-    "training": {"minibatches_per_update": 1},
+    "training": {"minibatches_per_update": 1, "advantage_baseline": "game"},
 }
 
 
@@ -50,9 +51,11 @@ class EnvironmentConfig:
     # "shuffled" orders moves, then walls, by a hash of the match seed and
     # joint step. "compact" lists wall labels without per-wall descriptions.
     # "directional" states each player-relative move's direction to the goal.
+    # "explicit" adds a line naming every placed wall and who placed it.
     action_menu_order: str = "sorted"
     wall_menu: str = "full"
     move_descriptions: str = "plain"
+    wall_listing: str = "none"
 
     def to_dict(self) -> dict[str, Any]:
         return canonical_section("environment", self)
@@ -87,6 +90,8 @@ class EnvironmentConfig:
             raise ValueError("move_descriptions must be 'plain' or 'directional'")
         if self.move_descriptions == "directional" and self.action_perspective != "player_relative":
             raise ValueError("Directional move descriptions require player_relative actions")
+        if self.wall_listing not in {"none", "explicit"}:
+            raise ValueError("wall_listing must be 'none' or 'explicit'")
 
 
 @dataclass(frozen=True)
@@ -150,6 +155,10 @@ class TrainingConfig:
     # Optimizer steps per collected batch. Each complete match is used once;
     # the batch is split into this many whole-match minibatches in order.
     minibatches_per_update: int = 1
+    # "game": standardize the four seats within each match (recorded credit).
+    # "seat_loo": subtract each seat's mean result over the batch's other
+    # matches, removing the structural turn-order advantage of some seats.
+    advantage_baseline: str = "game"
 
     def validate(self, env: EnvironmentConfig) -> None:
         if self.reward_mode not in {"outcome", "potential", "gae_blend"}:
@@ -160,6 +169,10 @@ class TrainingConfig:
             raise ValueError("The initial on-policy implementation permits exactly one optimizer epoch")
         if type(self.minibatches_per_update) is not int or self.minibatches_per_update <= 0:
             raise ValueError("minibatches_per_update must be a positive integer")
+        if self.advantage_baseline not in {"game", "seat_loo"}:
+            raise ValueError("advantage_baseline must be 'game' or 'seat_loo'")
+        if self.advantage_baseline == "seat_loo" and self.reward_mode != "outcome":
+            raise ValueError("The seat baseline is defined for outcome rewards only")
         if self.weight_decay < 0:
             raise ValueError("weight_decay must be non-negative")
         if self.loss_normalizer_per_game != env.max_joint_actions:

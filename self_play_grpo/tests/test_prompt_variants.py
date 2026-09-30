@@ -162,3 +162,44 @@ def test_non_default_environment_round_trips_through_serialization():
         other.reset(seed=seed)
         openings.add(other.observation(other.current_seat))
     assert len(openings) > 1
+
+
+def _wall_history():
+    return (
+        {"joint_step": 0, "seat": 1, "engine_player": 2, "engine_action": 0, "label": "WALL_C3H",
+         "notation": "c3h", "absolute_label": "WALL_C3H", "absolute_notation": "c3h"},
+        {"joint_step": 1, "seat": 2, "engine_player": 1, "engine_action": 0, "label": "MOVE_E2",
+         "notation": "e2", "absolute_label": "MOVE_E2", "absolute_notation": "e2"},
+    )
+
+
+def test_explicit_wall_listing_names_each_wall_in_the_actors_frame():
+    from self_play_grpo.envs.observations import action_label, rotate_action_notation
+
+    board = BoardState(
+        board_size=9,
+        pawn_positions=(Coordinate(4, 8), Coordinate(0, 4), Coordinate(4, 1), Coordinate(8, 4)),
+        walls_remaining=(5, 4, 5, 5), wall_cells=frozenset(), current_seat=1,
+        joint_action_index=2, max_joint_actions=120,
+    )
+    history = _wall_history()
+    plain = render_player_relative_observation(board, 1, LEGAL, history)
+    assert "Walls placed" not in plain
+    listed = render_player_relative_observation(board, 1, LEGAL, history, MenuStyle(walls_placed="explicit"))
+    relative = action_label(rotate_action_notation("c3h", 9, 1))
+    assert f"Walls placed:\n{relative} (player 0)\n\n" in listed
+    assert "MOVE_E2" not in listed.split("Walls placed:")[1].split("\n\n")[0]
+    empty = replace(board, current_seat=1)
+    assert "Walls placed:\n(none)\n\n" in render_player_relative_observation(
+        empty, 1, LEGAL, history[1:], MenuStyle(walls_placed="explicit"))
+
+
+def test_wall_listing_option_is_validated_and_omitted_at_default():
+    config = load_config(PROJECT / "configs" / "quoridor_outcome_64games.yaml")
+    assert "wall_listing" not in config.to_dict()["environment"]
+    with pytest.raises(ValueError, match="wall_listing"):
+        EnvironmentConfig(wall_listing="all").validate()
+    run3 = load_config(PROJECT / "configs" / "quoridor_outcome_64games_run3.yaml")
+    assert run3.environment.wall_listing == "explicit"
+    assert run3.training.advantage_baseline == "seat_loo"
+    assert run3.training.minibatches_per_update == 4

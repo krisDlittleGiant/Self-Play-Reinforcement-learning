@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from self_play_grpo.config import ExperimentConfig
+from self_play_grpo.rewards.outcome import seat_baseline_advantages
 from self_play_grpo.rollouts.pilot import (
     canonical_sha256, file_sha256, read_pilot_manifest,
 )
@@ -30,6 +31,9 @@ class TrainerShardAdmission:
     matches: tuple[MatchRecord, ...]
     receipt: BatchReceipt
     replay_tolerance: float
+    # Batch mean result per seat when training.advantage_baseline is
+    # "seat_loo"; empty for the within-match baseline recorded on disk.
+    seat_result_means: tuple[float, ...] = ()
 
 
 def admit_trainer_shard(
@@ -83,7 +87,19 @@ def admit_trainer_shard(
         raise ValueError("D5 trainer shard owned-token count differs from receipt")
     if file_sha256(manifest_path) != expected_manifest_sha256:
         raise ValueError("D5 rollout manifest changed during trainer admission")
+    seat_means: tuple[float, ...] = ()
+    if config.training.advantage_baseline == "seat_loo":
+        # Recorded credit stays the verified within-match advantage; only the
+        # in-memory training advantage uses the batch-wide seat baseline.
+        batch = [entry.final_results for entry in manifest.matches]
+        advantages = seat_baseline_advantages(batch)
+        for index, match in zip(indices, matches):
+            if tuple(match.final_results) != tuple(manifest.matches[index].final_results):
+                raise ValueError("D5 trainer match results differ from the manifest")
+            for turn in match.turns:
+                turn.credit.training_advantage = advantages[index][turn.seat]
+        seat_means = tuple(sum(row[seat] for row in batch) / len(batch) for seat in range(4))
     return TrainerShardAdmission(
         rank=rank, match_indices=indices, matches=matches, receipt=receipt,
-        replay_tolerance=manifest.replay_tolerance,
+        replay_tolerance=manifest.replay_tolerance, seat_result_means=seat_means,
     )
