@@ -1,0 +1,19 @@
+{
+  "code_identity": "source-sha256:d7e72599b1ef4f03d81f3743504664481a2a793c11c1e2e777e54aa0b63f3c31",
+  "config_sha256": "b5d1623cddd74d972efe588927985cf68a7660e71bc35701d631cc044ecbac89",
+  "replay_tolerance": 0.0002,
+  "rollout_modules": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "run_id": "run2-directional-qwen3-4b-seed-11",
+  "seed": 11,
+  "trainer_modules": [
+    4,
+    5,
+    6,
+    7
+  ]
+}

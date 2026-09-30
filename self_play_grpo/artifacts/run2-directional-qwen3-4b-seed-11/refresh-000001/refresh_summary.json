@@ -1,0 +1,11 @@
+{
+  "adapter_sha256": "46dc8a4ff7686ec62befa8d095810c0a0aafc493c6fc852f840fa74ff369e3f7",
+  "checkpoint_manifest_sha256": "e912e8f6e275ab9f2af6182669fae9a444b3641de6a311cceaefc541c05ad147",
+  "max_abs_probe_error": 0.0,
+  "optimizer_sha256": "53f0a03dfe1e5329e391df66fcf8b2ed08d1bcfa55fb3b546b60dc5c950305a1",
+  "parameter_sha256": "05ddf48437e0ff88bf0211503bedc7438c7168add5eebb4dcc751aee016f0dcf",
+  "policy_version": "policy-000001",
+  "refresh_ranks": 4,
+  "source_manifest_sha256": "51bb32fd1cb14fbf060de6b7f6a4dc55585ba796b5e3bbef22ff37317460b158",
+  "status": "refresh_reports_verified"
+}

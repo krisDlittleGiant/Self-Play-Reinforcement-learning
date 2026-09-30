@@ -1,0 +1,35 @@
+{
+  "failure": "D5 phase worker exited unsuccessfully",
+  "role": "trainer",
+  "status": "failed",
+  "workers": [
+    {
+      "log": "trainer-rank-000.log",
+      "module_id": 4,
+      "pid": 954996,
+      "rank": 0,
+      "returncode": 1
+    },
+    {
+      "log": "trainer-rank-001.log",
+      "module_id": 5,
+      "pid": 954997,
+      "rank": 1,
+      "returncode": 1
+    },
+    {
+      "log": "trainer-rank-002.log",
+      "module_id": 6,
+      "pid": 954998,
+      "rank": 2,
+      "returncode": 1
+    },
+    {
+      "log": "trainer-rank-003.log",
+      "module_id": 7,
+      "pid": 954999,
+      "rank": 3,
+      "returncode": -15
+    }
+  ]
+}

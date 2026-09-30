@@ -1,0 +1,35 @@
+{
+  "failure": null,
+  "role": "trainer",
+  "status": "workers_exited",
+  "workers": [
+    {
+      "log": "trainer-rank-000.log",
+      "module_id": 4,
+      "pid": 1384778,
+      "rank": 0,
+      "returncode": 0
+    },
+    {
+      "log": "trainer-rank-001.log",
+      "module_id": 5,
+      "pid": 1384779,
+      "rank": 1,
+      "returncode": 0
+    },
+    {
+      "log": "trainer-rank-002.log",
+      "module_id": 6,
+      "pid": 1384780,
+      "rank": 2,
+      "returncode": 0
+    },
+    {
+      "log": "trainer-rank-003.log",
+      "module_id": 7,
+      "pid": 1384781,
+      "rank": 3,
+      "returncode": 0
+    }
+  ]
+}

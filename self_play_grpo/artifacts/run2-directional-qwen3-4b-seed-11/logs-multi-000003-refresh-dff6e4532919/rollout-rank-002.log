@@ -1,0 +1,8 @@
+Calling add_step_closure function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling iter_mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/core/__init__.py:106: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  ret = original_fn(*args, **kwargs)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/gpu_migration/__init__.py:46: UserWarning: apex not installed, gpu_migration will not swap api for this package.
+  warnings.warn(
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 12922.93it/s]

@@ -1,0 +1,63 @@
+Calling add_step_closure function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling iter_mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/core/__init__.py:106: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  ret = original_fn(*args, **kwargs)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/gpu_migration/__init__.py:46: UserWarning: apex not installed, gpu_migration will not swap api for this package.
+  warnings.warn(
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 10401.41it/s]
+============================= HPU PT BRIDGE CONFIGURATION ON RANK = 0 ============= 
+ PT_HPU_LAZY_MODE = 0
+ PT_HPU_RECIPE_CACHE_CONFIG = /scratch/svijay46/verl-cache/habana_recipe,false,20480
+ PT_HPU_MAX_COMPOUND_OP_SIZE = 9223372036854775807
+ PT_HPU_LAZY_ACC_PAR_MODE = 1
+ PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES = 0
+ PT_HPU_EAGER_PIPELINE_ENABLE = 1
+ PT_HPU_EAGER_COLLECTIVE_PIPELINE_ENABLE = 1
+ PT_HPU_ENABLE_LAZY_COLLECTIVES = 1
+---------------------------: System Configuration :---------------------------
+Num CPU Cores : 152
+CPU RAM       : 502 GB
+------------------------------------------------------------------------------
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 10639.74it/s]
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 7, "seat": 0, "opponent": "random", "result": 0.25, "final_distance": 11}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 15, "seat": 1, "opponent": "random", "result": 0.25, "final_distance": 3}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 23, "seat": 2, "opponent": "random", "result": 0.25, "final_distance": 7}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 31, "seat": 3, "opponent": "random", "result": 0.25, "final_distance": 6}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 39, "seat": 0, "opponent": "noisy-shortest", "result": 1.0, "final_distance": 0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 47, "seat": 1, "opponent": "noisy-shortest", "result": 1.0, "final_distance": 0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 55, "seat": 2, "opponent": "noisy-shortest", "result": 1.0, "final_distance": 0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 63, "seat": 3, "opponent": "noisy-shortest", "result": 1.0, "final_distance": 0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 71, "seat": 0, "opponent": "shortest", "result": 0.0, "final_distance": 1}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 79, "seat": 1, "opponent": "shortest", "result": 0.0, "final_distance": 3}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 87, "seat": 2, "opponent": "shortest", "result": 1.0, "final_distance": 0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 95, "seat": 3, "opponent": "shortest", "result": 0.0, "final_distance": 1}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 103, "seat": 0, "opponent": "wall-aware", "result": 0.0, "final_distance": 19}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 111, "seat": 1, "opponent": "wall-aware", "result": 0.0, "final_distance": 2}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 119, "seat": 2, "opponent": "wall-aware", "result": 0.0, "final_distance": 9}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 127, "seat": 3, "opponent": "wall-aware", "result": 0.0, "final_distance": 5}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 135, "seat": 0, "opponent": "initial-llm", "result": 0.0, "final_distance": 1}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 143, "seat": 1, "opponent": "initial-llm", "result": 0.0, "final_distance": 2}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 151, "seat": 2, "opponent": "initial-llm", "result": 1.0, "final_distance": 0}
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"event": "evaluation_game_complete", "index": 159, "seat": 3, "opponent": "initial-llm", "result": 0.0, "final_distance": 9}
+{"by_opponent": {"initial-llm": {"backward_move_rate": 0.08823529411764706, "draw_rate": 0.0, "final_distance_95_interval": [0.875, 2.25], "forward_move_rate": 0.8949579831932774, "games": 32, "mean_final_distance": 1.5, "mean_fractional_result": 0.3125, "mean_game_length": 29.8125, "mean_placement": 2.25, "result_95_interval": [0.15625, 0.46875], "result_by_seat": {"0": 0.25, "1": 0.125, "2": 0.75, "3": 0.125}, "wall_rate": 0.0, "win_rate": 0.3125}, "noisy-shortest": {"backward_move_rate": 0.008298755186721992, "draw_rate": 0.0, "final_distance_95_interval": [0.03125, 0.40625], "forward_move_rate": 0.991701244813278, "games": 32, "mean_final_distance": 0.1875, "mean_fractional_result": 0.875, "mean_game_length": 28.90625, "mean_placement": 1.125, "result_95_interval": [0.75, 0.96875], "result_by_seat": {"0": 0.875, "1": 1.0, "2": 0.875, "3": 0.75}, "wall_rate": 0.0, "win_rate": 0.875}, "random": {"backward_move_rate": 0.2994428969359331, "draw_rate": 0.5, "final_distance_95_interval": [1.78125, 4.0], "forward_move_rate": 0.5668523676880223, "games": 32, "mean_final_distance": 2.875, "mean_fractional_result": 0.59375, "mean_game_length": 92.21875, "mean_placement": 1.25, "result_95_interval": [0.4609375, 0.734375], "result_by_seat": {"0": 0.53125, "1": 0.71875, "2": 0.71875, "3": 0.40625}, "wall_rate": 0.033647375504710635, "win_rate": 0.46875}, "shortest": {"backward_move_rate": 0.037037037037037035, "draw_rate": 0.0, "final_distance_95_interval": [0.78125, 1.34375], "forward_move_rate": 0.9537037037037037, "games": 32, "mean_final_distance": 1.0625, "mean_fractional_result": 0.25, "mean_game_length": 27.0, "mean_placement": 2.25, "result_95_interval": [0.09375, 0.40625], "result_by_seat": {"0": 0.0, "1": 0.0, "2": 1.0, "3": 0.0}, "wall_rate": 0.0, "win_rate": 0.25}, "wall-aware": {"backward_move_rate": 0.21766561514195584, "draw_rate": 0.0, "final_distance_95_interval": [5.78125, 11.78125], "forward_move_rate": 0.5899053627760252, "games": 32, "mean_final_distance": 8.59375, "mean_fractional_result": 0.0, "mean_game_length": 40.625, "mean_placement": 3.96875, "result_95_interval": [0.0, 0.0], "result_by_seat": {"0": 0.0, "1": 0.0, "2": 0.0, "3": 0.0}, "wall_rate": 0.027607361963190184, "win_rate": 0.0}}, "candidate": {"adapter_sha256": "d1a070ec0ff50351b7557d548b2355ae10e8ef77a0207bc39395e7e1e5fb894c", "checkpoint_manifest_sha256": "b1f5d6121e1a9e173826151bd4051064419d74272f0ab85528f84880979bdd11", "optimizer_steps": 0, "policy_version": "policy-000007", "runtime_identity": {"habana": "1.22.2.32", "peft": "0.20.0", "python": "3.12.3", "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4", "transformers": "5.12.1"}, "suite_sha256": "6310bec4f575194fdc5325fb54eafc89da815644a7fefb46373d578a0290227e"}, "overall": {"backward_move_rate": 0.18208092485549132, "draw_rate": 0.1, "final_distance_95_interval": [2.09375, 3.7], "forward_move_rate": 0.7236994219653179, "games": 160, "mean_final_distance": 2.84375, "mean_fractional_result": 0.40625, "mean_game_length": 43.7125, "mean_placement": 2.16875, "result_95_interval": [0.334375, 0.48125], "result_by_seat": {"0": 0.33125, "1": 0.36875, "2": 0.66875, "3": 0.25625}, "wall_rate": 0.01927437641723356, "win_rate": 0.38125}, "status": "evaluation_complete", "suite_sha256": "6310bec4f575194fdc5325fb54eafc89da815644a7fefb46373d578a0290227e"}

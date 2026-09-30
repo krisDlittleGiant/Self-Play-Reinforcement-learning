@@ -1,0 +1,8 @@
+{
+  "adapter_sha256": "89cf07fb224a82434fe0b78ae48413d2c5383cb1141fb490c2a6d3453cb1b085",
+  "source_first_match_sha256": "d97dda651c4faec36ef99c29a270f057ecedf37296b3d86d60c2ebee2644c4c7",
+  "source_pilot_manifest_sha256": "835e239a2fba4c9168fccc6120486c00ede51dfa8a9c6e655158ee95044ff2aa",
+  "source_pilot_policy_version": "pilot:1cfa9a720891:89cf07fb224a",
+  "status": "recorded_pilot_initial_policy",
+  "target_config_sha256": "b5d1623cddd74d972efe588927985cf68a7660e71bc35701d631cc044ecbac89"
+}

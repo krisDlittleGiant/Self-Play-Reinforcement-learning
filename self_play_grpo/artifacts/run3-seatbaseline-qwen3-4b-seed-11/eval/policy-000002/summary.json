@@ -1,0 +1,176 @@
+{
+  "by_opponent": {
+    "initial-llm": {
+      "backward_move_rate": 0.08786610878661087,
+      "draw_rate": 0.0,
+      "final_distance_95_interval": [
+        1.3125,
+        2.65625
+      ],
+      "forward_move_rate": 0.8368200836820083,
+      "games": 32,
+      "mean_final_distance": 1.9375,
+      "mean_fractional_result": 0.1875,
+      "mean_game_length": 30.09375,
+      "mean_placement": 2.4375,
+      "result_95_interval": [
+        0.0625,
+        0.34375
+      ],
+      "result_by_seat": {
+        "0": 0.25,
+        "1": 0.125,
+        "2": 0.25,
+        "3": 0.125
+      },
+      "wall_rate": 0.0,
+      "win_rate": 0.1875
+    },
+    "noisy-shortest": {
+      "backward_move_rate": 0.028455284552845527,
+      "draw_rate": 0.0,
+      "final_distance_95_interval": [
+        0.125,
+        1.15625
+      ],
+      "forward_move_rate": 0.9552845528455285,
+      "games": 32,
+      "mean_final_distance": 0.53125,
+      "mean_fractional_result": 0.8125,
+      "mean_game_length": 29.96875,
+      "mean_placement": 1.28125,
+      "result_95_interval": [
+        0.65625,
+        0.9375
+      ],
+      "result_by_seat": {
+        "0": 0.75,
+        "1": 0.875,
+        "2": 0.875,
+        "3": 0.75
+      },
+      "wall_rate": 0.008064516129032258,
+      "win_rate": 0.8125
+    },
+    "random": {
+      "backward_move_rate": 0.2821270310192024,
+      "draw_rate": 0.53125,
+      "final_distance_95_interval": [
+        2.1875,
+        4.875
+      ],
+      "forward_move_rate": 0.55096011816839,
+      "games": 32,
+      "mean_final_distance": 3.5,
+      "mean_fractional_result": 0.6015625,
+      "mean_game_length": 91.03125,
+      "mean_placement": 1.40625,
+      "result_95_interval": [
+        0.484375,
+        0.7421875
+      ],
+      "result_by_seat": {
+        "0": 0.8125,
+        "1": 0.71875,
+        "2": 0.53125,
+        "3": 0.34375
+      },
+      "wall_rate": 0.08016304347826086,
+      "win_rate": 0.46875
+    },
+    "shortest": {
+      "backward_move_rate": 0.04245283018867924,
+      "draw_rate": 0.0,
+      "final_distance_95_interval": [
+        1.0625,
+        2.28125
+      ],
+      "forward_move_rate": 0.9009433962264151,
+      "games": 32,
+      "mean_final_distance": 1.59375,
+      "mean_fractional_result": 0.15625,
+      "mean_game_length": 27.03125,
+      "mean_placement": 2.34375,
+      "result_95_interval": [
+        0.03125,
+        0.28125
+      ],
+      "result_by_seat": {
+        "0": 0.0,
+        "1": 0.0,
+        "2": 0.625,
+        "3": 0.0
+      },
+      "wall_rate": 0.013953488372093023,
+      "win_rate": 0.15625
+    },
+    "wall-aware": {
+      "backward_move_rate": 0.23322683706070288,
+      "draw_rate": 0.0,
+      "final_distance_95_interval": [
+        6.28125,
+        12.28125
+      ],
+      "forward_move_rate": 0.5654952076677316,
+      "games": 32,
+      "mean_final_distance": 9.0625,
+      "mean_fractional_result": 0.0,
+      "mean_game_length": 40.65625,
+      "mean_placement": 3.8125,
+      "result_95_interval": [
+        0.0,
+        0.0
+      ],
+      "result_by_seat": {
+        "0": 0.0,
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "wall_rate": 0.03987730061349693,
+      "win_rate": 0.0
+    }
+  },
+  "candidate": {
+    "adapter_sha256": "f1bdb6711dcdbf3f184c0db9bb07d94de1f54a476b461de8515af6c7df90afdd",
+    "checkpoint_manifest_sha256": "a3029b26482d8f71dff5d2c9b54a4d45d057af19fc9bb82b94765b2d6f3e0f05",
+    "optimizer_steps": 0,
+    "policy_version": "policy-000002",
+    "runtime_identity": {
+      "habana": "1.22.2.32",
+      "peft": "0.20.0",
+      "python": "3.12.3",
+      "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4",
+      "transformers": "5.12.1"
+    },
+    "suite_sha256": "6310bec4f575194fdc5325fb54eafc89da815644a7fefb46373d578a0290227e"
+  },
+  "overall": {
+    "backward_move_rate": 0.17842323651452283,
+    "draw_rate": 0.10625,
+    "final_distance_95_interval": [
+      2.53125,
+      4.2125
+    ],
+    "forward_move_rate": 0.6970954356846473,
+    "games": 160,
+    "mean_final_distance": 3.325,
+    "mean_fractional_result": 0.3515625,
+    "mean_game_length": 43.75625,
+    "mean_placement": 2.25625,
+    "result_95_interval": [
+      0.28125,
+      0.4234375
+    ],
+    "result_by_seat": {
+      "0": 0.3625,
+      "1": 0.34375,
+      "2": 0.45625,
+      "3": 0.24375
+    },
+    "wall_rate": 0.04365079365079365,
+    "win_rate": 0.325
+  },
+  "status": "evaluation_complete",
+  "suite_sha256": "6310bec4f575194fdc5325fb54eafc89da815644a7fefb46373d578a0290227e"
+}

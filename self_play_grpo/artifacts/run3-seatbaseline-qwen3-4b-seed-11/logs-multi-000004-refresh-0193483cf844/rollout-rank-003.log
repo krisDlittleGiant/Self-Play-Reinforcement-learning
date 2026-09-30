@@ -1,0 +1,23 @@
+Calling add_step_closure function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling iter_mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/core/__init__.py:106: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  ret = original_fn(*args, **kwargs)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/gpu_migration/__init__.py:46: UserWarning: apex not installed, gpu_migration will not swap api for this package.
+  warnings.warn(
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 10799.29it/s]
+============================= HPU PT BRIDGE CONFIGURATION ON RANK = 0 ============= 
+ PT_HPU_LAZY_MODE = 0
+ PT_HPU_RECIPE_CACHE_CONFIG = /scratch/svijay46/verl-cache/habana_recipe,false,20480
+ PT_HPU_MAX_COMPOUND_OP_SIZE = 9223372036854775807
+ PT_HPU_LAZY_ACC_PAR_MODE = 1
+ PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES = 0
+ PT_HPU_EAGER_PIPELINE_ENABLE = 1
+ PT_HPU_EAGER_COLLECTIVE_PIPELINE_ENABLE = 1
+ PT_HPU_ENABLE_LAZY_COLLECTIVES = 1
+---------------------------: System Configuration :---------------------------
+Num CPU Cores : 152
+CPU RAM       : 502 GB
+------------------------------------------------------------------------------
+Warning! The implementation of 'quoridor' has known issues. Please see the games list on github or the code for details.
+{"adapter_sha256": "f10ef4d64e9be760fe177c822aa1f6aa44d08935f049c0c68eab9c5a73462480", "checkpoint_manifest_sha256": "864ec487a75a74f31ddd7643568b4facc5474b0ceb45206a23358caa9a71380d", "module_id": 3, "parameter_sha256": "172c1da21be866f9e3d58bfe38b7a56e1bf78e2b3d268b5bc60d9f082aeb1921", "policy_version": "policy-000004", "probe_max_abs_error": 0.0, "rank": 3, "source_manifest_sha256": "a5a5fde58c5a4ea18d4e5cbff930f886d4a0e90e632ce80054ddfe313a78a5ae", "status": "refresh_verified"}

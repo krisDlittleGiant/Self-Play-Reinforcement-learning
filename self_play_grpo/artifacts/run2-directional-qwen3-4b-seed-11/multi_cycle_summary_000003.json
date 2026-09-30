@@ -1,0 +1,25 @@
+{
+  "checkpoint": "trainer-000003/trainer/checkpoints/policy-000003",
+  "checkpoint_manifest_sha256": "69757f0b184a9b73e6a456cb858704dad9f60874d7215d4dd7a1d45740120e83",
+  "max_abs_probe_error": 0.0,
+  "policy_version": "policy-000003",
+  "refresh_ranks": 4,
+  "source_manifest_sha256": "6c133d09137cdd44b5b1a9814c55e149166b84b76992830eedf1c147a088c319",
+  "status": "update_complete",
+  "trainer_metrics": {
+    "clip_fraction_before_step": 0.010936249666577753,
+    "games": 64,
+    "grad_norm": 0.3488897383213043,
+    "kl_loss": 0.0,
+    "loss": -0.01551787555217743,
+    "mean_ratio_before_step": 1.0002297487663376,
+    "optimizer_steps": 3,
+    "owned_tokens": 7498,
+    "policy_loss": -0.01551787555217743,
+    "policy_version": "policy-000003",
+    "replay_max_abs_error": 0.0,
+    "turns": 1857,
+    "update": 3
+  },
+  "update": 3
+}

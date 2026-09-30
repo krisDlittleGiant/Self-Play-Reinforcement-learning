@@ -1,0 +1,42 @@
+{
+  "checkpoint": "/scratch/svijay46/verl-gaudi-support/self_play_grpo/artifacts/run3-seatbaseline-qwen3-4b-seed-11/trainer-000005/trainer/checkpoints/policy-000005",
+  "checkpoint_adapter_sha256": "8a587c7ee9567633830dbe4665cbe109d6cbc1ac5c8dd0ee58164943613d2f66",
+  "checkpoint_manifest_sha256": "cfdd3580480e70155a0f42b2f2b2fe910116fde9616648e8cd412dfcbf554a35",
+  "metrics": {
+    "clip_fraction_before_step": 0.005619596541786743,
+    "games": 64,
+    "grad_norm": 0.07352215331047773,
+    "kl_loss": 0.0,
+    "loss": -0.00967626553028822,
+    "mean_ratio_before_step": 0.9997997624729827,
+    "optimizer_steps": 5,
+    "owned_tokens": 6940,
+    "policy_loss": -0.00967626553028822,
+    "policy_version": "policy-000005",
+    "replay_max_abs_error": 0.0,
+    "turns": 1734,
+    "update": 5
+  },
+  "parameter_sha256": "d43510227d74001a309145c518a78f4bac54856990b1d4ecc886d808604d3359",
+  "policy_probe": {
+    "completion_token_ids": [
+      29116,
+      2089,
+      23,
+      198
+    ],
+    "game_index": 0,
+    "joint_step": 0,
+    "log_probs": [
+      -3.4332275390625e-05,
+      -5.7220458984375e-05,
+      0.0,
+      0.0
+    ],
+    "match_sha256": "e99bf1dd2a3197ec22777c57435fecab4e305331f33f8979ff16e5ca59b5ba5f"
+  },
+  "run_id": "run3-seatbaseline-qwen3-4b-seed-11",
+  "source_manifest_sha256": "fb19a7dda928f074f0610f8501dc4548142111b5e54c6c4c99cd5446bafc2409",
+  "source_policy_version": "policy-000004",
+  "status": "updated_checkpoint_committed_refresh_pending"
+}

@@ -1,0 +1,126 @@
+{
+  "checkpoint_adapter_sha256": "f1bdb6711dcdbf3f184c0db9bb07d94de1f54a476b461de8515af6c7df90afdd",
+  "checkpoint_manifest_sha256": "a3029b26482d8f71dff5d2c9b54a4d45d057af19fc9bb82b94765b2d6f3e0f05",
+  "module_id": "6",
+  "rank": 2,
+  "restored": {
+    "checkpoint_manifest_sha256": "3e33b83c515a7125c188cd78eb5e8851b07e28970bc5d13f2553c2c346852f27",
+    "module_id": "6",
+    "optimizer_sha256": "f91a4d000de11fb91e0f971c50085eeb8f0967a32d559837c4310d08652294cf",
+    "parameter_sha256": "ff3cb1e3dc35e70c2c490fa5ac90852f1902ad92393c35a445981aa65fee61ec",
+    "policy_version": "policy-000001",
+    "rank": 2,
+    "run_id": "run3-seatbaseline-qwen3-4b-seed-11",
+    "status": "restored_no_optimizer_step",
+    "update_index": 1
+  },
+  "runtime_contract": {
+    "backend": "nccl",
+    "device_binding": "initialize_distributed_hpu -> HLS_MODULE_ID",
+    "device_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "devices": [
+      "hpu:0",
+      "hpu:1",
+      "hpu:2",
+      "hpu:3"
+    ],
+    "expected_reduction_sum": 10.0,
+    "module_ids": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "rank_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "reduction_values": [
+      10.0,
+      10.0
+    ],
+    "status": "ok",
+    "tensor_device": "hpu",
+    "world_size": 4
+  },
+  "schema_version": 1,
+  "source_manifest_sha256": "507b2f4dfaa9dd97ae101bc1e61232d9b2a03fd6ed62add8a0b52228ae99fc3b",
+  "source_policy_version": "policy-000001",
+  "status": "updated_checkpoint_committed_refresh_pending",
+  "update": {
+    "changed_parameter_tensors": 504,
+    "clip_fraction": 0.011931818238967521,
+    "consumed_manifest_sha256": "507b2f4dfaa9dd97ae101bc1e61232d9b2a03fd6ed62add8a0b52228ae99fc3b",
+    "grad_norm": 0.3834986612200737,
+    "gradient_sync_phases": 4,
+    "initial_parameter_sha256": "ff3cb1e3dc35e70c2c490fa5ac90852f1902ad92393c35a445981aa65fee61ec",
+    "kl_loss": 0.0,
+    "loss": -0.019477926660329103,
+    "max_abs_log_prob_error": 0.0,
+    "mean_ratio": 1.0014606544239955,
+    "minibatches": [
+      {
+        "clip_fraction": 0.0,
+        "games": 4,
+        "grad_norm": 0.5120116472244263,
+        "index": 0,
+        "loss": -0.029020259156823158,
+        "max_abs_log_ratio": 0.0,
+        "mean_ratio": 1.0,
+        "owned_tokens": 440
+      },
+      {
+        "clip_fraction": 0.008968610316514969,
+        "games": 4,
+        "grad_norm": 0.27158141136169434,
+        "index": 1,
+        "loss": 0.0009438078850507736,
+        "max_abs_log_ratio": 1.5242691040039062,
+        "mean_ratio": 0.9978283047676086,
+        "owned_tokens": 446
+      },
+      {
+        "clip_fraction": 0.01146788988262415,
+        "games": 4,
+        "grad_norm": 0.35073739290237427,
+        "index": 2,
+        "loss": -0.012649832293391228,
+        "max_abs_log_ratio": 0.34894561767578125,
+        "mean_ratio": 1.0031728744506836,
+        "owned_tokens": 436
+      },
+      {
+        "clip_fraction": 0.027397260069847107,
+        "games": 4,
+        "grad_norm": 0.3996641933917999,
+        "index": 3,
+        "loss": -0.0371854230761528,
+        "max_abs_log_ratio": 1.7088127136230469,
+        "mean_ratio": 1.0049222707748413,
+        "owned_tokens": 438
+      }
+    ],
+    "next_policy_version": "policy-000002",
+    "optimizer_sha256": "807e3059087f92989e7aa197811e771534804bf9f9d2b6fd50274882523b8575",
+    "optimizer_steps": 2,
+    "owned_tokens": 1760,
+    "parameter_sha256": "c592f2fa0cb2bdb04de8f0a59c7eef27b3927aeaad4974a4e8ee2595498209de",
+    "policy_loss": -0.019477926660329103,
+    "rank": 2,
+    "seat_result_means": [
+      0.171875,
+      0.09375,
+      0.515625,
+      0.21875
+    ],
+    "source_policy_version": "policy-000001",
+    "turns": 439
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "checkpoint_manifest_sha256": "a3029b26482d8f71dff5d2c9b54a4d45d057af19fc9bb82b94765b2d6f3e0f05",
+  "checkpoint_path": "trainer-000002/trainer/checkpoints/policy-000002",
+  "policy_version": "policy-000002",
+  "previous_record_sha256": "356ab94758cfff6d5ac279a60afd3e15e0b5474eebfa7f95bcf14f49c6f902ab",
+  "run_id": "run3-seatbaseline-qwen3-4b-seed-11",
+  "schema_version": 1,
+  "source_manifest_sha256": "507b2f4dfaa9dd97ae101bc1e61232d9b2a03fd6ed62add8a0b52228ae99fc3b",
+  "update_index": 2
+}

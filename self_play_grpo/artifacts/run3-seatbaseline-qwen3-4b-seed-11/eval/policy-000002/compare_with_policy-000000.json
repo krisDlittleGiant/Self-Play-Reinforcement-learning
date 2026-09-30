@@ -1,0 +1,84 @@
+{
+  "baseline": "policy-000000",
+  "by_opponent": {
+    "initial-llm": {
+      "final_distance_difference": -0.3125,
+      "final_distance_difference_95_interval": [
+        -0.6875,
+        0.0
+      ],
+      "games": 32,
+      "result_difference": 0.0625,
+      "result_difference_95_interval": [
+        0.0,
+        0.15625
+      ]
+    },
+    "noisy-shortest": {
+      "final_distance_difference": -0.53125,
+      "final_distance_difference_95_interval": [
+        -1.09375,
+        -0.0625
+      ],
+      "games": 32,
+      "result_difference": 0.125,
+      "result_difference_95_interval": [
+        0.03125,
+        0.25
+      ]
+    },
+    "random": {
+      "final_distance_difference": -0.84375,
+      "final_distance_difference_95_interval": [
+        -2.0,
+        0.21875
+      ],
+      "games": 32,
+      "result_difference": 0.046875,
+      "result_difference_95_interval": [
+        -0.0703125,
+        0.1640625
+      ]
+    },
+    "shortest": {
+      "final_distance_difference": -0.4375,
+      "final_distance_difference_95_interval": [
+        -0.9375,
+        -0.0625
+      ],
+      "games": 32,
+      "result_difference": 0.0625,
+      "result_difference_95_interval": [
+        0.0,
+        0.15625
+      ]
+    },
+    "wall-aware": {
+      "final_distance_difference": 0.21875,
+      "final_distance_difference_95_interval": [
+        -0.09375,
+        0.5625
+      ],
+      "games": 32,
+      "result_difference": 0.0,
+      "result_difference_95_interval": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "candidate": "policy-000002",
+  "overall": {
+    "final_distance_difference": -0.38125,
+    "final_distance_difference_95_interval": [
+      -0.6689062499999998,
+      -0.10625
+    ],
+    "games": 160,
+    "result_difference": 0.059375,
+    "result_difference_95_interval": [
+      0.021875,
+      0.1015625
+    ]
+  }
+}

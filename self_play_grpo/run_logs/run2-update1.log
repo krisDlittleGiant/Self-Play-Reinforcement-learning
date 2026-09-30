@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/initial_cycle.py", line 369, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/initial_cycle.py", line 364, in main
+    print(json.dumps(run_initial_cycle(parser.parse_args(argv)), sort_keys=True), flush=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/initial_cycle.py", line 212, in run_initial_cycle
+    raise FileExistsError("D5 one-update output must be new")
+FileExistsError: D5 one-update output must be new

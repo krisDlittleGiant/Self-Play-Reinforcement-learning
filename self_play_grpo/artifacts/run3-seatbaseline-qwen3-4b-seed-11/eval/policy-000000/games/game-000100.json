@@ -1,0 +1,58 @@
+{
+  "candidate": {
+    "adapter_sha256": "1fbafd6c28fb2521d3ee65bbba9f77e35b0f8c1cf806df15dccda72d7d7b573b",
+    "checkpoint_manifest_sha256": null,
+    "optimizer_steps": 0,
+    "policy_version": "policy-000000",
+    "runtime_identity": {
+      "habana": "1.22.2.32",
+      "peft": "0.20.0",
+      "python": "3.12.3",
+      "torch": "2.7.1+hpu_1.22.2-32.git6dbe0a4",
+      "transformers": "5.12.1"
+    },
+    "suite_sha256": "6310bec4f575194fdc5325fb54eafc89da815644a7fefb46373d578a0290227e"
+  },
+  "metrics": {
+    "backward_moves": 6,
+    "final_distance": 15,
+    "final_distances": [
+      15,
+      17,
+      0,
+      5
+    ],
+    "forward_moves": 9,
+    "moves": 15,
+    "placement": 3,
+    "turns": 16,
+    "walls": 1
+  },
+  "result": {
+    "candidate_name": "policy-000000",
+    "candidate_result": 0.0,
+    "candidate_seat": 0,
+    "final_results": [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    "game_id": "eval:6310bec4f575194fdc5325fb54eafc89da815644a7fefb46373d578a0290227e:100:policy-000000",
+    "joint_actions": 63,
+    "opponent_names": [
+      "wall_aware",
+      "wall_aware",
+      "wall_aware"
+    ],
+    "seed": 354108099261542589,
+    "termination_reason": "natural_win"
+  },
+  "schedule": {
+    "index": 100,
+    "opponent": "wall-aware",
+    "repeat": 4,
+    "seat": 0,
+    "seed": 354108099261542589
+  }
+}

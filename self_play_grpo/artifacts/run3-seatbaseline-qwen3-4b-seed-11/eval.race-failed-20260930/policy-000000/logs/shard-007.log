@@ -1,0 +1,21 @@
+Calling add_step_closure function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+Calling iter_mark_step function does not have any effect. It's lazy mode only functionality. (warning logged once)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/core/__init__.py:106: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  ret = original_fn(*args, **kwargs)
+/usr/local/lib/python3.12/dist-packages/habana_frameworks/torch/gpu_migration/__init__.py:46: UserWarning: apex not installed, gpu_migration will not swap api for this package.
+  warnings.warn(
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/evaluation/fixed_checkpoint.py", line 397, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/evaluation/fixed_checkpoint.py", line 385, in main
+    result = evaluate(args, config, suite)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/evaluation/fixed_checkpoint.py", line 187, in evaluate
+    publish_json(output / "candidate.json", metadata)
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/multi_evidence.py", line 45, in publish_json
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/scratch/svijay46/verl-gaudi-support/self_play_grpo/artifacts/run3-seatbaseline-qwen3-4b-seed-11/eval/policy-000000/.candidate.json.309d64e2b344424e93ac00bacdc93977.pending' -> '/scratch/svijay46/verl-gaudi-support/self_play_grpo/artifacts/run3-seatbaseline-qwen3-4b-seed-11/eval/policy-000000/candidate.json'

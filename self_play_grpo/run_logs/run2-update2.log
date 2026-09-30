@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/d6_cycle.py", line 339, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/d6_cycle.py", line 334, in main
+    print(json.dumps(run_second_cycle(parser.parse_args(argv)), sort_keys=True), flush=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/d6_cycle.py", line 152, in run_second_cycle
+    plan = audit_recovery(
+           ^^^^^^^^^^^^^^^
+  File "/scratch/svijay46/verl-gaudi-support/self_play_grpo/src/self_play_grpo/training/d6_recovery.py", line 87, in audit_recovery
+    raise ValueError("D6 recovery does not yet support this checkpoint generation")
+ValueError: D6 recovery does not yet support this checkpoint generation

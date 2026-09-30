@@ -1,0 +1,120 @@
+{
+  "module_id": "5",
+  "rank": 1,
+  "restored": {
+    "checkpoint_manifest_sha256": "cfdd3580480e70155a0f42b2f2b2fe910116fde9616648e8cd412dfcbf554a35",
+    "module_id": "5",
+    "optimizer_sha256": "b1a9408628e2bdc1810b99d14dc09d749bcdf8cc66e5102978985a2db40a89d6",
+    "parameter_sha256": "d43510227d74001a309145c518a78f4bac54856990b1d4ecc886d808604d3359",
+    "policy_version": "policy-000005",
+    "rank": 1,
+    "run_id": "run3-seatbaseline-qwen3-4b-seed-11",
+    "status": "restored_no_optimizer_step",
+    "update_index": 5
+  },
+  "runtime_contract": {
+    "backend": "nccl",
+    "device_binding": "initialize_distributed_hpu -> HLS_MODULE_ID",
+    "device_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "devices": [
+      "hpu:0",
+      "hpu:1",
+      "hpu:2",
+      "hpu:3"
+    ],
+    "expected_reduction_sum": 10.0,
+    "module_ids": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "rank_membership": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "reduction_values": [
+      10.0,
+      10.0
+    ],
+    "status": "ok",
+    "tensor_device": "hpu",
+    "world_size": 4
+  },
+  "update": {
+    "changed_parameter_tensors": 504,
+    "clip_fraction": 0.008045977020058138,
+    "consumed_manifest_sha256": "160fe9cf2b07cce2897b4cdbf5b1cb13ea3c63a7c1fb54fc7740fd84a9c77a6d",
+    "grad_norm": 0.21089229732751846,
+    "gradient_sync_phases": 4,
+    "initial_parameter_sha256": "d43510227d74001a309145c518a78f4bac54856990b1d4ecc886d808604d3359",
+    "kl_loss": 0.0,
+    "loss": -0.015367000829428434,
+    "max_abs_log_prob_error": 0.0,
+    "mean_ratio": 1.0004603196834696,
+    "minibatches": [
+      {
+        "clip_fraction": 0.0,
+        "games": 4,
+        "grad_norm": 0.315639466047287,
+        "index": 0,
+        "loss": -0.012219052761793137,
+        "max_abs_log_ratio": 0.0,
+        "mean_ratio": 1.0,
+        "owned_tokens": 432
+      },
+      {
+        "clip_fraction": 0.0069444444961845875,
+        "games": 4,
+        "grad_norm": 0.2474633753299713,
+        "index": 1,
+        "loss": -0.012213969603180885,
+        "max_abs_log_ratio": 0.3538360595703125,
+        "mean_ratio": 1.0019034147262573,
+        "owned_tokens": 432
+      },
+      {
+        "clip_fraction": 0.009259259328246117,
+        "games": 4,
+        "grad_norm": 0.15447549521923065,
+        "index": 2,
+        "loss": -0.012139875441789627,
+        "max_abs_log_ratio": 0.5250320434570312,
+        "mean_ratio": 1.0023764371871948,
+        "owned_tokens": 432
+      },
+      {
+        "clip_fraction": 0.01576576568186283,
+        "games": 4,
+        "grad_norm": 0.1259908527135849,
+        "index": 3,
+        "loss": -0.02489510551095009,
+        "max_abs_log_ratio": 1.6048126220703125,
+        "mean_ratio": 0.9976397752761841,
+        "owned_tokens": 444
+      }
+    ],
+    "next_policy_version": "policy-000006",
+    "optimizer_sha256": "535d21c9b94b2fe61e874fa3ba3fafc5e63df28bb4201000c1793ed1cf5ddd1d",
+    "optimizer_steps": 6,
+    "owned_tokens": 1740,
+    "parameter_sha256": "c85e0cfb5bd5eff451585d6b74e7c8166ddbec78b0059a05657d1a05a4489c81",
+    "policy_loss": -0.015367000829428434,
+    "rank": 1,
+    "seat_result_means": [
+      0.046875,
+      0.0,
+      0.796875,
+      0.15625
+    ],
+    "source_policy_version": "policy-000005",
+    "turns": 435
+  }
+}

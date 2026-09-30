@@ -1,0 +1,1776 @@
+{
+  "evaluations": {
+    "policy-000000": {
+      "by_opponent": {
+        "initial-llm": {
+          "backward_move_rate": 0.08085106382978724,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            1.5625,
+            3.03125
+          ],
+          "forward_move_rate": 0.825531914893617,
+          "games": 32,
+          "mean_final_distance": 2.25,
+          "mean_fractional_result": 0.125,
+          "mean_game_length": 30.0625,
+          "mean_placement": 2.5,
+          "result_95_interval": [
+            0.03125,
+            0.25
+          ],
+          "result_by_seat": {
+            "0": 0.125,
+            "1": 0.125,
+            "2": 0.125,
+            "3": 0.125
+          },
+          "wall_rate": 0.012605042016806723,
+          "win_rate": 0.125
+        },
+        "noisy-shortest": {
+          "backward_move_rate": 0.048582995951417005,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            0.4375,
+            1.8125
+          ],
+          "forward_move_rate": 0.9190283400809717,
+          "games": 32,
+          "mean_final_distance": 1.0625,
+          "mean_fractional_result": 0.6875,
+          "mean_game_length": 30.59375,
+          "mean_placement": 1.5625,
+          "result_95_interval": [
+            0.53125,
+            0.84375
+          ],
+          "result_by_seat": {
+            "0": 0.75,
+            "1": 0.875,
+            "2": 0.625,
+            "3": 0.5
+          },
+          "wall_rate": 0.01593625498007968,
+          "win_rate": 0.6875
+        },
+        "random": {
+          "backward_move_rate": 0.28715728715728717,
+          "draw_rate": 0.59375,
+          "final_distance_95_interval": [
+            2.875,
+            5.90625
+          ],
+          "forward_move_rate": 0.5339105339105339,
+          "games": 32,
+          "mean_final_distance": 4.34375,
+          "mean_fractional_result": 0.5546875,
+          "mean_game_length": 97.71875,
+          "mean_placement": 1.71875,
+          "result_95_interval": [
+            0.4375,
+            0.671875
+          ],
+          "result_by_seat": {
+            "0": 0.53125,
+            "1": 0.71875,
+            "2": 0.4375,
+            "3": 0.53125
+          },
+          "wall_rate": 0.11944091486658195,
+          "win_rate": 0.40625
+        },
+        "shortest": {
+          "backward_move_rate": 0.0430622009569378,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            1.40625,
+            2.71875
+          ],
+          "forward_move_rate": 0.8660287081339713,
+          "games": 32,
+          "mean_final_distance": 2.03125,
+          "mean_fractional_result": 0.09375,
+          "mean_game_length": 26.96875,
+          "mean_placement": 2.625,
+          "result_95_interval": [
+            0.0,
+            0.21875
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 0.375,
+            "3": 0.0
+          },
+          "wall_rate": 0.02336448598130841,
+          "win_rate": 0.09375
+        },
+        "wall-aware": {
+          "backward_move_rate": 0.23948220064724918,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            6.15625,
+            11.9375
+          ],
+          "forward_move_rate": 0.5792880258899676,
+          "games": 32,
+          "mean_final_distance": 8.84375,
+          "mean_fractional_result": 0.0,
+          "mean_game_length": 40.9375,
+          "mean_placement": 3.8125,
+          "result_95_interval": [
+            0.0,
+            0.0
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_rate": 0.057926829268292686,
+          "win_rate": 0.0
+        }
+      },
+      "compare_with_policy_000000": null,
+      "overall": {
+        "backward_move_rate": 0.18487891317188423,
+        "draw_rate": 0.11875,
+        "final_distance_95_interval": [
+          2.93125,
+          4.575
+        ],
+        "forward_move_rate": 0.6798582398109864,
+        "games": 160,
+        "mean_final_distance": 3.70625,
+        "mean_fractional_result": 0.2921875,
+        "mean_game_length": 45.25625,
+        "mean_placement": 2.44375,
+        "result_95_interval": [
+          0.2265625,
+          0.359375
+        ],
+        "result_by_seat": {
+          "0": 0.28125,
+          "1": 0.34375,
+          "2": 0.3125,
+          "3": 0.23125
+        },
+        "wall_rate": 0.06875687568756876,
+        "win_rate": 0.2625
+      }
+    },
+    "policy-000002": {
+      "by_opponent": {
+        "initial-llm": {
+          "backward_move_rate": 0.08786610878661087,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            1.3125,
+            2.65625
+          ],
+          "forward_move_rate": 0.8368200836820083,
+          "games": 32,
+          "mean_final_distance": 1.9375,
+          "mean_fractional_result": 0.1875,
+          "mean_game_length": 30.09375,
+          "mean_placement": 2.4375,
+          "result_95_interval": [
+            0.0625,
+            0.34375
+          ],
+          "result_by_seat": {
+            "0": 0.25,
+            "1": 0.125,
+            "2": 0.25,
+            "3": 0.125
+          },
+          "wall_rate": 0.0,
+          "win_rate": 0.1875
+        },
+        "noisy-shortest": {
+          "backward_move_rate": 0.028455284552845527,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            0.125,
+            1.15625
+          ],
+          "forward_move_rate": 0.9552845528455285,
+          "games": 32,
+          "mean_final_distance": 0.53125,
+          "mean_fractional_result": 0.8125,
+          "mean_game_length": 29.96875,
+          "mean_placement": 1.28125,
+          "result_95_interval": [
+            0.65625,
+            0.9375
+          ],
+          "result_by_seat": {
+            "0": 0.75,
+            "1": 0.875,
+            "2": 0.875,
+            "3": 0.75
+          },
+          "wall_rate": 0.008064516129032258,
+          "win_rate": 0.8125
+        },
+        "random": {
+          "backward_move_rate": 0.2821270310192024,
+          "draw_rate": 0.53125,
+          "final_distance_95_interval": [
+            2.1875,
+            4.875
+          ],
+          "forward_move_rate": 0.55096011816839,
+          "games": 32,
+          "mean_final_distance": 3.5,
+          "mean_fractional_result": 0.6015625,
+          "mean_game_length": 91.03125,
+          "mean_placement": 1.40625,
+          "result_95_interval": [
+            0.484375,
+            0.7421875
+          ],
+          "result_by_seat": {
+            "0": 0.8125,
+            "1": 0.71875,
+            "2": 0.53125,
+            "3": 0.34375
+          },
+          "wall_rate": 0.08016304347826086,
+          "win_rate": 0.46875
+        },
+        "shortest": {
+          "backward_move_rate": 0.04245283018867924,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            1.0625,
+            2.28125
+          ],
+          "forward_move_rate": 0.9009433962264151,
+          "games": 32,
+          "mean_final_distance": 1.59375,
+          "mean_fractional_result": 0.15625,
+          "mean_game_length": 27.03125,
+          "mean_placement": 2.34375,
+          "result_95_interval": [
+            0.03125,
+            0.28125
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 0.625,
+            "3": 0.0
+          },
+          "wall_rate": 0.013953488372093023,
+          "win_rate": 0.15625
+        },
+        "wall-aware": {
+          "backward_move_rate": 0.23322683706070288,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            6.28125,
+            12.28125
+          ],
+          "forward_move_rate": 0.5654952076677316,
+          "games": 32,
+          "mean_final_distance": 9.0625,
+          "mean_fractional_result": 0.0,
+          "mean_game_length": 40.65625,
+          "mean_placement": 3.8125,
+          "result_95_interval": [
+            0.0,
+            0.0
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_rate": 0.03987730061349693,
+          "win_rate": 0.0
+        }
+      },
+      "compare_with_policy_000000": {
+        "baseline": "policy-000000",
+        "by_opponent": {
+          "initial-llm": {
+            "final_distance_difference": -0.3125,
+            "final_distance_difference_95_interval": [
+              -0.6875,
+              0.0
+            ],
+            "games": 32,
+            "result_difference": 0.0625,
+            "result_difference_95_interval": [
+              0.0,
+              0.15625
+            ]
+          },
+          "noisy-shortest": {
+            "final_distance_difference": -0.53125,
+            "final_distance_difference_95_interval": [
+              -1.09375,
+              -0.0625
+            ],
+            "games": 32,
+            "result_difference": 0.125,
+            "result_difference_95_interval": [
+              0.03125,
+              0.25
+            ]
+          },
+          "random": {
+            "final_distance_difference": -0.84375,
+            "final_distance_difference_95_interval": [
+              -2.0,
+              0.21875
+            ],
+            "games": 32,
+            "result_difference": 0.046875,
+            "result_difference_95_interval": [
+              -0.0703125,
+              0.1640625
+            ]
+          },
+          "shortest": {
+            "final_distance_difference": -0.4375,
+            "final_distance_difference_95_interval": [
+              -0.9375,
+              -0.0625
+            ],
+            "games": 32,
+            "result_difference": 0.0625,
+            "result_difference_95_interval": [
+              0.0,
+              0.15625
+            ]
+          },
+          "wall-aware": {
+            "final_distance_difference": 0.21875,
+            "final_distance_difference_95_interval": [
+              -0.09375,
+              0.5625
+            ],
+            "games": 32,
+            "result_difference": 0.0,
+            "result_difference_95_interval": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "candidate": "policy-000002",
+        "overall": {
+          "final_distance_difference": -0.38125,
+          "final_distance_difference_95_interval": [
+            -0.6689062499999998,
+            -0.10625
+          ],
+          "games": 160,
+          "result_difference": 0.059375,
+          "result_difference_95_interval": [
+            0.021875,
+            0.1015625
+          ]
+        }
+      },
+      "overall": {
+        "backward_move_rate": 0.17842323651452283,
+        "draw_rate": 0.10625,
+        "final_distance_95_interval": [
+          2.53125,
+          4.2125
+        ],
+        "forward_move_rate": 0.6970954356846473,
+        "games": 160,
+        "mean_final_distance": 3.325,
+        "mean_fractional_result": 0.3515625,
+        "mean_game_length": 43.75625,
+        "mean_placement": 2.25625,
+        "result_95_interval": [
+          0.28125,
+          0.4234375
+        ],
+        "result_by_seat": {
+          "0": 0.3625,
+          "1": 0.34375,
+          "2": 0.45625,
+          "3": 0.24375
+        },
+        "wall_rate": 0.04365079365079365,
+        "win_rate": 0.325
+      }
+    },
+    "policy-000004": {
+      "by_opponent": {
+        "initial-llm": {
+          "backward_move_rate": 0.0875,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            1.15625,
+            2.5
+          ],
+          "forward_move_rate": 0.8666666666666667,
+          "games": 32,
+          "mean_final_distance": 1.78125,
+          "mean_fractional_result": 0.28125,
+          "mean_game_length": 30.125,
+          "mean_placement": 2.25,
+          "result_95_interval": [
+            0.125,
+            0.4375
+          ],
+          "result_by_seat": {
+            "0": 0.25,
+            "1": 0.125,
+            "2": 0.625,
+            "3": 0.125
+          },
+          "wall_rate": 0.0,
+          "win_rate": 0.28125
+        },
+        "noisy-shortest": {
+          "backward_move_rate": 0.0163265306122449,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            0.03125,
+            0.40625
+          ],
+          "forward_move_rate": 0.9836734693877551,
+          "games": 32,
+          "mean_final_distance": 0.1875,
+          "mean_fractional_result": 0.875,
+          "mean_game_length": 29.40625,
+          "mean_placement": 1.125,
+          "result_95_interval": [
+            0.75,
+            0.96875
+          ],
+          "result_by_seat": {
+            "0": 0.875,
+            "1": 1.0,
+            "2": 0.875,
+            "3": 0.75
+          },
+          "wall_rate": 0.0,
+          "win_rate": 0.875
+        },
+        "random": {
+          "backward_move_rate": 0.2716236722306525,
+          "draw_rate": 0.46875,
+          "final_distance_95_interval": [
+            1.84375,
+            4.4375
+          ],
+          "forward_move_rate": 0.5553869499241275,
+          "games": 32,
+          "mean_final_distance": 3.09375,
+          "mean_fractional_result": 0.6171875,
+          "mean_game_length": 86.28125,
+          "mean_placement": 1.375,
+          "result_95_interval": [
+            0.484375,
+            0.7421875
+          ],
+          "result_by_seat": {
+            "0": 0.625,
+            "1": 0.71875,
+            "2": 0.6875,
+            "3": 0.4375
+          },
+          "wall_rate": 0.054519368723098996,
+          "win_rate": 0.5
+        },
+        "shortest": {
+          "backward_move_rate": 0.018518518518518517,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            0.71875,
+            1.28125
+          ],
+          "forward_move_rate": 0.9490740740740741,
+          "games": 32,
+          "mean_final_distance": 0.96875,
+          "mean_fractional_result": 0.25,
+          "mean_game_length": 27.0,
+          "mean_placement": 2.0,
+          "result_95_interval": [
+            0.09375,
+            0.40625
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 1.0,
+            "3": 0.0
+          },
+          "wall_rate": 0.0,
+          "win_rate": 0.25
+        },
+        "wall-aware": {
+          "backward_move_rate": 0.22327044025157233,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            6.15625,
+            12.125
+          ],
+          "forward_move_rate": 0.559748427672956,
+          "games": 32,
+          "mean_final_distance": 8.9375,
+          "mean_fractional_result": 0.0,
+          "mean_game_length": 40.625,
+          "mean_placement": 3.875,
+          "result_95_interval": [
+            0.0,
+            0.0
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_rate": 0.024539877300613498,
+          "win_rate": 0.0
+        }
+      },
+      "compare_with_policy_000000": {
+        "baseline": "policy-000000",
+        "by_opponent": {
+          "initial-llm": {
+            "final_distance_difference": -0.46875,
+            "final_distance_difference_95_interval": [
+              -0.90625,
+              -0.0625
+            ],
+            "games": 32,
+            "result_difference": 0.15625,
+            "result_difference_95_interval": [
+              0.03125,
+              0.28125
+            ]
+          },
+          "noisy-shortest": {
+            "final_distance_difference": -0.875,
+            "final_distance_difference_95_interval": [
+              -1.625,
+              -0.25
+            ],
+            "games": 32,
+            "result_difference": 0.1875,
+            "result_difference_95_interval": [
+              0.0625,
+              0.34375
+            ]
+          },
+          "random": {
+            "final_distance_difference": -1.25,
+            "final_distance_difference_95_interval": [
+              -2.84375,
+              0.25
+            ],
+            "games": 32,
+            "result_difference": 0.0625,
+            "result_difference_95_interval": [
+              -0.1171875,
+              0.23457031249999716
+            ]
+          },
+          "shortest": {
+            "final_distance_difference": -1.0625,
+            "final_distance_difference_95_interval": [
+              -1.84375,
+              -0.40625
+            ],
+            "games": 32,
+            "result_difference": 0.15625,
+            "result_difference_95_interval": [
+              0.03125,
+              0.28125
+            ]
+          },
+          "wall-aware": {
+            "final_distance_difference": 0.09375,
+            "final_distance_difference_95_interval": [
+              -0.3125,
+              0.53125
+            ],
+            "games": 32,
+            "result_difference": 0.0,
+            "result_difference_95_interval": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "candidate": "policy-000004",
+        "overall": {
+          "final_distance_difference": -0.7125,
+          "final_distance_difference_95_interval": [
+            -1.11875,
+            -0.33125
+          ],
+          "games": 160,
+          "result_difference": 0.1125,
+          "result_difference_95_interval": [
+            0.05625,
+            0.171875
+          ]
+        }
+      },
+      "overall": {
+        "backward_move_rate": 0.16626936829559,
+        "draw_rate": 0.09375,
+        "final_distance_95_interval": [
+          2.225,
+          3.86875
+        ],
+        "forward_move_rate": 0.7139451728247914,
+        "games": 160,
+        "mean_final_distance": 2.99375,
+        "mean_fractional_result": 0.4046875,
+        "mean_game_length": 42.6875,
+        "mean_placement": 2.125,
+        "result_95_interval": [
+          0.33125,
+          0.4796875
+        ],
+        "result_by_seat": {
+          "0": 0.35,
+          "1": 0.36875,
+          "2": 0.6375,
+          "3": 0.2625
+        },
+        "wall_rate": 0.02668213457076566,
+        "win_rate": 0.38125
+      }
+    },
+    "policy-000006": {
+      "by_opponent": {
+        "initial-llm": {
+          "backward_move_rate": 0.08403361344537816,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            0.875,
+            2.1875
+          ],
+          "forward_move_rate": 0.8949579831932774,
+          "games": 32,
+          "mean_final_distance": 1.46875,
+          "mean_fractional_result": 0.3125,
+          "mean_game_length": 29.8125,
+          "mean_placement": 2.1875,
+          "result_95_interval": [
+            0.15625,
+            0.46875
+          ],
+          "result_by_seat": {
+            "0": 0.25,
+            "1": 0.125,
+            "2": 0.75,
+            "3": 0.125
+          },
+          "wall_rate": 0.0,
+          "win_rate": 0.3125
+        },
+        "noisy-shortest": {
+          "backward_move_rate": 0.008298755186721992,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            0.03125,
+            0.40625
+          ],
+          "forward_move_rate": 0.991701244813278,
+          "games": 32,
+          "mean_final_distance": 0.1875,
+          "mean_fractional_result": 0.875,
+          "mean_game_length": 28.90625,
+          "mean_placement": 1.125,
+          "result_95_interval": [
+            0.75,
+            0.96875
+          ],
+          "result_by_seat": {
+            "0": 0.875,
+            "1": 1.0,
+            "2": 0.875,
+            "3": 0.75
+          },
+          "wall_rate": 0.0,
+          "win_rate": 0.875
+        },
+        "random": {
+          "backward_move_rate": 0.308659217877095,
+          "draw_rate": 0.5,
+          "final_distance_95_interval": [
+            1.8125,
+            3.9382812499999886
+          ],
+          "forward_move_rate": 0.5670391061452514,
+          "games": 32,
+          "mean_final_distance": 2.875,
+          "mean_fractional_result": 0.625,
+          "mean_game_length": 91.96875,
+          "mean_placement": 1.3125,
+          "result_95_interval": [
+            0.5078125,
+            0.7427734374999915
+          ],
+          "result_by_seat": {
+            "0": 0.4375,
+            "1": 0.90625,
+            "2": 0.71875,
+            "3": 0.4375
+          },
+          "wall_rate": 0.03504043126684636,
+          "win_rate": 0.5
+        },
+        "shortest": {
+          "backward_move_rate": 0.032407407407407406,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            0.8125,
+            1.40625
+          ],
+          "forward_move_rate": 0.9490740740740741,
+          "games": 32,
+          "mean_final_distance": 1.09375,
+          "mean_fractional_result": 0.25,
+          "mean_game_length": 27.0,
+          "mean_placement": 2.25,
+          "result_95_interval": [
+            0.09375,
+            0.40625
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 1.0,
+            "3": 0.0
+          },
+          "wall_rate": 0.0,
+          "win_rate": 0.25
+        },
+        "wall-aware": {
+          "backward_move_rate": 0.2358490566037736,
+          "draw_rate": 0.0,
+          "final_distance_95_interval": [
+            5.936718750000001,
+            12.03125
+          ],
+          "forward_move_rate": 0.5943396226415094,
+          "games": 32,
+          "mean_final_distance": 8.75,
+          "mean_fractional_result": 0.0,
+          "mean_game_length": 40.65625,
+          "mean_placement": 3.90625,
+          "result_95_interval": [
+            0.0,
+            0.0
+          ],
+          "result_by_seat": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_rate": 0.024539877300613498,
+          "win_rate": 0.0
+        }
+      },
+      "compare_with_policy_000000": {
+        "baseline": "policy-000000",
+        "by_opponent": {
+          "initial-llm": {
+            "final_distance_difference": -0.78125,
+            "final_distance_difference_95_interval": [
+              -1.40625,
+              -0.25
+            ],
+            "games": 32,
+            "result_difference": 0.1875,
+            "result_difference_95_interval": [
+              0.0625,
+              0.3125
+            ]
+          },
+          "noisy-shortest": {
+            "final_distance_difference": -0.875,
+            "final_distance_difference_95_interval": [
+              -1.625,
+              -0.25
+            ],
+            "games": 32,
+            "result_difference": 0.1875,
+            "result_difference_95_interval": [
+              0.0625,
+              0.34375
+            ]
+          },
+          "random": {
+            "final_distance_difference": -1.46875,
+            "final_distance_difference_95_interval": [
+              -3.15625,
+              0.125
+            ],
+            "games": 32,
+            "result_difference": 0.0703125,
+            "result_difference_95_interval": [
+              -0.09375,
+              0.234375
+            ]
+          },
+          "shortest": {
+            "final_distance_difference": -0.9375,
+            "final_distance_difference_95_interval": [
+              -1.78125,
+              -0.21875
+            ],
+            "games": 32,
+            "result_difference": 0.15625,
+            "result_difference_95_interval": [
+              0.03125,
+              0.28125
+            ]
+          },
+          "wall-aware": {
+            "final_distance_difference": -0.09375,
+            "final_distance_difference_95_interval": [
+              -0.6257812499999993,
+              0.4375
+            ],
+            "games": 32,
+            "result_difference": 0.0,
+            "result_difference_95_interval": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "candidate": "policy-000006",
+        "overall": {
+          "final_distance_difference": -0.83125,
+          "final_distance_difference_95_interval": [
+            -1.26875,
+            -0.41875
+          ],
+          "games": 160,
+          "result_difference": 0.1203125,
+          "result_difference_95_interval": [
+            0.0640625,
+            0.178125
+          ]
+        }
+      },
+      "overall": {
+        "backward_move_rate": 0.18796992481203006,
+        "draw_rate": 0.1,
+        "final_distance_95_interval": [
+          2.1125,
+          3.74375
+        ],
+        "forward_move_rate": 0.7241179872758821,
+        "games": 160,
+        "mean_final_distance": 2.875,
+        "mean_fractional_result": 0.4125,
+        "mean_game_length": 43.66875,
+        "mean_placement": 2.15625,
+        "result_95_interval": [
+          0.3390625,
+          0.4875
+        ],
+        "result_by_seat": {
+          "0": 0.3125,
+          "1": 0.40625,
+          "2": 0.66875,
+          "3": 0.2625
+        },
+        "wall_rate": 0.019285309132161088,
+        "win_rate": 0.3875
+      }
+    }
+  },
+  "indicators": [
+    {
+      "backward_move_rate": 0.0761904761904762,
+      "chosen_menu_position": {
+        "0": 573,
+        "1": 454,
+        "2": 438,
+        "3": 320,
+        "5+": 34
+      },
+      "draw_rate": 0.0,
+      "entropy_estimate_nats": 0.17207602972247693,
+      "first_listed_move_rate": 0.32100840336134456,
+      "first_listed_rate": 0.31500824628916985,
+      "forward_move_rate": 0.8509803921568627,
+      "lateral_move_rate": 0.07282913165266107,
+      "matches": 64,
+      "mean_game_length": 28.421875,
+      "mean_path_distance_gain_per_move": 0.8565826330532212,
+      "model_turns": 1819,
+      "near_deterministic_rate": 0.6096756459593183,
+      "policy_versions": [
+        "policy-000000"
+      ],
+      "rollout": "rollout-000000",
+      "termination_counts": {
+        "natural_win": 64
+      },
+      "top_openings": [
+        {
+          "count": 246,
+          "label": "MOVE_E8"
+        },
+        {
+          "count": 3,
+          "label": "WALL_E2H"
+        },
+        {
+          "count": 3,
+          "label": "WALL_E5H"
+        },
+        {
+          "count": 1,
+          "label": "MOVE_D9"
+        },
+        {
+          "count": 1,
+          "label": "MOVE_F9"
+        }
+      ],
+      "wall_rate": 0.018691588785046728,
+      "wins_by_seat": [
+        13,
+        3,
+        28,
+        20
+      ]
+    },
+    {
+      "backward_move_rate": 0.06740331491712707,
+      "chosen_menu_position": {
+        "0": 579,
+        "1": 429,
+        "2": 483,
+        "3": 319,
+        "5+": 16
+      },
+      "draw_rate": 0.0,
+      "entropy_estimate_nats": 0.15261432401191236,
+      "first_listed_move_rate": 0.31988950276243094,
+      "first_listed_rate": 0.31708652792990144,
+      "forward_move_rate": 0.8756906077348067,
+      "lateral_move_rate": 0.0569060773480663,
+      "matches": 64,
+      "mean_game_length": 28.53125,
+      "mean_path_distance_gain_per_move": 0.9022099447513812,
+      "model_turns": 1826,
+      "near_deterministic_rate": 0.6599123767798467,
+      "policy_versions": [
+        "policy-000001"
+      ],
+      "rollout": "rollout-000001",
+      "termination_counts": {
+        "natural_win": 64
+      },
+      "top_openings": [
+        {
+          "count": 246,
+          "label": "MOVE_E8"
+        },
+        {
+          "count": 8,
+          "label": "WALL_E5H"
+        },
+        {
+          "count": 1,
+          "label": "WALL_E2H"
+        },
+        {
+          "count": 1,
+          "label": "WALL_E6V"
+        }
+      ],
+      "wall_rate": 0.008762322015334063,
+      "wins_by_seat": [
+        11,
+        6,
+        33,
+        14
+      ]
+    },
+    {
+      "backward_move_rate": 0.04788732394366197,
+      "chosen_menu_position": {
+        "0": 513,
+        "1": 431,
+        "2": 468,
+        "3": 363,
+        "5+": 8
+      },
+      "draw_rate": 0.0,
+      "entropy_estimate_nats": 0.09574994757412125,
+      "first_listed_move_rate": 0.28901408450704225,
+      "first_listed_rate": 0.28771733034212005,
+      "forward_move_rate": 0.8980281690140846,
+      "lateral_move_rate": 0.054084507042253524,
+      "matches": 64,
+      "mean_game_length": 27.859375,
+      "mean_path_distance_gain_per_move": 0.9442253521126761,
+      "model_turns": 1783,
+      "near_deterministic_rate": 0.7420078519349411,
+      "policy_versions": [
+        "policy-000002"
+      ],
+      "rollout": "rollout-000002",
+      "termination_counts": {
+        "natural_win": 64
+      },
+      "top_openings": [
+        {
+          "count": 249,
+          "label": "MOVE_E8"
+        },
+        {
+          "count": 3,
+          "label": "WALL_E2H"
+        },
+        {
+          "count": 2,
+          "label": "WALL_E5H"
+        },
+        {
+          "count": 2,
+          "label": "WALL_E8H"
+        }
+      ],
+      "wall_rate": 0.00448681996634885,
+      "wins_by_seat": [
+        12,
+        2,
+        33,
+        17
+      ]
+    },
+    {
+      "backward_move_rate": 0.03940605368360937,
+      "chosen_menu_position": {
+        "0": 544,
+        "1": 392,
+        "2": 455,
+        "3": 361,
+        "5+": 4
+      },
+      "draw_rate": 0.0,
+      "entropy_estimate_nats": 0.09604731018831084,
+      "first_listed_move_rate": 0.3106796116504854,
+      "first_listed_rate": 0.3097949886104784,
+      "forward_move_rate": 0.9166190748143918,
+      "lateral_move_rate": 0.04397487150199886,
+      "matches": 64,
+      "mean_game_length": 27.4375,
+      "mean_path_distance_gain_per_move": 0.9771559109080525,
+      "model_turns": 1756,
+      "near_deterministic_rate": 0.7784738041002278,
+      "policy_versions": [
+        "policy-000003"
+      ],
+      "rollout": "rollout-000003",
+      "termination_counts": {
+        "natural_win": 64
+      },
+      "top_openings": [
+        {
+          "count": 253,
+          "label": "MOVE_E8"
+        },
+        {
+          "count": 1,
+          "label": "WALL_A1H"
+        },
+        {
+          "count": 1,
+          "label": "WALL_E3H"
+        },
+        {
+          "count": 1,
+          "label": "WALL_E8H"
+        }
+      ],
+      "wall_rate": 0.0028473804100227792,
+      "wins_by_seat": [
+        3,
+        0,
+        51,
+        10
+      ]
+    },
+    {
+      "backward_move_rate": 0.024826789838337183,
+      "chosen_menu_position": {
+        "0": 495,
+        "1": 456,
+        "2": 431,
+        "3": 350,
+        "5+": 2
+      },
+      "draw_rate": 0.0,
+      "entropy_estimate_nats": 0.05434055394367363,
+      "first_listed_move_rate": 0.28579676674364896,
+      "first_listed_rate": 0.28546712802768165,
+      "forward_move_rate": 0.9434180138568129,
+      "lateral_move_rate": 0.03175519630484989,
+      "matches": 64,
+      "mean_game_length": 27.09375,
+      "mean_path_distance_gain_per_move": 1.0277136258660509,
+      "model_turns": 1734,
+      "near_deterministic_rate": 0.8615916955017301,
+      "policy_versions": [
+        "policy-000004"
+      ],
+      "rollout": "rollout-000004",
+      "termination_counts": {
+        "natural_win": 64
+      },
+      "top_openings": [
+        {
+          "count": 254,
+          "label": "MOVE_E8"
+        },
+        {
+          "count": 1,
+          "label": "MOVE_D9"
+        },
+        {
+          "count": 1,
+          "label": "WALL_E1H"
+        }
+      ],
+      "wall_rate": 0.0011534025374855825,
+      "wins_by_seat": [
+        2,
+        2,
+        56,
+        4
+      ]
+    },
+    {
+      "backward_move_rate": 0.02694954128440367,
+      "chosen_menu_position": {
+        "0": 435,
+        "1": 511,
+        "2": 457,
+        "3": 341
+      },
+      "draw_rate": 0.0,
+      "entropy_estimate_nats": 0.050231067412490144,
+      "first_listed_move_rate": 0.24942660550458715,
+      "first_listed_rate": 0.24942660550458715,
+      "forward_move_rate": 0.9397935779816514,
+      "lateral_move_rate": 0.033256880733944956,
+      "matches": 64,
+      "mean_game_length": 27.25,
+      "mean_path_distance_gain_per_move": 1.0200688073394495,
+      "model_turns": 1744,
+      "near_deterministic_rate": 0.8784403669724771,
+      "policy_versions": [
+        "policy-000005"
+      ],
+      "rollout": "rollout-000005",
+      "termination_counts": {
+        "natural_win": 64
+      },
+      "top_openings": [
+        {
+          "count": 256,
+          "label": "MOVE_E8"
+        }
+      ],
+      "wall_rate": 0.0,
+      "wins_by_seat": [
+        3,
+        0,
+        51,
+        10
+      ]
+    }
+  ],
+  "launcher_timings": [
+    {
+      "finished": "2026-09-30 01:55:50",
+      "returncode": 0,
+      "seconds": 1762.2114306500007,
+      "step": "update_000001"
+    },
+    {
+      "finished": "2026-09-30 01:55:54",
+      "returncode": 0,
+      "seconds": 1.0815903300008358,
+      "step": "freeze_eval_suite"
+    },
+    {
+      "returncode": 1,
+      "seconds": 240.77788190799947,
+      "step": "evaluate_000000"
+    },
+    {
+      "finished": "2026-09-30 07:09:29",
+      "returncode": 0,
+      "seconds": 0.49770817600074224,
+      "step": "freeze_eval_suite"
+    },
+    {
+      "returncode": 0,
+      "seconds": 420.15210381900033,
+      "step": "evaluate_000000"
+    },
+    {
+      "finished": "2026-09-30 07:16:30",
+      "returncode": 0,
+      "seconds": 0.6812440989997413,
+      "step": "summarize_eval_000000"
+    },
+    {
+      "finished": "2026-09-30 07:45:04",
+      "returncode": 0,
+      "seconds": 1707.2752968460009,
+      "step": "update_000002"
+    },
+    {
+      "returncode": 0,
+      "seconds": 298.5109976599997,
+      "step": "evaluate_000002"
+    },
+    {
+      "finished": "2026-09-30 07:50:12",
+      "returncode": 0,
+      "seconds": 0.6335685789999843,
+      "step": "summarize_eval_000002"
+    },
+    {
+      "finished": "2026-09-30 07:50:14",
+      "returncode": 0,
+      "seconds": 1.5557643710017146,
+      "step": "compare_eval_000002"
+    },
+    {
+      "finished": "2026-09-30 08:43:38",
+      "returncode": 0,
+      "seconds": 3197.808973385003,
+      "step": "updates_to_000004"
+    },
+    {
+      "returncode": 0,
+      "seconds": 296.57958895600314,
+      "step": "evaluate_000004"
+    },
+    {
+      "finished": "2026-09-30 08:48:53",
+      "returncode": 0,
+      "seconds": 0.6210714240005473,
+      "step": "summarize_eval_000004"
+    },
+    {
+      "finished": "2026-09-30 08:48:56",
+      "returncode": 0,
+      "seconds": 3.2574749900013558,
+      "step": "compare_eval_000004"
+    },
+    {
+      "finished": "2026-09-30 09:40:58",
+      "returncode": 0,
+      "seconds": 3110.346512778997,
+      "step": "updates_to_000006"
+    },
+    {
+      "returncode": 0,
+      "seconds": 305.09669904000475,
+      "step": "evaluate_000006"
+    },
+    {
+      "finished": "2026-09-30 09:46:41",
+      "returncode": 0,
+      "seconds": 0.6175325009971857,
+      "step": "summarize_eval_000006"
+    },
+    {
+      "finished": "2026-09-30 09:46:44",
+      "returncode": 0,
+      "seconds": 3.088011658997857,
+      "step": "compare_eval_000006"
+    }
+  ],
+  "phase_timings": [
+    {
+      "phase": "collection",
+      "seconds": 511.3044378829982,
+      "update": 3
+    },
+    {
+      "phase": "refresh",
+      "seconds": 70.74334676199942,
+      "update": 3
+    },
+    {
+      "phase": "training",
+      "seconds": 987.0600634250004,
+      "update": 3
+    },
+    {
+      "phase": "collection",
+      "seconds": 507.8901485440001,
+      "update": 4
+    },
+    {
+      "phase": "refresh",
+      "seconds": 57.41176159300085,
+      "update": 4
+    },
+    {
+      "phase": "training",
+      "seconds": 959.7607955240019,
+      "update": 4
+    },
+    {
+      "phase": "collection",
+      "seconds": 500.3377251849961,
+      "update": 5
+    },
+    {
+      "phase": "refresh",
+      "seconds": 47.408282331998635,
+      "update": 5
+    },
+    {
+      "phase": "training",
+      "seconds": 936.6122937409964,
+      "update": 5
+    },
+    {
+      "phase": "collection",
+      "seconds": 503.6962229790006,
+      "update": 6
+    },
+    {
+      "phase": "refresh",
+      "seconds": 49.916884061996825,
+      "update": 6
+    },
+    {
+      "phase": "training",
+      "seconds": 948.3692067860029,
+      "update": 6
+    }
+  ],
+  "run_root": "/scratch/svijay46/verl-gaudi-support/self_play_grpo/artifacts/run3-seatbaseline-qwen3-4b-seed-11",
+  "updates": [
+    {
+      "minibatches": [
+        {
+          "clip_fraction": 0.0,
+          "games": 4,
+          "grad_norm": 0.7050485610961914,
+          "index": 0,
+          "loss": -0.035129792988300323,
+          "max_abs_log_ratio": 0.0,
+          "mean_ratio": 1.0,
+          "owned_tokens": 496
+        },
+        {
+          "clip_fraction": 0.015021459199488163,
+          "games": 4,
+          "grad_norm": 0.5297905206680298,
+          "index": 1,
+          "loss": -0.014519980177283287,
+          "max_abs_log_ratio": 2.125354766845703,
+          "mean_ratio": 1.0042195320129395,
+          "owned_tokens": 466
+        },
+        {
+          "clip_fraction": 0.01179245300590992,
+          "games": 4,
+          "grad_norm": 0.3479662537574768,
+          "index": 2,
+          "loss": -0.011753841303288937,
+          "max_abs_log_ratio": 0.4760704040527344,
+          "mean_ratio": 1.0003890991210938,
+          "owned_tokens": 424
+        },
+        {
+          "clip_fraction": 0.01836734637618065,
+          "games": 4,
+          "grad_norm": 0.5024126768112183,
+          "index": 3,
+          "loss": -0.03117900714278221,
+          "max_abs_log_ratio": 0.6487960815429688,
+          "mean_ratio": 1.0019183158874512,
+          "owned_tokens": 490
+        }
+      ],
+      "policy_version": "policy-000001",
+      "seat_result_means": [
+        0.203125,
+        0.046875,
+        0.4375,
+        0.3125
+      ],
+      "trainer_metrics": {
+        "clip_fraction_before_step": 0.008442265795206972,
+        "games": 64,
+        "grad_norm": 0.5213045030832291,
+        "kl_loss": 0.0,
+        "loss": -0.02375214733183384,
+        "mean_ratio_before_step": 1.0004294401679943,
+        "optimizer_steps": 1,
+        "owned_tokens": 7344,
+        "policy_loss": -0.02375214733183384,
+        "policy_version": "policy-000001",
+        "replay_max_abs_error": 0.0,
+        "turns": 1819,
+        "update": 1
+      },
+      "update": 1
+    },
+    {
+      "minibatches": [
+        {
+          "clip_fraction": 0.0,
+          "games": 4,
+          "grad_norm": 0.5120116472244263,
+          "index": 0,
+          "loss": -0.022910719737410545,
+          "max_abs_log_ratio": 0.0,
+          "mean_ratio": 1.0,
+          "owned_tokens": 432
+        },
+        {
+          "clip_fraction": 0.0068807341158390045,
+          "games": 4,
+          "grad_norm": 0.27158141136169434,
+          "index": 1,
+          "loss": -0.013688331469893456,
+          "max_abs_log_ratio": 0.7273368835449219,
+          "mean_ratio": 1.0035580396652222,
+          "owned_tokens": 436
+        },
+        {
+          "clip_fraction": 0.00917431153357029,
+          "games": 4,
+          "grad_norm": 0.35073739290237427,
+          "index": 2,
+          "loss": -0.04015001654624939,
+          "max_abs_log_ratio": 1.1611099243164062,
+          "mean_ratio": 0.9999042749404907,
+          "owned_tokens": 436
+        },
+        {
+          "clip_fraction": 0.024336284026503563,
+          "games": 4,
+          "grad_norm": 0.3996641933917999,
+          "index": 3,
+          "loss": -0.04250627011060715,
+          "max_abs_log_ratio": 1.2334671020507812,
+          "mean_ratio": 1.0061622858047485,
+          "owned_tokens": 452
+        }
+      ],
+      "policy_version": "policy-000002",
+      "seat_result_means": [
+        0.171875,
+        0.09375,
+        0.515625,
+        0.21875
+      ],
+      "trainer_metrics": {
+        "clip_fraction_before_step": 0.011450381679389313,
+        "games": 64,
+        "grad_norm": 0.3834986612200737,
+        "kl_loss": 0.0,
+        "loss": -0.023287270218133926,
+        "mean_ratio_before_step": 1.0007533215904443,
+        "optimizer_steps": 2,
+        "owned_tokens": 7336,
+        "policy_loss": -0.023287270218133926,
+        "policy_version": "policy-000002",
+        "replay_max_abs_error": 0.0,
+        "turns": 1826,
+        "update": 2
+      },
+      "update": 2
+    },
+    {
+      "minibatches": [
+        {
+          "clip_fraction": 0.0,
+          "games": 4,
+          "grad_norm": 0.7381447553634644,
+          "index": 0,
+          "loss": -0.021077867597341537,
+          "max_abs_log_ratio": 0.0,
+          "mean_ratio": 1.0,
+          "owned_tokens": 464
+        },
+        {
+          "clip_fraction": 0.0022727272007614374,
+          "games": 4,
+          "grad_norm": 0.1888248175382614,
+          "index": 1,
+          "loss": -0.03119153529405594,
+          "max_abs_log_ratio": 0.2266845703125,
+          "mean_ratio": 1.0010114908218384,
+          "owned_tokens": 440
+        },
+        {
+          "clip_fraction": 0.011363636702299118,
+          "games": 4,
+          "grad_norm": 0.2521403431892395,
+          "index": 2,
+          "loss": -0.01192941889166832,
+          "max_abs_log_ratio": 0.8754730224609375,
+          "mean_ratio": 1.0029922723770142,
+          "owned_tokens": 440
+        },
+        {
+          "clip_fraction": 0.006756756920367479,
+          "games": 4,
+          "grad_norm": 0.28120511770248413,
+          "index": 3,
+          "loss": -0.026473268866539,
+          "max_abs_log_ratio": 0.8849411010742188,
+          "mean_ratio": 0.9993985891342163,
+          "owned_tokens": 444
+        }
+      ],
+      "policy_version": "policy-000003",
+      "seat_result_means": [
+        0.1875,
+        0.03125,
+        0.515625,
+        0.265625
+      ],
+      "trainer_metrics": {
+        "clip_fraction_before_step": 0.0058757694459988805,
+        "games": 64,
+        "grad_norm": 0.36507875844836235,
+        "kl_loss": 0.0,
+        "loss": -0.02359778992831707,
+        "mean_ratio_before_step": 0.9999587406442362,
+        "optimizer_steps": 3,
+        "owned_tokens": 7148,
+        "policy_loss": -0.02359778992831707,
+        "policy_version": "policy-000003",
+        "replay_max_abs_error": 0.0,
+        "turns": 1783,
+        "update": 3
+      },
+      "update": 3
+    },
+    {
+      "minibatches": [
+        {
+          "clip_fraction": 0.0,
+          "games": 4,
+          "grad_norm": 0.35351717472076416,
+          "index": 0,
+          "loss": -0.009164289571344852,
+          "max_abs_log_ratio": 0.0,
+          "mean_ratio": 1.0,
+          "owned_tokens": 436
+        },
+        {
+          "clip_fraction": 0.0022727272007614374,
+          "games": 4,
+          "grad_norm": 0.19427432119846344,
+          "index": 1,
+          "loss": -0.028094487264752388,
+          "max_abs_log_ratio": 0.408294677734375,
+          "mean_ratio": 0.9998763799667358,
+          "owned_tokens": 440
+        },
+        {
+          "clip_fraction": 0.004629629664123058,
+          "games": 4,
+          "grad_norm": 0.04898934066295624,
+          "index": 2,
+          "loss": -0.012457641772925854,
+          "max_abs_log_ratio": 0.6608123779296875,
+          "mean_ratio": 1.002107858657837,
+          "owned_tokens": 432
+        },
+        {
+          "clip_fraction": 0.013888888992369175,
+          "games": 4,
+          "grad_norm": 0.09811857342720032,
+          "index": 3,
+          "loss": -0.009761317633092403,
+          "max_abs_log_ratio": 0.9260787963867188,
+          "mean_ratio": 1.0085852146148682,
+          "owned_tokens": 432
+        }
+      ],
+      "policy_version": "policy-000004",
+      "seat_result_means": [
+        0.046875,
+        0.0,
+        0.796875,
+        0.15625
+      ],
+      "trainer_metrics": {
+        "clip_fraction_before_step": 0.006681831106056298,
+        "games": 64,
+        "grad_norm": 0.17372485250234604,
+        "kl_loss": 0.0,
+        "loss": -0.013818520121276379,
+        "mean_ratio_before_step": 1.0018253971779927,
+        "optimizer_steps": 4,
+        "owned_tokens": 7034,
+        "policy_loss": -0.013818520121276379,
+        "policy_version": "policy-000004",
+        "replay_max_abs_error": 0.0,
+        "turns": 1756,
+        "update": 4
+      },
+      "update": 4
+    },
+    {
+      "minibatches": [
+        {
+          "clip_fraction": 0.0,
+          "games": 4,
+          "grad_norm": 0.039182379841804504,
+          "index": 0,
+          "loss": -0.00488762091845274,
+          "max_abs_log_ratio": 0.0,
+          "mean_ratio": 1.0,
+          "owned_tokens": 432
+        },
+        {
+          "clip_fraction": 0.009009009227156639,
+          "games": 4,
+          "grad_norm": 0.16157715022563934,
+          "index": 1,
+          "loss": -0.029482703655958176,
+          "max_abs_log_ratio": 0.7301101684570312,
+          "mean_ratio": 0.9999789595603943,
+          "owned_tokens": 444
+        },
+        {
+          "clip_fraction": 0.0069444444961845875,
+          "games": 4,
+          "grad_norm": 0.024893473833799362,
+          "index": 2,
+          "loss": -0.00499552208930254,
+          "max_abs_log_ratio": 0.3305015563964844,
+          "mean_ratio": 1.000826120376587,
+          "owned_tokens": 432
+        },
+        {
+          "clip_fraction": 0.013636363670229912,
+          "games": 4,
+          "grad_norm": 0.06843560934066772,
+          "index": 3,
+          "loss": -0.042132072150707245,
+          "max_abs_log_ratio": 1.8761329650878906,
+          "mean_ratio": 0.9936777949333191,
+          "owned_tokens": 440
+        }
+      ],
+      "policy_version": "policy-000005",
+      "seat_result_means": [
+        0.03125,
+        0.03125,
+        0.875,
+        0.0625
+      ],
+      "trainer_metrics": {
+        "clip_fraction_before_step": 0.005619596541786743,
+        "games": 64,
+        "grad_norm": 0.07352215331047773,
+        "kl_loss": 0.0,
+        "loss": -0.00967626553028822,
+        "mean_ratio_before_step": 0.9997997624729827,
+        "optimizer_steps": 5,
+        "owned_tokens": 6940,
+        "policy_loss": -0.00967626553028822,
+        "policy_version": "policy-000005",
+        "replay_max_abs_error": 0.0,
+        "turns": 1734,
+        "update": 5
+      },
+      "update": 5
+    },
+    {
+      "minibatches": [
+        {
+          "clip_fraction": 0.0,
+          "games": 4,
+          "grad_norm": 0.315639466047287,
+          "index": 0,
+          "loss": -0.012219052761793137,
+          "max_abs_log_ratio": 0.0,
+          "mean_ratio": 1.0,
+          "owned_tokens": 432
+        },
+        {
+          "clip_fraction": 0.0,
+          "games": 4,
+          "grad_norm": 0.2474633753299713,
+          "index": 1,
+          "loss": -0.010050538927316666,
+          "max_abs_log_ratio": 0.22256088256835938,
+          "mean_ratio": 0.9994021654129028,
+          "owned_tokens": 436
+        },
+        {
+          "clip_fraction": 0.01785714365541935,
+          "games": 4,
+          "grad_norm": 0.15447549521923065,
+          "index": 2,
+          "loss": -0.024215050041675568,
+          "max_abs_log_ratio": 0.5608787536621094,
+          "mean_ratio": 0.9983149766921997,
+          "owned_tokens": 448
+        },
+        {
+          "clip_fraction": 0.002314814832061529,
+          "games": 4,
+          "grad_norm": 0.1259908527135849,
+          "index": 3,
+          "loss": -0.012094874866306782,
+          "max_abs_log_ratio": 0.4498405456542969,
+          "mean_ratio": 1.0026086568832397,
+          "owned_tokens": 432
+        }
+      ],
+      "policy_version": "policy-000006",
+      "seat_result_means": [
+        0.046875,
+        0.0,
+        0.796875,
+        0.15625
+      ],
+      "trainer_metrics": {
+        "clip_fraction_before_step": 0.00559059633027523,
+        "games": 64,
+        "grad_norm": 0.21089229732751846,
+        "kl_loss": 0.0,
+        "loss": -0.013688062317669392,
+        "mean_ratio_before_step": 1.0004748423165137,
+        "optimizer_steps": 6,
+        "owned_tokens": 6976,
+        "policy_loss": -0.013688062317669392,
+        "policy_version": "policy-000006",
+        "replay_max_abs_error": 0.0,
+        "turns": 1744,
+        "update": 6
+      },
+      "update": 6
+    }
+  ]
+}

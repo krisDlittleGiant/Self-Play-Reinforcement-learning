@@ -1,0 +1,38 @@
+{
+  "checkpoint": "trainer-000002/trainer/checkpoints/policy-000002",
+  "checkpoint_manifest_sha256": "a3029b26482d8f71dff5d2c9b54a4d45d057af19fc9bb82b94765b2d6f3e0f05",
+  "coordinator": {
+    "batch_sha256": null,
+    "checkpoint_sha256": "a3029b26482d8f71dff5d2c9b54a4d45d057af19fc9bb82b94765b2d6f3e0f05",
+    "failure": null,
+    "phase": "ready",
+    "policy_version": "policy-000002",
+    "ready_acknowledgements": 0,
+    "refreshed_rollouts": 0,
+    "update_index": 2,
+    "updated_trainers": 0,
+    "verified_trainers": 0
+  },
+  "games": 64,
+  "max_abs_probe_error": 0.0,
+  "policy_version": "policy-000002",
+  "refresh_ranks": 4,
+  "run_id": "run3-seatbaseline-qwen3-4b-seed-11",
+  "source_manifest_sha256": "507b2f4dfaa9dd97ae101bc1e61232d9b2a03fd6ed62add8a0b52228ae99fc3b",
+  "status": "second_update_complete",
+  "trainer_metrics": {
+    "clip_fraction_before_step": 0.011450381679389313,
+    "games": 64,
+    "grad_norm": 0.3834986612200737,
+    "kl_loss": 0.0,
+    "loss": -0.023287270218133926,
+    "mean_ratio_before_step": 1.0007533215904443,
+    "optimizer_steps": 2,
+    "owned_tokens": 7336,
+    "policy_loss": -0.023287270218133926,
+    "policy_version": "policy-000002",
+    "replay_max_abs_error": 0.0,
+    "turns": 1826,
+    "update": 2
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "code_identity": "source-sha256:df54b7845d246ce38bfaec7baa86eaa008fba5a870409ffcada180125b2defe7",
+  "config_sha256": "a1a45338ce9a82e1997129826894c37141c6d450abfdef80574185266c57252c",
+  "replay_tolerance": 0.0002,
+  "rollout_modules": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "run_id": "run3-seatbaseline-qwen3-4b-seed-11",
+  "seed": 11,
+  "trainer_modules": [
+    4,
+    5,
+    6,
+    7
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "failure": null,
+  "role": "rollout",
+  "status": "workers_exited",
+  "workers": [
+    {
+      "log": "rollout-rank-000.log",
+      "module_id": 0,
+      "pid": 95517,
+      "rank": 0,
+      "returncode": 0
+    },
+    {
+      "log": "rollout-rank-001.log",
+      "module_id": 1,
+      "pid": 95518,
+      "rank": 1,
+      "returncode": 0
+    },
+    {
+      "log": "rollout-rank-002.log",
+      "module_id": 2,
+      "pid": 95519,
+      "rank": 2,
+      "returncode": 0
+    },
+    {
+      "log": "rollout-rank-003.log",
+      "module_id": 3,
+      "pid": 95520,
+      "rank": 3,
+      "returncode": 0
+    }
+  ]
+}
